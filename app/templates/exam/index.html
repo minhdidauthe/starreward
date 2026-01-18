@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">Góc Thi Cử</h2>
+
+        <!-- Exam Schedule -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-calendar-alt"></i> Lịch Thi Sắp Tới</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    Chưa có lịch thi nào sắp tới.
+                </div>
+            </div>
+        </div>
+
+        <!-- Available Exams -->
+        <h4 class="mb-3">Đề Thi Tự Luyện</h4>
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="display-4 text-primary me-3">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title">Đề ôn tập Toán Giữa Kỳ 1</h5>
+                            <p class="card-text mb-1"><small class="text-muted"><i class="fas fa-clock"></i> 45 phút |
+                                    20 câu</small></p>
+                            <a href="#" class="btn btn-outline-primary btn-sm">Làm Bài Ngay</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

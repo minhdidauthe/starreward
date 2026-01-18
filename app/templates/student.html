@@ -1,0 +1,600 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">{{ student.name }}</h5>
+            </div>
+            <div class="card-body">
+                <h3 class="text-center mb-3">
+                    <i class="fas fa-star star-icon"></i> {{ student.total_stars }}
+                </h3>
+                <h4 class="text-center">{{ get_reward_level(student.total_stars) }}</h4>
+            </div>
+        </div>
+
+        <!-- Daily Tasks Card -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="card-title mb-0">Công Việc Hàng Ngày</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    {% for task in daily_tasks %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ task.name }}</h6>
+                                <small class="text-muted">{{ task.description }}</small>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-warning text-dark me-2">
+                                    <i class="fas fa-star"></i> {{ task.default_stars }}
+                                </span>
+                                {% if task.id in completed_tasks %}
+                                <button class="btn btn-success btn-sm" disabled>
+                                    <i class="fas fa-check"></i> Hoàn thành
+                                </button>
+                                {% else %}
+                                <form action="{{ url_for('main.add_stars', student_id=student.id) }}" method="POST"
+                                    class="d-inline">
+                                    <input type="hidden" name="task_id" value="{{ task.id }}">
+                                    <button type="submit" class="btn btn-outline-success btn-sm">
+                                        Hoàn thành
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Manual Add/Subtract Stars Card -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">Thêm/Trừ Sao Thủ Công</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('main.add_stars', student_id=student.id) }}" method="POST">
+                    <div class="mb-3">
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="isPenalty" name="is_penalty"
+                                value="true">
+                            <label class="form-check-label" for="isPenalty">Trừ sao (vi phạm)</label>
+                        </div>
+                        <label for="stars" class="form-label">Số Sao</label>
+                        <input type="number" class="form-control" id="stars" name="stars" min="1" max="10" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reason" class="form-label">Lý Do</label>
+                        <textarea class="form-control" id="reason" name="reason" rows="3" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="submitButton">Thêm Sao</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Danh Sách Công Việc</h5>
+                <a href="{{ url_for('main.add_task', student_id=student.id) }}" class="btn btn-light btn-sm">
+                    <i class="fas fa-plus"></i> Thêm Công Việc
+                </a>
+            </div>
+            <div class="card-body">
+                <div id="tasksList">
+                    <!-- Dữ liệu sẽ được thêm vào đây bằng JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <!-- Daily Summary Card -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">Tổng Hợp Sao Hàng Ngày</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-3">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-outline-primary btn-sm active" onclick="updateTable(7)">7
+                            ngày</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="updateTable(30)">30
+                            ngày</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="updateTable(90)">90
+                            ngày</button>
+                    </div>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-outline-primary btn-sm active" id="tableViewBtn"
+                            onclick="switchView('table')">
+                            <i class="fas fa-table"></i> Bảng
+                        </button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="chartViewBtn"
+                            onclick="switchView('chart')">
+                            <i class="fas fa-chart-line"></i> Biểu đồ
+                        </button>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('main.add_test_data', student_id=student.id) }}"
+                            class="btn btn-success btn-sm me-2">
+                            <i class="fas fa-plus"></i> Thêm Dữ Liệu Test
+                        </a>
+                        <a href="{{ url_for('main.clear_test_data', student_id=student.id) }}"
+                            class="btn btn-danger btn-sm"
+                            onclick="return confirm('Bạn có chắc muốn xóa tất cả dữ liệu test?')">
+                            <i class="fas fa-trash"></i> Xóa Dữ Liệu Test
+                        </a>
+                    </div>
+                </div>
+                <div id="tableView">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Ngày</th>
+                                    <th>Số Sao</th>
+                                    <th>Lý Do</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dailySummaryTable">
+                                <!-- Dữ liệu sẽ được thêm vào đây bằng JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Phân trang -->
+                    <nav aria-label="Phân trang tổng hợp sao">
+                        <ul class="pagination justify-content-center" id="dailySummaryPagination">
+                            <!-- Nút phân trang sẽ được thêm vào đây bằng JavaScript -->
+                        </ul>
+                    </nav>
+                </div>
+                <div id="chartView" style="display: none;">
+                    <canvas id="starChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Card -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">Lịch Sử Nhận Sao</h5>
+            </div>
+            <div class="card-body">
+                <div id="rewardHistory">
+                    <!-- Dữ liệu sẽ được thêm vào đây bằng JavaScript -->
+                </div>
+                <!-- Phân trang -->
+                <nav aria-label="Phân trang lịch sử nhận sao">
+                    <ul class="pagination justify-content-center" id="rewardHistoryPagination">
+                        <!-- Nút phân trang sẽ được thêm vào đây bằng JavaScript -->
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Xử lý nút thêm/trừ sao
+    document.getElementById('isPenalty').addEventListener('change', function () {
+        const submitButton = document.getElementById('submitButton');
+        if (this.checked) {
+            submitButton.textContent = 'Trừ Sao';
+            submitButton.classList.remove('btn-primary');
+            submitButton.classList.add('btn-danger');
+        } else {
+            submitButton.textContent = 'Thêm Sao';
+            submitButton.classList.remove('btn-danger');
+            submitButton.classList.add('btn-primary');
+        }
+    });
+
+    // Chuyển đổi giữa chế độ xem bảng và biểu đồ
+    function switchView(view) {
+        const tableView = document.getElementById('tableView');
+        const chartView = document.getElementById('chartView');
+        const tableViewBtn = document.getElementById('tableViewBtn');
+        const chartViewBtn = document.getElementById('chartViewBtn');
+
+        if (view === 'table') {
+            tableView.style.display = 'block';
+            chartView.style.display = 'none';
+            tableViewBtn.classList.add('active');
+            chartViewBtn.classList.remove('active');
+        } else {
+            tableView.style.display = 'none';
+            chartView.style.display = 'block';
+            tableViewBtn.classList.remove('active');
+            chartViewBtn.classList.add('active');
+            updateChart();
+        }
+    }
+
+    // Biến lưu trữ biểu đồ
+    let starChart = null;
+
+    // Cập nhật bảng tổng hợp
+    function updateTable(days = 30, page = 1) {
+        // Cập nhật trạng thái active của các nút
+        const timeButtons = document.querySelectorAll('.btn-group .btn-outline-primary');
+        timeButtons.forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.textContent.trim() === `${days} ngày`) {
+                btn.classList.add('active');
+            }
+        });
+
+        fetch(`/get_star_history/{{ student.id }}?days=${days}&page=${page}`)
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.getElementById('dailySummaryTable');
+                tableBody.innerHTML = '';
+
+                data.daily_summary.forEach(day => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                    <td>${day.date}</td>
+                    <td>
+                        <span class="badge bg-warning text-dark">
+                            <i class="fas fa-star"></i> ${day.stars}
+                        </span>
+                    </td>
+                    <td>
+                        <ul class="list-unstyled mb-0">
+                            ${day.reasons.map(reason => `<li>${reason}</li>`).join('')}
+                        </ul>
+                    </td>
+                `;
+                    tableBody.appendChild(row);
+                });
+
+                // Cập nhật phân trang
+                updatePagination(data.pagination, days);
+
+                // Nếu đang ở chế độ xem biểu đồ, cập nhật biểu đồ
+                if (document.getElementById('chartView').style.display === 'block') {
+                    updateChart(days);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading daily summary:', error);
+            });
+    }
+
+    // Cập nhật phân trang
+    function updatePagination(pagination, days) {
+        const paginationContainer = document.getElementById('dailySummaryPagination');
+        paginationContainer.innerHTML = '';
+
+        const { current_page, total_pages } = pagination;
+
+        // Nút Previous
+        const prevLi = document.createElement('li');
+        prevLi.className = `page-item ${current_page === 1 ? 'disabled' : ''}`;
+        prevLi.innerHTML = `
+        <a class="page-link" href="#" onclick="updateTable(${days}, ${current_page - 1})" aria-label="Previous">
+            <span aria-hidden="true">&laquo;</span>
+        </a>
+    `;
+        paginationContainer.appendChild(prevLi);
+
+        // Các nút số trang
+        for (let i = 1; i <= total_pages; i++) {
+            const pageLi = document.createElement('li');
+            pageLi.className = `page-item ${i === current_page ? 'active' : ''}`;
+            pageLi.innerHTML = `
+            <a class="page-link" href="#" onclick="updateTable(${days}, ${i})">${i}</a>
+        `;
+            paginationContainer.appendChild(pageLi);
+        }
+
+        // Nút Next
+        const nextLi = document.createElement('li');
+        nextLi.className = `page-item ${current_page === total_pages ? 'disabled' : ''}`;
+        nextLi.innerHTML = `
+        <a class="page-link" href="#" onclick="updateTable(${days}, ${current_page + 1})" aria-label="Next">
+            <span aria-hidden="true">&raquo;</span>
+        </a>
+    `;
+        paginationContainer.appendChild(nextLi);
+    }
+
+    // Cập nhật lịch sử nhận sao
+    function updateRewardHistory(page = 1) {
+        fetch(`/get_reward_history/{{ student.id }}?page=${page}`)
+            .then(response => response.json())
+            .then(data => {
+                const historyContainer = document.getElementById('rewardHistory');
+                historyContainer.innerHTML = '';
+
+                data.rewards.forEach(reward => {
+                    const achievement = document.createElement('div');
+                    achievement.className = `achievement shadow-sm ${reward.is_penalty ? 'border-danger' : ''} mb-3`;
+                    achievement.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5>
+                                ${reward.is_penalty ?
+                            `<i class="fas fa-star text-danger"></i> -${Math.abs(reward.stars)} sao` :
+                            `<i class="fas fa-star star-icon"></i> ${reward.stars} sao`
+                        }
+                            </h5>
+                            <p class="mb-1">${reward.reason}</p>
+                            <small class="text-muted">${reward.date}</small>
+                        </div>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-sm btn-outline-primary" 
+                                    data-bs-toggle="modal" data-bs-target="#editModal${reward.id}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <form action="/delete_reward/${reward.id}" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                        onclick="return confirm('Bạn có chắc muốn xóa phần thưởng này?')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                `;
+                    historyContainer.appendChild(achievement);
+
+                    // Thêm modal chỉnh sửa
+                    const modal = document.createElement('div');
+                    modal.className = 'modal fade';
+                    modal.id = `editModal${reward.id}`;
+                    modal.setAttribute('tabindex', '-1');
+                    modal.innerHTML = `
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Chỉnh Sửa Phần Thưởng</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <form action="/edit_reward/${reward.id}" method="POST">
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <div class="form-check form-switch mb-3">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   id="editIsPenalty${reward.id}" name="is_penalty" 
+                                                   value="true" ${reward.is_penalty ? 'checked' : ''}>
+                                            <label class="form-check-label" for="editIsPenalty${reward.id}">
+                                                Trừ sao (vi phạm)
+                                            </label>
+                                        </div>
+                                        <label for="editStars${reward.id}" class="form-label">Số Sao</label>
+                                        <input type="number" class="form-control" id="editStars${reward.id}" 
+                                               name="stars" min="1" max="10" value="${Math.abs(reward.stars)}" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="editReason${reward.id}" class="form-label">Lý Do</label>
+                                        <textarea class="form-control" id="editReason${reward.id}" 
+                                                  name="reason" rows="3" required>${reward.reason}</textarea>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                    <button type="submit" class="btn btn-primary">Lưu Thay Đổi</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                `;
+                    document.body.appendChild(modal);
+                });
+
+                // Cập nhật phân trang
+                updateRewardPagination(data.pagination);
+            })
+            .catch(error => {
+                console.error('Error loading reward history:', error);
+            });
+    }
+
+    // Cập nhật phân trang lịch sử
+    function updateRewardPagination(pagination) {
+        const paginationContainer = document.getElementById('rewardHistoryPagination');
+        paginationContainer.innerHTML = '';
+
+        const { current_page, total_pages } = pagination;
+
+        // Nút Previous
+        const prevLi = document.createElement('li');
+        prevLi.className = `page-item ${current_page === 1 ? 'disabled' : ''}`;
+        prevLi.innerHTML = `
+        <a class="page-link" href="#" onclick="updateRewardHistory(${current_page - 1})" aria-label="Previous">
+            <span aria-hidden="true">&laquo;</span>
+        </a>
+    `;
+        paginationContainer.appendChild(prevLi);
+
+        // Các nút số trang
+        for (let i = 1; i <= total_pages; i++) {
+            const pageLi = document.createElement('li');
+            pageLi.className = `page-item ${i === current_page ? 'active' : ''}`;
+            pageLi.innerHTML = `
+            <a class="page-link" href="#" onclick="updateRewardHistory(${i})">${i}</a>
+        `;
+            paginationContainer.appendChild(pageLi);
+        }
+
+        // Nút Next
+        const nextLi = document.createElement('li');
+        nextLi.className = `page-item ${current_page === total_pages ? 'disabled' : ''}`;
+        nextLi.innerHTML = `
+        <a class="page-link" href="#" onclick="updateRewardHistory(${current_page + 1})" aria-label="Next">
+            <span aria-hidden="true">&raquo;</span>
+        </a>
+    `;
+        paginationContainer.appendChild(nextLi);
+    }
+
+    // Cập nhật biểu đồ
+    function updateChart(days = null) {
+        // Nếu không truyền vào số ngày, lấy từ nút đang active
+        if (days === null) {
+            const activeButton = document.querySelector('.btn-group .btn-outline-primary.active');
+            days = parseInt(activeButton.textContent.trim().split(' ')[0]);
+        }
+
+        fetch(`/get_star_history/{{ student.id }}?days=${days}&is_chart=true`)
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('starChart').getContext('2d');
+
+                // Nếu biểu đồ đã tồn tại, hủy nó
+                if (starChart) {
+                    starChart.destroy();
+                }
+
+                // Tạo biểu đồ mới
+                starChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.daily_summary.map(day => day.date).reverse(),
+                        datasets: [{
+                            label: 'Số Sao',
+                            data: data.daily_summary.map(day => day.stars).reverse(),
+                            borderColor: 'rgb(255, 193, 7)',
+                            backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                            tension: 0.1,
+                            fill: true,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: `Biểu Đồ Sao Hàng Ngày (${days} ngày gần nhất)`,
+                                font: {
+                                    size: 16
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    afterBody: function (context) {
+                                        const index = context[0].dataIndex;
+                                        const reasons = data.daily_summary[data.daily_summary.length - 1 - index].reasons;
+                                        return reasons.map(reason => `• ${reason}`).join('\n');
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Số Sao',
+                                    font: {
+                                        size: 14
+                                    }
+                                },
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Ngày',
+                                    font: {
+                                        size: 14
+                                    }
+                                },
+                                reverse: true
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error loading chart data:', error);
+            });
+    }
+
+    // Cập nhật danh sách công việc
+    function updateTasks() {
+        fetch(`/get_tasks/{{ student.id }}`)
+            .then(response => response.json())
+            .then(tasks => {
+                const tasksList = document.getElementById('tasksList');
+                tasksList.innerHTML = '';
+
+                tasks.forEach(task => {
+                    const taskElement = document.createElement('div');
+                    taskElement.className = `task mb-3 p-3 border rounded ${task.is_completed ? 'bg-light' : ''}`;
+                    taskElement.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5 class="mb-1 ${task.is_completed ? 'text-decoration-line-through' : ''}">
+                                ${task.title}
+                            </h5>
+                            <p class="mb-1">${task.description || ''}</p>
+                            <small class="text-muted">
+                                <i class="far fa-clock"></i> 
+                                ${new Date(task.due_date).toLocaleString('vi-VN')}
+                            </small>
+                        </div>
+                        <div class="btn-group">
+                            ${!task.is_completed ? `
+                                <form action="/complete_task/${task.id}" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-success">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </form>
+                            ` : ''}
+                            <form action="/delete_task/${task.id}" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-danger" 
+                                        onclick="return confirm('Bạn có chắc muốn xóa công việc này?')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                `;
+                    tasksList.appendChild(taskElement);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading tasks:', error);
+            });
+    }
+
+    // Cập nhật danh sách công việc mỗi phút
+    setInterval(updateTasks, 60000);
+
+    // Khởi tạo bảng, lịch sử và danh sách công việc khi trang được tải
+    document.addEventListener('DOMContentLoaded', () => {
+        updateTable(30, 1);
+        updateRewardHistory(1);
+        updateTasks();
+    });
+</script>
+
+<style>
+    #chartView {
+        height: 400px;
+        margin-top: 20px;
+    }
+
+    .task {
+        transition: all 0.3s ease;
+    }
+
+    .task:hover {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+</style>
+{% endblock %}

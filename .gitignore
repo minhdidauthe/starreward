@@ -1,0 +1,14 @@
+
+.aider*
+.env
+venv/
+env/
+aider_env/
+download_env/
+__pycache__/
+*.pyc
+.DS_Store
+node_modules/
+downloaded_materials/
+downloaded_materials_backup/
+clawdbot/

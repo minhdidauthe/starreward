@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  mongodb:
+    build:
+      context: ./docker/mongodb
+      dockerfile: Dockerfile
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - app_network
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: star_reward_app
+
+  mongodb_replica_1:
+    build:
+      context: ./docker/mongodb
+      dockerfile: Dockerfile
+    command: mongod --replSet rs0
+    networks:
+      - app_network
+
+  mongodb_replica_2:
+    build:
+      context: ./docker/mongodb
+      dockerfile: Dockerfile
+    command: mongod --replSet rs0
+    networks:
+      - app_network
+
+  redis:
+    build:
+      context: ./docker/redis
+      dockerfile: Dockerfile
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - app_network
+
+  redis_replica:
+    build:
+      context: ./docker/redis
+      dockerfile: Dockerfile
+    command: redis-server --slaveof redis 6379
+    networks:
+      - app_network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    depends_on:
+      - mongodb
+      - redis
+    environment:
+      - FLASK_ENV=development
+      - MONGO_URI=mongodb://admin:password@mongodb:27017/
+      - REDIS_URL=redis://redis:6379/0
+    networks:
+      - app_network
+
+volumes:
+  mongodb_data:
+  redis_data:
+
+networks:
+  app_network:
+    driver: bridge 

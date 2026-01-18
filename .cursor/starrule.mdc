@@ -1,0 +1,27 @@
+# Star Reward App Rules
+
+## Cấu trúc dự án
+- `app.py`: File chính chứa logic của ứng dụng
+- `templates/`: Chứa các file HTML template
+- `static/`: Chứa CSS, JavaScript và các tài nguyên tĩnh
+- `database/`: Chứa các file liên quan đến cơ sở dữ liệu
+- `venv/`: Môi trường ảo Python
+- `requirements.txt`: Danh sách các dependencies
+
+## Quy tắc phát triển
+1. Mọi thay đổi code phải được thêm vào file `progress.md`
+2. Các quyết định kỹ thuật quan trọng phải được ghi lại trong `techContext.md`
+3. Các pattern hệ thống phải được ghi lại trong `systemPatterns.md`
+4. Mọi bug và vấn đề phải được ghi lại trong `activeContext.md`
+
+## Cấu trúc file
+- Sử dụng PEP 8 cho Python code
+- HTML templates phải tuân theo cấu trúc Bootstrap
+- CSS phải được viết theo module
+- JavaScript phải sử dụng ES6+
+
+## Quy trình làm việc
+1. Đọc tất cả các file trong memory bank trước khi bắt đầu task
+2. Cập nhật documentation sau mỗi thay đổi quan trọng
+3. Kiểm tra code với linter trước khi commit
+4. Chạy test trước khi deploy 
