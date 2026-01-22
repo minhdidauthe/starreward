@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}{{ exam.title }} - Góc Thi Cử{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/exam/">Góc Thi Cử</a></li>
+        <li class="breadcrumb-item active">{{ exam.title }}</li>
+    </ol>
+</nav>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body p-4 text-center">
+                <!-- Exam Icon -->
+                <div class="mb-4">
+                    <div style="width: 100px; height: 100px; margin: 0 auto; border-radius: 50%;
+                        background: linear-gradient(135deg, var(--primary-100), var(--primary-200));
+                        display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-clipboard-check" style="font-size: 2.5rem; color: var(--primary-500);"></i>
+                    </div>
+                </div>
+
+                <!-- Exam Info -->
+                <h2 class="mb-2">{{ exam.title }}</h2>
+                {% if exam.subject %}
+                <span class="badge bg-primary mb-3">{{ exam.subject.name }}</span>
+                {% endif %}
+
+                {% if exam.description %}
+                <p class="text-muted mb-4">{{ exam.description }}</p>
+                {% endif %}
+
+                <!-- Stats -->
+                <div class="row g-3 mb-4">
+                    <div class="col-4">
+                        <div class="p-3 rounded" style="background: var(--primary-50);">
+                            <div class="h3 mb-1 text-primary">{{ questionCount }}</div>
+                            <div class="small text-muted">Câu hỏi</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-3 rounded" style="background: var(--success-50);">
+                            <div class="h3 mb-1 text-success">{{ exam.duration_minutes }}</div>
+                            <div class="small text-muted">Phút</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-3 rounded" style="background: var(--accent-50);">
+                            <div class="h3 mb-1" style="color: var(--accent-500);">{{ questionCount }}</div>
+                            <div class="small text-muted">Điểm</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rules -->
+                <div class="alert alert-warning text-start mb-4">
+                    <h6 class="alert-heading">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Lưu ý trước khi làm bài
+                    </h6>
+                    <ul class="mb-0 ps-3">
+                        <li>Đọc kỹ đề bài trước khi chọn đáp án</li>
+                        <li>Thời gian làm bài: <strong>{{ exam.duration_minutes }} phút</strong></li>
+                        <li>Không được thoát khỏi trang khi đang làm bài</li>
+                        <li>Nộp bài khi hoàn thành hoặc hết giờ</li>
+                    </ul>
+                </div>
+
+                <!-- Actions -->
+                <div class="d-flex gap-3 justify-content-center">
+                    <a href="/exam/" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Quay Lại
+                    </a>
+                    <a href="/exam/start/{{ exam._id }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-play me-2"></i>Bắt Đầu Làm Bài
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

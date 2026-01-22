@@ -1,191 +1,47 @@
-# Kế hoạch triển khai Star Reward App
+# Kế hoạch triển khai Star Reward App (Node.js Version)
 
-## Sprint 1: Thiết lập cơ sở dự án (1 tuần)
+Dự án hiện đã hoàn thành giai đoạn chuyển đổi cơ bản từ Python sang Node.js. Kế hoạch tiếp theo tập trung vào việc hoàn thiện tính năng, tối ưu hóa trải nghiệm người dùng và triển khai thực tế.
 
-### Database & Infrastructure
-- [ ] Thiết lập MongoDB cluster với replica set
-- [ ] Cấu hình sharding strategy cho các collections
-- [ ] Thiết lập Redis cache server
-- [ ] Cấu hình backup strategy
+## Giai đoạn 1: Hoàn thiện Core System (Đã hoàn thành)
+- [x] Thiết lập cấu trúc dự án Node.js/Express.
+- [x] Chuyển đổi Schema từ SQLite sang MongoDB (Mongoose).
+- [x] Implement các route chính: Quản lý học sinh, tặng sao, lịch sử sao.
+- [x] Tích hợp Nunjucks template engine và sửa lỗi tương thích thẻ Jinja2.
+- [x] Seed dữ liệu mẫu ban đầu.
 
-### Project Setup
-- [ ] Khởi tạo Flask project structure
-- [ ] Cài đặt và cấu hình dependencies trong requirements.txt
-- [ ] Thiết lập Docker environment
-- [ ] Cấu hình CI/CD pipeline
+## Giai đoạn 2: Tối ưu hóa UI/UX & Tính năng (Hiện tại)
+- [ ] **Cải thiện Dashboard**:
+  - [ ] Thêm biểu đồ tổng quan cho tất cả học sinh tại trang chủ.
+  - [ ] Hiển thị thông báo (Toast) khi thực hiện các thao tác thành công.
+- [ ] **Quản lý Nhiệm vụ (Tasks)**:
+  - [ ] Cho phép chỉnh sửa và gia hạn nhiệm vụ.
+  - [ ] Thêm tính năng nhắc nhở nhiệm vụ sắp đến hạn.
+- [ ] **Lịch sử & Báo cáo**:
+  - [ ] Xuất lịch sử tặng sao ra file Excel/CSV.
+  - [ ] Thống kê top nhiệm vụ được hoàn thành nhiều nhất.
 
-## Sprint 2: Core System (2 tuần)
+## Giai đoạn 3: Tính năng nâng cao (Sắp tới)
+- [ ] **Hệ thống Đổi thưởng (Reward Shop)**:
+  - [ ] Tạo danh mục các phần quà (ví dụ: 100 sao = 1 món đồ chơi).
+  - [ ] Cho phép học sinh "mua" quà bằng số sao đang có.
+- [ ] **Gamification**:
+  - [ ] Hệ thống cấp độ (Level) dựa trên tổng số sao tích lũy.
+  - [ ] Huy hiệu (Badges) cho các thành tích đặc biệt (ví dụ: 7 ngày liên tiếp hoàn thành nhiệm vụ).
+- [ ] **Xác thực & Phân quyền**:
+  - [ ] Thêm trang Login cho phụ huynh/giáo viên.
+  - [ ] Phân quyền: Admin (quản lý tất cả) và User (chỉ xem thông tin).
 
-### User Management
-- [ ] Implement User model và MongoDB schema
-- [ ] Implement JWT authentication
-- [ ] API endpoints cho register/login
-- [ ] User profile management
-- [ ] Unit tests cho user management
+## Giai đoạn 4: Triển khai & Bảo trì
+- [ ] **Deployment**:
+  - [ ] Cấu hình PM2 để chạy ứng dụng bền bỉ trên VPS.
+  - [ ] Thiết lập Nginx làm Reverse Proxy.
+  - [ ] Cấu hình SSL (Certbot) cho tên miền.
+- [ ] **Monitoring**:
+  - [ ] Sử dụng công cụ log (như Winston hoặc Morgan) để theo dõi lỗi.
+  - [ ] Thiết lập backup định kỳ cho MongoDB.
 
-### Point System
-- [ ] Implement Point Transaction model
-- [ ] Point calculation service
-- [ ] Point history tracking
-- [ ] Redis caching cho user points
-- [ ] Unit tests cho point system
-
-## Sprint 3: Reward System (2 tuần)
-
-### Reward Management
-- [ ] Implement Reward model
-- [ ] CRUD operations cho rewards
-- [ ] Reward validation rules
-- [ ] Reward availability tracking
-- [ ] Unit tests cho reward management
-
-### Reward Redemption
-- [ ] Implement Reward Transaction model
-- [ ] Redemption validation service
-- [ ] Point deduction logic
-- [ ] Redemption history tracking
-- [ ] Unit tests cho redemption system
-
-## Sprint 4: Activity System (1 tuần)
-
-### Activity Management
-- [ ] Implement Activity model
-- [ ] CRUD operations cho activities
-- [ ] Activity rules engine
-- [ ] Point calculation rules
-- [ ] Unit tests cho activity system
-
-## Sprint 5: Admin Dashboard (1 tuần)
-
-### Admin Interface
-- [ ] User management interface
-- [ ] Reward management interface
-- [ ] Activity configuration interface
-- [ ] Transaction monitoring
-- [ ] Analytics dashboard
-
-## Sprint 6: Frontend Development (2 tuần)
-
-### User Interface
-- [ ] Homepage design và implementation
-- [ ] User profile page
-- [ ] Reward catalog page
-- [ ] Point history page
-- [ ] Responsive design
-
-### Integration
-- [ ] API integration
-- [ ] Error handling
-- [ ] Loading states
-- [ ] Success/error notifications
-
-## Sprint 7: Testing & Optimization (1 tuần)
-
-### Testing
-- [ ] Integration testing
-- [ ] Performance testing
-- [ ] Security testing
-- [ ] User acceptance testing
-
-### Optimization
-- [ ] Database query optimization
-- [ ] Cache optimization
-- [ ] API response time optimization
-- [ ] Load balancing configuration
-
-## Sprint 8: Deployment & Documentation (1 tuần)
-
-### Deployment
-- [ ] Production environment setup
-- [ ] SSL configuration
-- [ ] Monitoring setup
-- [ ] Backup system verification
-
-### Documentation
-- [ ] API documentation
-- [ ] System architecture documentation
-- [ ] User manual
-- [ ] Admin manual
-
-## Coding Standards
-
-### Python
-- Tuân thủ PEP 8
-- Sử dụng type hints
-- Docstring cho tất cả functions/classes
-- Unit test coverage > 80%
-
-### Database
-- Sử dụng indexes đã định nghĩa
-- Implement sharding strategy
-- Implement caching strategy
-- Regular backup verification
-
-### Security
-- JWT authentication
-- Input validation
-- XSS prevention
-- CSRF protection
-- Rate limiting
-
-### Performance
-- Caching cho high-traffic endpoints
-- Async operations cho heavy tasks
-- Database query optimization
-- Regular performance monitoring
-
-## Review Points
-
-### Code Review
-- Pull request cho mỗi feature
-- Unit tests requirement
-- Code style verification
-- Security review
-
-### Testing Review
-- Unit test coverage
-- Integration test scenarios
-- Performance test results
-- Security test results
-
-## Monitoring Plan
-
-### System Monitoring
-- Server metrics
-- Database performance
-- Cache hit rates
-- API response times
-
-### Business Monitoring
-- User engagement metrics
-- Point transaction volume
-- Reward redemption rates
-- System usage analytics
-
-## Risk Management
-
-### Technical Risks
-- Database performance
-- Cache consistency
-- System scalability
-- API availability
-
-### Business Risks
-- User adoption
-- Point inflation
-- Reward availability
-- System abuse
-
-## Contingency Plans
-
-### System Issues
-- Fallback procedures
-- Data recovery plan
-- Service degradation strategy
-- Emergency contact list
-
-### Business Issues
-- Point adjustment policy
-- Reward stock management
-- User support protocol
-- Fraud prevention measures 
+## Tiêu chuẩn lập trình (Coding Standards)
+- **Javascript**: Sử dụng ES6+, tuân thủ chuẩn Clean Code.
+- **CSS**: Ưu tiên sử dụng các class của Bootstrap 5, hạn chế viết CSS tùy biến quá nhiều.
+- **Database**: Luôn sử dụng Mongoose Middleware để xử lý các logic liên quan (ví dụ: cập nhật `total_stars` khi có `Reward` mới).
+- **Git**: Commit message rõ ràng, phân chia branch theo tính năng.

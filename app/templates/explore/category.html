@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category.name }} - Góc Khám Phá - StarEdu{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/explore">Góc Khám Phá</a></li>
+        <li class="breadcrumb-item active">{{ category.name }}</li>
+    </ol>
+</nav>
+
+<!-- Category Header -->
+<div class="card mb-4" style="background: linear-gradient(135deg, var(--{{ category.color }}-400) 0%, var(--{{ category.color }}-600) 100%); border: none;">
+    <div class="card-body p-4 text-white">
+        <div class="d-flex align-items-center gap-4">
+            <div style="width: 80px; height: 80px; border-radius: 20px; background: rgba(255,255,255,0.2);
+                display: flex; align-items: center; justify-content: center;">
+                <i class="fas {{ category.icon }}" style="font-size: 2.5rem;"></i>
+            </div>
+            <div>
+                <h2 class="mb-1">{{ category.name }}</h2>
+                <p class="mb-0 opacity-75">{{ category.description }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter & Sort -->
+<div class="d-flex flex-wrap gap-2 mb-4">
+    <div class="btn-group">
+        <button class="btn btn-outline-primary active" data-filter="all">Tất cả</button>
+        <button class="btn btn-outline-primary" data-filter="easy">Dễ</button>
+        <button class="btn btn-outline-primary" data-filter="medium">Trung bình</button>
+        <button class="btn btn-outline-primary" data-filter="hard">Khó</button>
+    </div>
+    <select class="form-select" style="width: auto;" id="sortSelect">
+        <option value="order">Mặc định</option>
+        <option value="popular">Phổ biến nhất</option>
+        <option value="newest">Mới nhất</option>
+        <option value="rating">Đánh giá cao</option>
+    </select>
+</div>
+
+<!-- Activities Grid -->
+<div class="row g-4" id="activitiesGrid">
+    {% if activities and activities.length > 0 %}
+        {% for activity in activities %}
+        <div class="col-md-6 col-lg-4" data-difficulty="{{ activity.difficulty }}">
+            <div class="card h-100 activity-card">
+                <div class="card-body">
+                    <!-- Thumbnail -->
+                    <div class="position-relative mb-3">
+                        {% if activity.isNewActivity %}
+                        <span class="badge bg-danger position-absolute" style="top: 8px; right: 8px; z-index: 1;">MỚI</span>
+                        {% endif %}
+                        <div style="width: 100%; height: 120px; border-radius: 12px;
+                            background: linear-gradient(135deg, var(--{{ activity.color }}-100), var(--{{ activity.color }}-200));
+                            display: flex; align-items: center; justify-content: center;">
+                            <i class="fas {{ activity.icon }}" style="font-size: 3rem; color: var(--{{ activity.color }}-500);"></i>
+                        </div>
+                    </div>
+
+                    <!-- Info -->
+                    <h5 class="mb-2">{{ activity.title }}</h5>
+                    <p class="text-muted small mb-3">{{ activity.description | truncate(80) }}</p>
+
+                    <!-- Meta -->
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <span class="badge bg-{{ category.color }}-subtle text-{{ category.color }}">
+                            {{ activity.type }}
+                        </span>
+                        <span class="badge bg-light text-dark">
+                            <i class="fas fa-clock me-1"></i>{{ activity.duration }} phút
+                        </span>
+                        <span class="badge
+                            {% if activity.difficulty == 'easy' %}bg-success-subtle text-success
+                            {% elif activity.difficulty == 'medium' %}bg-warning-subtle text-warning
+                            {% else %}bg-danger-subtle text-danger{% endif %}">
+                            {% if activity.difficulty == 'easy' %}Dễ
+                            {% elif activity.difficulty == 'medium' %}Trung bình
+                            {% else %}Khó{% endif %}
+                        </span>
+                    </div>
+
+                    <!-- Rating & Stats -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center gap-1">
+                            <div class="text-warning small">
+                                {% for i in range(5) %}
+                                    {% if i < activity.rating | round %}
+                                        <i class="fas fa-star"></i>
+                                    {% else %}
+                                        <i class="far fa-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <small class="text-muted">({{ activity.ratingCount }})</small>
+                        </div>
+                        <span class="text-warning fw-bold">
+                            <i class="fas fa-star"></i> +{{ activity.starsReward }}
+                        </span>
+                    </div>
+
+                    <!-- Play Button -->
+                    <a href="/explore/activity/{{ activity._id }}" class="btn btn-primary w-100">
+                        <i class="fas fa-play me-2"></i>Chơi ngay
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--neutral-100);
+                    display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                    <i class="fas fa-inbox" style="font-size: 2rem; color: var(--text-muted);"></i>
+                </div>
+                <h5 class="text-muted">Chưa có hoạt động nào</h5>
+                <p class="text-muted">Danh mục này sẽ sớm được cập nhật!</p>
+                <a href="/explore" class="btn btn-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Quay lại
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Filter functionality
+document.querySelectorAll('[data-filter]').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+
+        const filter = this.dataset.filter;
+        document.querySelectorAll('#activitiesGrid > div').forEach(card => {
+            if (filter === 'all' || card.dataset.difficulty === filter) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .activity-card {
+        transition: all 0.2s ease;
+    }
+
+    .activity-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+    }
+</style>
+{% endblock %}

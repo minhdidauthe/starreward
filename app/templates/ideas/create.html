@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+
+{% block title %}Đăng Ý Tưởng Mới - StarEdu{% endblock %}
+
+{% block extra_css %}
+<style>
+    .create-form-card {
+        border: none;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .category-select {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 12px;
+    }
+
+    .category-option {
+        padding: 16px;
+        border: 2px solid var(--neutral-200);
+        border-radius: var(--radius-lg);
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .category-option:hover {
+        border-color: var(--primary-300);
+        background: var(--primary-50);
+    }
+
+    .category-option.selected {
+        border-color: var(--primary-500);
+        background: var(--primary-100);
+    }
+
+    .category-option i {
+        font-size: 1.5rem;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .tag-input-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 8px;
+        border: 1px solid var(--neutral-200);
+        border-radius: var(--radius-md);
+        min-height: 50px;
+    }
+
+    .tag-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 12px;
+        background: var(--primary-100);
+        color: var(--primary-700);
+        border-radius: 20px;
+        font-size: 0.875rem;
+    }
+
+    .tag-badge button {
+        background: none;
+        border: none;
+        color: var(--primary-500);
+        cursor: pointer;
+        padding: 0;
+        font-size: 1rem;
+    }
+
+    .content-textarea {
+        min-height: 300px;
+        line-height: 1.8;
+    }
+
+    .char-counter {
+        font-size: 0.875rem;
+        color: var(--neutral-500);
+    }
+
+    .tips-card {
+        background: linear-gradient(135deg, var(--info-50), var(--primary-50));
+        border: 1px solid var(--info-200);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/ideas">Góc Ý Tưởng</a></li>
+        <li class="breadcrumb-item active">Đăng Ý Tưởng Mới</li>
+    </ol>
+</nav>
+
+<div class="row g-4">
+    <!-- Main Form -->
+    <div class="col-lg-8">
+        <div class="card create-form-card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>Chia Sẻ Ý Tưởng Của Bạn
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <form action="/ideas/create" method="POST" id="ideaForm">
+                    <!-- Student Selection -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-user-graduate me-1 text-primary"></i>Học sinh
+                        </label>
+                        <select name="studentId" class="form-select" required id="studentSelect">
+                            <option value="">-- Chọn học sinh --</option>
+                            {% for student in students %}
+                            <option value="{{ student._id }}"
+                                    data-avatar="{{ student.avatar or '' }}"
+                                    {{ 'selected' if selectedStudent and selectedStudent._id == student._id else '' }}>
+                                {{ student.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Title -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-heading me-1 text-primary"></i>Tiêu đề ý tưởng
+                        </label>
+                        <input type="text" name="title" class="form-control form-control-lg"
+                               placeholder="Ví dụ: Robot thu gom rác tự động"
+                               maxlength="200" required id="titleInput">
+                        <div class="d-flex justify-content-end mt-1">
+                            <span class="char-counter"><span id="titleCount">0</span>/200</span>
+                        </div>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-folder me-1 text-primary"></i>Danh mục
+                        </label>
+                        <div class="category-select">
+                            {% for cat, label in categoryLabels %}
+                            <div class="category-option" data-category="{{ cat }}">
+                                <i class="fas {{ categoryIcons[cat] }} text-{{ categoryColors[cat] }}"></i>
+                                <span>{{ label }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="category" id="categoryInput" value="other">
+                    </div>
+
+                    <!-- Content -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-edit me-1 text-primary"></i>Mô tả chi tiết ý tưởng
+                        </label>
+                        <textarea name="content" class="form-control content-textarea"
+                                  placeholder="Hãy mô tả chi tiết ý tưởng của bạn:
+- Ý tưởng này là gì?
+- Tại sao bạn nghĩ ra ý tưởng này?
+- Nó sẽ giúp ích gì cho mọi người?
+- Làm thế nào để thực hiện?
+
+Viết càng chi tiết, AI sẽ phân tích càng chính xác!"
+                                  maxlength="5000" required id="contentInput"></textarea>
+                        <div class="d-flex justify-content-between mt-1">
+                            <small class="text-muted">Viết ít nhất 100 ký tự để AI có thể phân tích tốt hơn</small>
+                            <span class="char-counter"><span id="contentCount">0</span>/5000</span>
+                        </div>
+                    </div>
+
+                    <!-- Tags -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-tags me-1 text-primary"></i>Từ khóa (tùy chọn)
+                        </label>
+                        <div class="tag-input-container" id="tagContainer">
+                            <input type="text" class="border-0 flex-grow-1" style="min-width: 100px; outline: none;"
+                                   placeholder="Nhập từ khóa và nhấn Enter..."
+                                   id="tagInput">
+                        </div>
+                        <input type="hidden" name="tags" id="tagsHidden">
+                        <small class="text-muted">Ví dụ: robot, môi trường, tái chế</small>
+                    </div>
+
+                    <!-- Submit -->
+                    <div class="d-flex gap-3">
+                        <button type="submit" class="btn btn-primary btn-lg flex-grow-1">
+                            <i class="fas fa-paper-plane me-2"></i>Đăng Ý Tưởng
+                        </button>
+                        <a href="/ideas" class="btn btn-outline-secondary btn-lg">Hủy</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Tips -->
+    <div class="col-lg-4">
+        <div class="card tips-card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-magic me-2 text-info"></i>Mẹo viết ý tưởng hay
+                </h5>
+                <ul class="mb-0">
+                    <li class="mb-2">Đặt tiêu đề ngắn gọn, hấp dẫn</li>
+                    <li class="mb-2">Mô tả rõ vấn đề bạn muốn giải quyết</li>
+                    <li class="mb-2">Giải thích cách ý tưởng hoạt động</li>
+                    <li class="mb-2">Nêu lợi ích cho cộng đồng</li>
+                    <li>Viết chi tiết để AI phân tích chính xác hơn</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-star text-warning me-2"></i>Phần thưởng
+                </h5>
+                <ul class="list-unstyled mb-0">
+                    <li class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-warning text-dark">+5 ⭐</span>
+                        <span>Đăng ý tưởng mới</span>
+                    </li>
+                    <li class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-success text-white">+3 ⭐</span>
+                        <span>AI phân tích ý tưởng</span>
+                    </li>
+                    <li class="d-flex align-items-center gap-2">
+                        <span class="badge bg-info text-white">+1 ⭐</span>
+                        <span>Bình luận ý tưởng</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Character counters
+const titleInput = document.getElementById('titleInput');
+const contentInput = document.getElementById('contentInput');
+const titleCount = document.getElementById('titleCount');
+const contentCount = document.getElementById('contentCount');
+
+titleInput.addEventListener('input', () => {
+    titleCount.textContent = titleInput.value.length;
+});
+
+contentInput.addEventListener('input', () => {
+    contentCount.textContent = contentInput.value.length;
+});
+
+// Category selection
+const categoryOptions = document.querySelectorAll('.category-option');
+const categoryInput = document.getElementById('categoryInput');
+
+categoryOptions.forEach(option => {
+    option.addEventListener('click', function() {
+        categoryOptions.forEach(o => o.classList.remove('selected'));
+        this.classList.add('selected');
+        categoryInput.value = this.dataset.category;
+    });
+});
+
+// Set default category
+document.querySelector('.category-option[data-category="other"]')?.classList.add('selected');
+
+// Tags
+const tagContainer = document.getElementById('tagContainer');
+const tagInput = document.getElementById('tagInput');
+const tagsHidden = document.getElementById('tagsHidden');
+let tags = [];
+
+tagInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ',') {
+        e.preventDefault();
+        const tag = this.value.trim();
+        if (tag && !tags.includes(tag) && tags.length < 5) {
+            tags.push(tag);
+            renderTags();
+            this.value = '';
+        }
+    }
+});
+
+function renderTags() {
+    // Remove existing tags
+    tagContainer.querySelectorAll('.tag-badge').forEach(t => t.remove());
+
+    // Add tags
+    tags.forEach((tag, index) => {
+        const badge = document.createElement('span');
+        badge.className = 'tag-badge';
+        badge.innerHTML = `${tag} <button type="button" onclick="removeTag(${index})">&times;</button>`;
+        tagContainer.insertBefore(badge, tagInput);
+    });
+
+    tagsHidden.value = tags.join(',');
+}
+
+function removeTag(index) {
+    tags.splice(index, 1);
+    renderTags();
+}
+
+// Form validation
+document.getElementById('ideaForm').addEventListener('submit', function(e) {
+    const content = contentInput.value.trim();
+    if (content.length < 50) {
+        e.preventDefault();
+        Toast.warning('Nội dung quá ngắn', 'Vui lòng mô tả chi tiết hơn (ít nhất 50 ký tự)');
+        return;
+    }
+});
+</script>
+{% endblock %}

@@ -1,41 +1,120 @@
 {% extends "base.html" %}
 
+{% block title %}Góc Thi Cử - StarEdu{% endblock %}
+
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <h2 class="mb-4">Góc Thi Cử</h2>
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">Góc Thi Cử</h2>
+        <p class="text-muted mb-0">Kiểm tra kiến thức và luyện tập</p>
+    </div>
+</div>
 
-        <!-- Exam Schedule -->
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="card-title mb-0"><i class="fas fa-calendar-alt"></i> Lịch Thi Sắp Tới</h5>
-            </div>
-            <div class="card-body">
-                <div class="alert alert-info">
-                    Chưa có lịch thi nào sắp tới.
-                </div>
-            </div>
-        </div>
+<!-- Available Exams -->
+<h4 class="mb-3">
+    <i class="fas fa-file-alt me-2 text-primary"></i>
+    Đề Thi Tự Luyện
+</h4>
 
-        <!-- Available Exams -->
-        <h4 class="mb-3">Đề Thi Tự Luyện</h4>
-        <div class="row">
-            <div class="col-md-6 mb-4">
-                <div class="card">
-                    <div class="card-body d-flex align-items-center">
-                        <div class="display-4 text-primary me-3">
-                            <i class="fas fa-file-alt"></i>
+<div class="row g-4">
+    {% if exams and exams.length > 0 %}
+        {% for exam in exams %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 reward-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-start gap-3 mb-3">
+                        <div style="width: 56px; height: 56px; border-radius: 12px;
+                            background: linear-gradient(135deg, var(--primary-100), var(--primary-200));
+                            display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i class="fas fa-clipboard-list" style="font-size: 1.5rem; color: var(--primary-500);"></i>
                         </div>
-                        <div>
-                            <h5 class="card-title">Đề ôn tập Toán Giữa Kỳ 1</h5>
-                            <p class="card-text mb-1"><small class="text-muted"><i class="fas fa-clock"></i> 45 phút |
-                                    20 câu</small></p>
-                            <a href="#" class="btn btn-outline-primary btn-sm">Làm Bài Ngay</a>
+                        <div class="flex-grow-1">
+                            <h5 class="card-title mb-1">{{ exam.title }}</h5>
+                            {% if exam.subject %}
+                            <span class="badge bg-light text-dark mb-2">{{ exam.subject.name }}</span>
+                            {% endif %}
                         </div>
                     </div>
+
+                    {% if exam.description %}
+                    <p class="text-muted small mb-3">{{ exam.description }}</p>
+                    {% endif %}
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex gap-3">
+                            <span class="text-muted small">
+                                <i class="fas fa-clock me-1"></i>{{ exam.duration_minutes }} phút
+                            </span>
+                            <span class="text-muted small">
+                                <i class="fas fa-question-circle me-1"></i>{{ exam.questionCount }} câu
+                            </span>
+                        </div>
+                    </div>
+
+                    <a href="/exam/detail/{{ exam._id }}" class="btn btn-primary w-100">
+                        <i class="fas fa-play me-2"></i>Làm Bài
+                    </a>
                 </div>
             </div>
         </div>
-    </div>
+        {% endfor %}
+    {% else %}
+        <!-- Default cards when no exams in database -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-start gap-3 mb-3">
+                        <div style="width: 56px; height: 56px; border-radius: 12px;
+                            background: linear-gradient(135deg, var(--primary-100), var(--primary-200));
+                            display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i class="fas fa-clipboard-list" style="font-size: 1.5rem; color: var(--primary-500);"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="card-title mb-1">Đề ôn tập Toán Giữa Kỳ 1</h5>
+                            <span class="badge bg-light text-dark mb-2">Toán Học</span>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-3">Ôn tập các phép tính cộng trừ trong phạm vi 100</p>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex gap-3">
+                            <span class="text-muted small"><i class="fas fa-clock me-1"></i>45 phút</span>
+                            <span class="text-muted small"><i class="fas fa-question-circle me-1"></i>20 câu</span>
+                        </div>
+                    </div>
+                    <a href="#" class="btn btn-primary w-100">
+                        <i class="fas fa-play me-2"></i>Làm Bài
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-start gap-3 mb-3">
+                        <div style="width: 56px; height: 56px; border-radius: 12px;
+                            background: linear-gradient(135deg, var(--success-100), var(--success-200));
+                            display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i class="fas fa-clipboard-list" style="font-size: 1.5rem; color: var(--success-500);"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="card-title mb-1">Kiểm tra Tiếng Anh Unit 1-3</h5>
+                            <span class="badge bg-light text-dark mb-2">Tiếng Anh</span>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-3">Từ vựng về gia đình, trường học và màu sắc</p>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex gap-3">
+                            <span class="text-muted small"><i class="fas fa-clock me-1"></i>30 phút</span>
+                            <span class="text-muted small"><i class="fas fa-question-circle me-1"></i>15 câu</span>
+                        </div>
+                    </div>
+                    <a href="#" class="btn btn-primary w-100">
+                        <i class="fas fa-play me-2"></i>Làm Bài
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}

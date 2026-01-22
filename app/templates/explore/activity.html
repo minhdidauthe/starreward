@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block title %}{{ activity.title }} - Góc Khám Phá - StarEdu{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/explore">Góc Khám Phá</a></li>
+        {% if activity.category %}
+        <li class="breadcrumb-item"><a href="/explore/category/{{ activity.category.slug }}">{{ activity.category.name }}</a></li>
+        {% endif %}
+        <li class="breadcrumb-item active">{{ activity.title }}</li>
+    </ol>
+</nav>
+
+<div class="row g-4">
+    <!-- Main Content -->
+    <div class="col-lg-8">
+        <div class="card">
+            <!-- Activity Header -->
+            <div style="height: 200px; background: linear-gradient(135deg, var(--{{ activity.color }}-400) 0%, var(--{{ activity.color }}-600) 100%);
+                border-radius: var(--radius-xl) var(--radius-xl) 0 0; display: flex; align-items: center; justify-content: center;">
+                <i class="fas {{ activity.icon }}" style="font-size: 5rem; color: rgba(255,255,255,0.9);"></i>
+            </div>
+
+            <div class="card-body p-4">
+                <!-- Title & Meta -->
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    {% if activity.isNewActivity %}
+                    <span class="badge bg-danger">MỚI</span>
+                    {% endif %}
+                    {% if activity.isFeatured %}
+                    <span class="badge bg-warning text-dark">NỔI BẬT</span>
+                    {% endif %}
+                    <span class="badge bg-{{ activity.color }}-subtle text-{{ activity.color }}">{{ activity.type }}</span>
+                    <span class="badge
+                        {% if activity.difficulty == 'easy' %}bg-success-subtle text-success
+                        {% elif activity.difficulty == 'medium' %}bg-warning-subtle text-warning
+                        {% else %}bg-danger-subtle text-danger{% endif %}">
+                        {% if activity.difficulty == 'easy' %}Dễ
+                        {% elif activity.difficulty == 'medium' %}Trung bình
+                        {% else %}Khó{% endif %}
+                    </span>
+                </div>
+
+                <h2 class="mb-3">{{ activity.title }}</h2>
+
+                <!-- Rating -->
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="d-flex align-items-center gap-1">
+                        <div class="text-warning">
+                            {% for i in range(5) %}
+                                {% if i < activity.rating | round %}
+                                    <i class="fas fa-star"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <span class="text-muted">({{ activity.ratingCount }} đánh giá)</span>
+                    </div>
+                    <span class="text-muted">|</span>
+                    <span class="text-muted">
+                        <i class="fas fa-play me-1"></i>{{ activity.playCount }} lượt chơi
+                    </span>
+                </div>
+
+                <!-- Description -->
+                <p class="lead mb-4">{{ activity.description }}</p>
+
+                <!-- Instructions -->
+                {% if activity.instructions %}
+                <div class="mb-4">
+                    <h5><i class="fas fa-list-ol me-2 text-primary"></i>Hướng dẫn chơi</h5>
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            {{ activity.instructions | safe }}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Materials (for craft activities) -->
+                {% if activity.materials and activity.materials.length > 0 %}
+                <div class="mb-4">
+                    <h5><i class="fas fa-tools me-2 text-warning"></i>Nguyên liệu cần chuẩn bị</h5>
+                    <ul class="list-group list-group-flush">
+                        {% for material in activity.materials %}
+                        <li class="list-group-item bg-transparent">
+                            <i class="fas fa-check text-success me-2"></i>{{ material }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <!-- Select Student & Play -->
+                <div class="card bg-light border-0 p-3 mb-3">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <i class="fas fa-user-graduate text-primary"></i>
+                        <label class="form-label mb-0 fw-medium">Chọn học sinh nhận sao:</label>
+                    </div>
+                    <select class="form-select mb-2" id="studentSelect">
+                        <option value="">-- Không chọn (chơi tự do) --</option>
+                        {% for student in students %}
+                        <option value="{{ student._id }}">{{ student.name }} ({{ student.total_stars }} ⭐)</option>
+                        {% endfor %}
+                    </select>
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Chọn học sinh để sao được cộng vào tài khoản sau khi hoàn thành
+                    </small>
+                </div>
+
+                <!-- Play Button -->
+                <a href="/explore/play/{{ activity._id }}" class="btn btn-primary btn-lg w-100" id="playButton">
+                    <i class="fas fa-play me-2"></i>Bắt đầu chơi
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Activity Info Card -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2 text-primary"></i>Thông tin</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted"><i class="fas fa-clock me-2"></i>Thời gian</span>
+                        <strong>{{ activity.duration }} phút</strong>
+                    </li>
+                    <li class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted"><i class="fas fa-star me-2"></i>Sao thưởng</span>
+                        <strong class="text-warning">+{{ activity.starsReward }} <i class="fas fa-star"></i></strong>
+                    </li>
+                    <li class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted"><i class="fas fa-child me-2"></i>Độ tuổi</span>
+                        <strong>{{ activity.ageRange.min }} - {{ activity.ageRange.max }} tuổi</strong>
+                    </li>
+                    <li class="d-flex justify-content-between py-2">
+                        <span class="text-muted"><i class="fas fa-signal me-2"></i>Độ khó</span>
+                        <strong class="
+                            {% if activity.difficulty == 'easy' %}text-success
+                            {% elif activity.difficulty == 'medium' %}text-warning
+                            {% else %}text-danger{% endif %}">
+                            {% if activity.difficulty == 'easy' %}Dễ
+                            {% elif activity.difficulty == 'medium' %}Trung bình
+                            {% else %}Khó{% endif %}
+                        </strong>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Rate This Activity -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-star me-2 text-warning"></i>Đánh giá</h5>
+            </div>
+            <div class="card-body text-center">
+                <p class="text-muted mb-3">Bạn thấy hoạt động này thế nào?</p>
+                <div class="rating-stars mb-3" id="ratingStars">
+                    {% for i in range(5) %}
+                    <i class="far fa-star" style="font-size: 2rem; cursor: pointer; color: var(--warning-400);"
+                        data-rating="{{ i + 1 }}"></i>
+                    {% endfor %}
+                </div>
+                <button class="btn btn-outline-primary btn-sm" id="submitRating" disabled>
+                    Gửi đánh giá
+                </button>
+            </div>
+        </div>
+
+        <!-- Related Activities -->
+        {% if relatedActivities and relatedActivities.length > 0 %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-th-large me-2 text-primary"></i>Hoạt động liên quan</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for related in relatedActivities %}
+                <a href="/explore/activity/{{ related._id }}" class="list-group-item list-group-item-action">
+                    <div class="d-flex align-items-center gap-3">
+                        <div style="width: 48px; height: 48px; border-radius: 10px;
+                            background: linear-gradient(135deg, var(--{{ related.color }}-100), var(--{{ related.color }}-200));
+                            display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i class="fas {{ related.icon }}" style="color: var(--{{ related.color }}-500);"></i>
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <h6 class="mb-0 text-truncate">{{ related.title }}</h6>
+                            <small class="text-muted">
+                                <i class="fas fa-star text-warning"></i> +{{ related.starsReward }}
+                            </small>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Rating functionality
+let selectedRating = 0;
+const ratingStars = document.querySelectorAll('#ratingStars i');
+const submitBtn = document.getElementById('submitRating');
+
+ratingStars.forEach(star => {
+    star.addEventListener('mouseenter', function() {
+        const rating = parseInt(this.dataset.rating);
+        updateStars(rating);
+    });
+
+    star.addEventListener('click', function() {
+        selectedRating = parseInt(this.dataset.rating);
+        submitBtn.disabled = false;
+    });
+});
+
+document.getElementById('ratingStars').addEventListener('mouseleave', function() {
+    updateStars(selectedRating);
+});
+
+function updateStars(rating) {
+    ratingStars.forEach((star, index) => {
+        if (index < rating) {
+            star.classList.remove('far');
+            star.classList.add('fas');
+        } else {
+            star.classList.remove('fas');
+            star.classList.add('far');
+        }
+    });
+}
+
+submitBtn.addEventListener('click', async function() {
+    if (selectedRating === 0) return;
+
+    try {
+        const response = await fetch('/explore/api/rate/{{ activity._id }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rating: selectedRating })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            Toast.success('Cảm ơn bạn!', 'Đánh giá của bạn đã được ghi nhận');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Đã đánh giá';
+        }
+    } catch (error) {
+        Toast.error('Lỗi', 'Không thể gửi đánh giá');
+    }
+});
+
+// Update play button URL with selected student
+const studentSelectActivity = document.getElementById('studentSelect');
+const playButton = document.getElementById('playButton');
+
+studentSelectActivity.addEventListener('change', function() {
+    const baseUrl = '/explore/play/{{ activity._id }}';
+    if (this.value) {
+        playButton.href = baseUrl + '?studentId=' + this.value;
+    } else {
+        playButton.href = baseUrl;
+    }
+});
+</script>
+{% endblock %}

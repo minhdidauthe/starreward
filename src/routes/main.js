@@ -57,7 +57,8 @@ router.get('/student/:id', async (req, res) => {
             task: { $ne: null }
         });
 
-        const completedTasks = new Set(rewards.map(r => r.task.toString()));
+        // Convert to array of strings for Nunjucks 'in' operator compatibility
+        const completedTasks = rewards.map(r => r.task.toString());
 
         res.render('student.html', {
             student,
@@ -211,6 +212,260 @@ router.post('/add_task/:student_id', async (req, res) => {
     }
 });
 
-// Other actions (complete, delete task, etc.) can be added similarly
+// ============================================
+// Reward History API
+// ============================================
+router.get('/get_reward_history/:id', async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const perPage = 10;
+
+        const total = await Reward.countDocuments({ student: req.params.id });
+        const rewards = await Reward.find({ student: req.params.id })
+            .sort({ date: -1 })
+            .skip((page - 1) * perPage)
+            .limit(perPage);
+
+        const rewardsFormatted = rewards.map(r => ({
+            id: r._id,
+            stars: r.stars,
+            reason: r.reason,
+            date: moment(r.date).format('DD/MM/YYYY HH:mm'),
+            is_penalty: r.is_penalty
+        }));
+
+        res.json({
+            rewards: rewardsFormatted,
+            pagination: {
+                current_page: page,
+                total_pages: Math.ceil(total / perPage),
+                total_items: total
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ============================================
+// Edit Reward
+// ============================================
+router.post('/edit_reward/:id', async (req, res) => {
+    try {
+        const reward = await Reward.findById(req.params.id);
+        if (!reward) {
+            req.flash('danger', 'Không tìm thấy ghi nhận sao!');
+            return res.redirect('back');
+        }
+
+        const oldStars = reward.stars;
+        let newStars = parseInt(req.body.stars) || 0;
+        const isPenalty = req.body.is_penalty === 'true' || req.body.is_penalty === 'on';
+        const reason = req.body.reason;
+
+        if (isPenalty) {
+            newStars = -Math.abs(newStars);
+        }
+
+        // Update reward
+        reward.stars = newStars;
+        reward.reason = reason;
+        reward.is_penalty = isPenalty;
+        await reward.save();
+
+        // Update student's total stars (difference)
+        const starsDiff = newStars - oldStars;
+        await Student.updateOne(
+            { _id: reward.student },
+            { $inc: { total_stars: starsDiff } }
+        );
+
+        req.flash('success', 'Đã cập nhật ghi nhận sao!');
+        res.redirect(`/student/${reward.student}`);
+    } catch (err) {
+        console.error(err);
+        req.flash('danger', 'Có lỗi xảy ra!');
+        res.redirect('back');
+    }
+});
+
+// ============================================
+// Delete Reward
+// ============================================
+router.post('/delete_reward/:id', async (req, res) => {
+    try {
+        const reward = await Reward.findById(req.params.id);
+        if (!reward) {
+            req.flash('danger', 'Không tìm thấy ghi nhận sao!');
+            return res.redirect('back');
+        }
+
+        const studentId = reward.student;
+        const stars = reward.stars;
+
+        // Remove reward
+        await Reward.deleteOne({ _id: req.params.id });
+
+        // Update student's total stars
+        await Student.updateOne(
+            { _id: studentId },
+            { $inc: { total_stars: -stars } }
+        );
+
+        req.flash('success', 'Đã xóa ghi nhận sao!');
+        res.redirect(`/student/${studentId}`);
+    } catch (err) {
+        console.error(err);
+        req.flash('danger', 'Có lỗi xảy ra!');
+        res.redirect('back');
+    }
+});
+
+// ============================================
+// Complete Task
+// ============================================
+router.post('/complete_task/:id', async (req, res) => {
+    try {
+        const task = await Task.findById(req.params.id);
+        if (!task) {
+            req.flash('danger', 'Không tìm thấy công việc!');
+            return res.redirect('back');
+        }
+
+        task.is_completed = true;
+        await task.save();
+
+        req.flash('success', `Đã hoàn thành công việc "${task.title}"!`);
+        res.redirect(`/student/${task.student}`);
+    } catch (err) {
+        console.error(err);
+        req.flash('danger', 'Có lỗi xảy ra!');
+        res.redirect('back');
+    }
+});
+
+// ============================================
+// Delete Task
+// ============================================
+router.post('/delete_task/:id', async (req, res) => {
+    try {
+        const task = await Task.findById(req.params.id);
+        if (!task) {
+            req.flash('danger', 'Không tìm thấy công việc!');
+            return res.redirect('back');
+        }
+
+        const studentId = task.student;
+        await Task.deleteOne({ _id: req.params.id });
+
+        req.flash('success', 'Đã xóa công việc!');
+        res.redirect(`/student/${studentId}`);
+    } catch (err) {
+        console.error(err);
+        req.flash('danger', 'Có lỗi xảy ra!');
+        res.redirect('back');
+    }
+});
+
+// ============================================
+// Add Test Data (for demo purposes)
+// ============================================
+router.get('/add_test_data/:student_id', async (req, res) => {
+    try {
+        const studentId = req.params.student_id;
+        const reasons = [
+            'Học bài chăm chỉ',
+            'Hoàn thành bài tập',
+            'Giúp đỡ bạn bè',
+            'Rửa bát',
+            'Dọn phòng',
+            'Đi ngủ đúng giờ',
+            'Tập thể dục',
+            'Đọc sách',
+            'Vẽ tranh đẹp',
+            'Ngoan ngoãn'
+        ];
+
+        // Generate test data for last 30 days
+        for (let i = 0; i < 30; i++) {
+            const date = moment().subtract(i, 'days').toDate();
+            const numRewards = Math.floor(Math.random() * 3) + 1; // 1-3 rewards per day
+
+            for (let j = 0; j < numRewards; j++) {
+                const stars = Math.floor(Math.random() * 5) + 1; // 1-5 stars
+                const reason = reasons[Math.floor(Math.random() * reasons.length)];
+                const isPenalty = Math.random() < 0.1; // 10% chance of penalty
+
+                await Reward.create({
+                    stars: isPenalty ? -stars : stars,
+                    reason: isPenalty ? `Vi phạm: ${reason}` : reason,
+                    student: studentId,
+                    is_penalty: isPenalty,
+                    date: date
+                });
+            }
+        }
+
+        // Recalculate total stars
+        const totalStars = await Reward.aggregate([
+            { $match: { student: new mongoose.Types.ObjectId(studentId) } },
+            { $group: { _id: null, total: { $sum: '$stars' } } }
+        ]);
+
+        const newTotal = totalStars[0]?.total || 0;
+        await Student.updateOne({ _id: studentId }, { total_stars: newTotal });
+
+        req.flash('success', 'Đã tạo dữ liệu test cho 30 ngày!');
+        res.redirect(`/student/${studentId}`);
+    } catch (err) {
+        console.error(err);
+        req.flash('danger', 'Có lỗi khi tạo dữ liệu test!');
+        res.redirect('back');
+    }
+});
+
+// ============================================
+// Clear Test Data
+// ============================================
+router.get('/clear_test_data/:student_id', async (req, res) => {
+    try {
+        const studentId = req.params.student_id;
+
+        // Delete all rewards for this student
+        await Reward.deleteMany({ student: studentId });
+
+        // Reset total stars
+        await Student.updateOne({ _id: studentId }, { total_stars: 0 });
+
+        req.flash('success', 'Đã xóa tất cả dữ liệu!');
+        res.redirect(`/student/${studentId}`);
+    } catch (err) {
+        console.error(err);
+        req.flash('danger', 'Có lỗi khi xóa dữ liệu!');
+        res.redirect('back');
+    }
+});
+
+// ============================================
+// Update Student Avatar
+// ============================================
+router.post('/api/student/:id/avatar', async (req, res) => {
+    try {
+        const { avatar } = req.body;
+        const student = await Student.findById(req.params.id);
+
+        if (!student) {
+            return res.status(404).json({ success: false, error: 'Không tìm thấy học sinh' });
+        }
+
+        student.avatar = avatar;
+        await student.save();
+
+        res.json({ success: true, avatar: student.avatar });
+    } catch (err) {
+        console.error('Error updating avatar:', err);
+        res.status(500).json({ success: false, error: 'Không thể cập nhật avatar' });
+    }
+});
 
 module.exports = router;

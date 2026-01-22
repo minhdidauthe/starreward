@@ -1,0 +1,526 @@
+{% extends "base.html" %}
+
+{% block title %}Viết Bài Chia Sẻ - Góc Phụ Huynh{% endblock %}
+
+{% block extra_css %}
+<style>
+    .create-hero {
+        background: linear-gradient(135deg, var(--primary-500) 0%, var(--accent-500) 100%);
+        border-radius: var(--radius-2xl);
+        padding: 32px;
+        color: white;
+        margin-bottom: 24px;
+    }
+
+    .form-card {
+        border: none;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .category-select {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 12px;
+    }
+
+    .category-option {
+        position: relative;
+    }
+
+    .category-option input {
+        position: absolute;
+        opacity: 0;
+    }
+
+    .category-option label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        padding: 16px;
+        border: 2px solid var(--neutral-200);
+        border-radius: var(--radius-lg);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+    }
+
+    .category-option label:hover {
+        border-color: var(--primary-300);
+        background: var(--primary-50);
+    }
+
+    .category-option input:checked + label {
+        border-color: var(--primary-500);
+        background: var(--primary-50);
+    }
+
+    .category-option i {
+        font-size: 1.5rem;
+    }
+
+    .role-select {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .role-option {
+        position: relative;
+    }
+
+    .role-option input {
+        position: absolute;
+        opacity: 0;
+    }
+
+    .role-option label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border: 2px solid var(--neutral-200);
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .role-option label:hover {
+        border-color: var(--primary-300);
+    }
+
+    .role-option input:checked + label {
+        border-color: var(--primary-500);
+        background: var(--primary-500);
+        color: white;
+    }
+
+    .editor-toolbar {
+        display: flex;
+        gap: 8px;
+        padding: 12px;
+        background: var(--neutral-50);
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        border: 1px solid var(--neutral-200);
+        border-bottom: none;
+        flex-wrap: wrap;
+    }
+
+    .editor-toolbar button {
+        padding: 8px 12px;
+        border: none;
+        background: white;
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .editor-toolbar button:hover {
+        background: var(--primary-100);
+        color: var(--primary-600);
+    }
+
+    .content-editor {
+        min-height: 400px;
+        border: 1px solid var(--neutral-200);
+        border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+        padding: 16px;
+        font-size: 1rem;
+        line-height: 1.8;
+    }
+
+    .content-editor:focus {
+        outline: none;
+        border-color: var(--primary-300);
+    }
+
+    .tag-input-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 8px;
+        border: 1px solid var(--neutral-200);
+        border-radius: var(--radius-lg);
+        min-height: 50px;
+        cursor: text;
+    }
+
+    .tag-input-container:focus-within {
+        border-color: var(--primary-300);
+    }
+
+    .tag-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        background: var(--primary-100);
+        color: var(--primary-700);
+        border-radius: 15px;
+        font-size: 0.875rem;
+    }
+
+    .tag-badge button {
+        border: none;
+        background: none;
+        padding: 0;
+        cursor: pointer;
+        color: var(--primary-500);
+    }
+
+    .tag-input {
+        border: none;
+        outline: none;
+        flex: 1;
+        min-width: 100px;
+        padding: 4px;
+    }
+
+    .preview-section {
+        background: var(--neutral-50);
+        border-radius: var(--radius-lg);
+        padding: 24px;
+        margin-top: 24px;
+    }
+
+    .cover-upload {
+        border: 2px dashed var(--neutral-300);
+        border-radius: var(--radius-lg);
+        padding: 40px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .cover-upload:hover {
+        border-color: var(--primary-400);
+        background: var(--primary-50);
+    }
+
+    .cover-preview {
+        max-width: 100%;
+        max-height: 200px;
+        border-radius: var(--radius-lg);
+    }
+
+    .age-range-slider {
+        padding: 0 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<div class="create-hero">
+    <div class="d-flex align-items-center justify-content-between">
+        <div>
+            <h2 class="mb-2"><i class="fas fa-pen-fancy me-2"></i>Viết Bài Chia Sẻ</h2>
+            <p class="mb-0 opacity-90">Chia sẻ kinh nghiệm nuôi dạy con của bạn với cộng đồng</p>
+        </div>
+        <a href="/blog" class="btn btn-light">
+            <i class="fas fa-arrow-left me-2"></i>Quay lại
+        </a>
+    </div>
+</div>
+
+<form action="/blog/write" method="POST" id="blogForm">
+    <div class="row">
+        <!-- Main Form -->
+        <div class="col-lg-8">
+            <div class="card form-card mb-4">
+                <div class="card-body">
+                    <!-- Title -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Tiêu đề bài viết <span class="text-danger">*</span></label>
+                        <input type="text" name="title" class="form-control form-control-lg"
+                               placeholder="VD: Cách dạy con tự lập từ nhỏ" required maxlength="200">
+                        <small class="text-muted">Tiêu đề ngắn gọn, thu hút (tối đa 200 ký tự)</small>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Danh mục <span class="text-danger">*</span></label>
+                        <div class="category-select">
+                            {% for cat, label in categoryLabels %}
+                            <div class="category-option">
+                                <input type="radio" name="category" id="cat-{{ cat }}" value="{{ cat }}"
+                                       {{ 'checked' if cat == 'experience' else '' }}>
+                                <label for="cat-{{ cat }}">
+                                    <i class="fas {{ categoryIcons[cat] }} text-{{ categoryColors[cat] }}"></i>
+                                    <span style="font-size: 0.85rem;">{{ label }}</span>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Nội dung bài viết <span class="text-danger">*</span></label>
+                        <div class="editor-toolbar">
+                            <button type="button" onclick="formatText('bold')" title="In đậm">
+                                <i class="fas fa-bold"></i>
+                            </button>
+                            <button type="button" onclick="formatText('italic')" title="In nghiêng">
+                                <i class="fas fa-italic"></i>
+                            </button>
+                            <button type="button" onclick="formatText('underline')" title="Gạch chân">
+                                <i class="fas fa-underline"></i>
+                            </button>
+                            <button type="button" onclick="formatText('insertUnorderedList')" title="Danh sách">
+                                <i class="fas fa-list-ul"></i>
+                            </button>
+                            <button type="button" onclick="formatText('insertOrderedList')" title="Danh sách số">
+                                <i class="fas fa-list-ol"></i>
+                            </button>
+                            <button type="button" onclick="insertHeading()" title="Tiêu đề">
+                                <i class="fas fa-heading"></i>
+                            </button>
+                            <button type="button" onclick="insertQuote()" title="Trích dẫn">
+                                <i class="fas fa-quote-left"></i>
+                            </button>
+                        </div>
+                        <div class="content-editor" contenteditable="true" id="contentEditor"
+                             placeholder="Viết nội dung bài viết của bạn tại đây..."></div>
+                        <input type="hidden" name="content" id="contentInput">
+                    </div>
+
+                    <!-- Tags -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Tags</label>
+                        <div class="tag-input-container" onclick="document.getElementById('tagInput').focus()">
+                            <div id="tagList"></div>
+                            <input type="text" id="tagInput" class="tag-input" placeholder="Nhập tag và nhấn Enter...">
+                        </div>
+                        <input type="hidden" name="tags" id="tagsInput">
+                        <small class="text-muted">Thêm tags để bài viết dễ tìm kiếm hơn</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Author Info -->
+            <div class="card form-card mb-4">
+                <div class="card-header bg-transparent">
+                    <h6 class="mb-0"><i class="fas fa-user me-2"></i>Thông tin tác giả</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Tên của bạn <span class="text-danger">*</span></label>
+                        <input type="text" name="authorName" class="form-control"
+                               placeholder="VD: Nguyễn Văn A" required maxlength="100">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email (không bắt buộc)</label>
+                        <input type="email" name="authorEmail" class="form-control"
+                               placeholder="email@example.com" maxlength="100">
+                        <small class="text-muted">Email sẽ không hiển thị công khai</small>
+                    </div>
+
+                    <div class="mb-0">
+                        <label class="form-label">Vai trò</label>
+                        <div class="role-select">
+                            {% for role, label in roleLabels %}
+                            <div class="role-option">
+                                <input type="radio" name="authorRole" id="role-{{ role }}" value="{{ role }}"
+                                       {{ 'checked' if role == 'parent' else '' }}>
+                                <label for="role-{{ role }}">{{ label }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Age Range -->
+            <div class="card form-card mb-4">
+                <div class="card-header bg-transparent">
+                    <h6 class="mb-0"><i class="fas fa-child me-2"></i>Độ tuổi phù hợp</h6>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">Bài viết phù hợp với phụ huynh có con trong độ tuổi:</p>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label small">Từ</label>
+                            <select name="ageMin" class="form-select">
+                                {% for i in range(0, 19) %}
+                                <option value="{{ i }}">{{ i }} tuổi</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small">Đến</label>
+                            <select name="ageMax" class="form-select">
+                                {% for i in range(0, 19) %}
+                                <option value="{{ i }}" {{ 'selected' if i == 18 else '' }}>{{ i }} tuổi</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cover Image -->
+            <div class="card form-card mb-4">
+                <div class="card-header bg-transparent">
+                    <h6 class="mb-0"><i class="fas fa-image me-2"></i>Ảnh bìa</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <input type="url" name="coverImage" id="coverImageInput" class="form-control"
+                               placeholder="Nhập URL ảnh bìa...">
+                    </div>
+                    <div id="coverPreviewContainer" style="display: none;">
+                        <img id="coverPreview" class="cover-preview w-100" alt="Preview">
+                    </div>
+                    <small class="text-muted">Dán link ảnh từ internet (không bắt buộc)</small>
+                </div>
+            </div>
+
+            <!-- Submit -->
+            <div class="card form-card">
+                <div class="card-body">
+                    <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">
+                        <i class="fas fa-paper-plane me-2"></i>Đăng Bài Viết
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary w-100" onclick="previewPost()">
+                        <i class="fas fa-eye me-2"></i>Xem Trước
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xem Trước Bài Viết</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="previewContent"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Tags handling
+let tags = [];
+const tagInput = document.getElementById('tagInput');
+const tagList = document.getElementById('tagList');
+const tagsInput = document.getElementById('tagsInput');
+
+tagInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ',') {
+        e.preventDefault();
+        addTag(this.value.trim());
+        this.value = '';
+    }
+});
+
+function addTag(tag) {
+    if (!tag || tags.includes(tag) || tags.length >= 10) return;
+    tags.push(tag);
+    renderTags();
+}
+
+function removeTag(index) {
+    tags.splice(index, 1);
+    renderTags();
+}
+
+function renderTags() {
+    tagList.innerHTML = tags.map((tag, i) => `
+        <span class="tag-badge">
+            #${tag}
+            <button type="button" onclick="removeTag(${i})">&times;</button>
+        </span>
+    `).join('');
+    tagsInput.value = tags.join(',');
+}
+
+// Editor formatting
+function formatText(command) {
+    document.execCommand(command, false, null);
+    document.getElementById('contentEditor').focus();
+}
+
+function insertHeading() {
+    document.execCommand('formatBlock', false, 'h3');
+}
+
+function insertQuote() {
+    document.execCommand('formatBlock', false, 'blockquote');
+}
+
+// Form submission
+document.getElementById('blogForm').addEventListener('submit', function(e) {
+    const content = document.getElementById('contentEditor').innerHTML;
+    if (!content.trim() || content === '<br>') {
+        e.preventDefault();
+        alert('Vui lòng nhập nội dung bài viết');
+        return;
+    }
+    document.getElementById('contentInput').value = content;
+});
+
+// Cover image preview
+document.getElementById('coverImageInput').addEventListener('input', function() {
+    const url = this.value;
+    const container = document.getElementById('coverPreviewContainer');
+    const preview = document.getElementById('coverPreview');
+
+    if (url) {
+        preview.src = url;
+        preview.onload = () => container.style.display = 'block';
+        preview.onerror = () => container.style.display = 'none';
+    } else {
+        container.style.display = 'none';
+    }
+});
+
+// Preview
+function previewPost() {
+    const title = document.querySelector('[name="title"]').value || 'Chưa có tiêu đề';
+    const content = document.getElementById('contentEditor').innerHTML || 'Chưa có nội dung';
+    const authorName = document.querySelector('[name="authorName"]').value || 'Ẩn danh';
+    const category = document.querySelector('[name="category"]:checked');
+    const categoryLabel = category ? category.closest('.category-option').querySelector('span').textContent : '';
+
+    document.getElementById('previewContent').innerHTML = `
+        <div class="mb-3">
+            <span class="badge bg-primary">${categoryLabel}</span>
+        </div>
+        <h2 class="mb-3">${title}</h2>
+        <p class="text-muted mb-4">Bởi <strong>${authorName}</strong></p>
+        <div class="border-top pt-4">
+            ${content}
+        </div>
+    `;
+
+    new bootstrap.Modal(document.getElementById('previewModal')).show();
+}
+
+// Placeholder for contenteditable
+const editor = document.getElementById('contentEditor');
+editor.addEventListener('focus', function() {
+    if (this.textContent === '') {
+        this.innerHTML = '';
+    }
+});
+editor.addEventListener('blur', function() {
+    if (this.innerHTML === '' || this.innerHTML === '<br>') {
+        this.innerHTML = '';
+    }
+});
+</script>
+{% endblock %}

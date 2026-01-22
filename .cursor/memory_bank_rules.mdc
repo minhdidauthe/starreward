@@ -1,132 +1,27 @@
-# Memory Bank Rules
+# Memory Bank Rules (Star Reward App)
 
-## Cấu trúc Memory Bank
-```mermaid
-flowchart TD
-    PB[projectbrief.md] --> PC[productContext.md]
-    PB --> SP[systemPatterns.md]
-    PB --> TC[techContext.md]
-    
-    PC --> AC[activeContext.md]
-    SP --> AC
-    TC --> AC
-    
-    AC --> P[progress.md]
-```
+## Cấu trúc Tài liệu (Documentation Structure)
+Hệ thống tài liệu được lưu trữ trong thư mục `.cursor/` bao gồm:
+
+1. **projectbrief.md**: Tóm tắt mục tiêu, tech stack và cấu trúc dự án.
+2. **technical_design.md**: Chi tiết thiết kế hệ thống, database schema và API routing.
+3. **implementation_plan.md**: Lộ trình phát triển, các giai đoạn đã hoàn thành và sắp tới.
+4. **task_list.md**: Danh sách các đầu việc cụ thể cần thực hiện.
+5. **starrule.mdc**: Các quy tắc phát triển và tiêu chuẩn code dành riêng cho dự án.
 
 ## Quy tắc cập nhật
-1. Mọi thay đổi code phải được ghi lại trong `progress.md`
-2. Các quyết định kỹ thuật mới phải được ghi trong `techContext.md`
-3. Các pattern hệ thống mới phải được ghi trong `systemPatterns.md`
-4. Các vấn đề hiện tại phải được ghi trong `activeContext.md`
+1. **Tính nhất quán**: Khi thay đổi kiến trúc hoặc tính năng lớn, phải cập nhật đồng thời cả `technical_design.md` và `projectbrief.md`.
+2. **Theo dõi tiến độ**: Cập nhật trạng thái [x] trong `implementation_plan.md` và `task_list.md` sau khi hoàn thành task.
+3. **Quyết định kỹ thuật**: Các thay đổi về thư viện hoặc cách xử lý logic quan trọng phải được ghi chú lại trong `technical_design.md`.
 
-## Quy trình làm việc
-1. Đọc tất cả các file memory bank trước khi bắt đầu task
-2. Cập nhật documentation sau mỗi thay đổi quan trọng
-3. Sử dụng lệnh "update memory bank" để cập nhật toàn bộ documentation
-4. Kiểm tra tính nhất quán của documentation
+## Quy trình làm việc của AI Agent
+1. **Đọc hiểu**: Luôn đọc `projectbrief.md` và `starrule.mdc` đầu tiên để hiểu bối cảnh dự án.
+2. **Lập kế hoạch**: Kiểm tra `task_list.md` để xác định việc cần làm tiếp theo.
+3. **Thực hiện**: Tuân thủ các tiêu chuẩn code trong `starrule.mdc`.
+4. **Cập nhật**: Sau khi hoàn thành, cập nhật lại tài liệu để phản ánh trạng thái mới nhất của dự án.
 
-## Nội dung các file
-### projectbrief.md
-- Mục tiêu dự án
-- Phạm vi dự án
-- Yêu cầu cốt lõi
-- Timeline
-- Stakeholders
-- Ràng buộc và giới hạn
-- Các rủi ro chính
-- Chiến lược phát triển
-
-### productContext.md
-- Vấn đề cần giải quyết
-- Giải pháp
-- Trải nghiệm người dùng
-- KPI
-- User personas
-- User stories
-- User flows
-- Wireframes và mockups
-- Feedback từ người dùng
-
-### systemPatterns.md
-- Kiến trúc hệ thống
-- Design patterns
-- Quy trình làm việc
-- Best practices
-- Security patterns
-- Error handling
-- Logging strategy
-- Monitoring và alerting
-- Performance optimization
-- Scalability patterns
-
-### techContext.md
-- Công nghệ sử dụng
-- Cấu hình môi trường
-- Dependencies
-- API documentation
-- Database schema
-- Deployment process
-- CI/CD pipeline
-- Testing strategy
-- Performance benchmarks
-- Security measures
-
-### activeContext.md
-- Task hiện tại
-- Vấn đề đang gặp phải
-- Quyết định cần đưa ra
-- Next steps
-- Blockers
-- Dependencies
-- Timeline hiện tại
-- Resource allocation
-- Risk assessment
-- Mitigation strategies
-
-### progress.md
-- Tính năng đã hoàn thành
-- Tính năng đang làm
-- Bug đã fix
-- Bug cần fix
-- Performance improvements
-- Security updates
-- Documentation updates
-- Test coverage
-- Code quality metrics
-- Deployment history
-
-## Quy tắc bảo trì
-1. Mỗi file phải được cập nhật ít nhất một lần mỗi sprint
-2. Các thay đổi lớn phải được review bởi ít nhất một thành viên khác
-3. Sử dụng version control cho tất cả các file documentation
-4. Duy trì tính nhất quán trong format và style
-5. Đảm bảo các link và reference luôn hoạt động
-6. Thường xuyên kiểm tra tính chính xác của thông tin
-
-## Template cho các file
-Mỗi file phải tuân theo template sau:
-```markdown
-# [Tên file]
-
-## Tóm tắt
-[Brief summary of the content]
-
-## Chi tiết
-[Detailed content]
-
-## Cập nhật gần đây
-- [Date]: [Change description]
-- [Date]: [Change description]
-
-## Người chịu trách nhiệm
-- [Name]: [Role]
-- [Name]: [Role]
-```
-
-## Quy trình review
-1. Tạo pull request cho các thay đổi documentation
-2. Review bởi ít nhất một thành viên khác
-3. Đảm bảo tính nhất quán với các file khác
-4. Kiểm tra tính chính xác của thông tin
-5. Merge sau khi được approve
+## Lưu ý về Tech Stack hiện tại
+- **Backend**: Node.js / Express.js
+- **Database**: MongoDB / Mongoose
+- **Template**: Nunjucks
+- **Frontend**: Bootstrap 5

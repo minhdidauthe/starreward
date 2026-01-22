@@ -1,0 +1,604 @@
+{% extends "base.html" %}
+
+{% block title %}{{ idea.title }} - Góc Ý Tưởng - StarEdu{% endblock %}
+
+{% block extra_css %}
+<style>
+    .idea-header {
+        background: linear-gradient(135deg, var(--primary-500) 0%, var(--secondary-500) 100%);
+        border-radius: var(--radius-2xl);
+        padding: 32px;
+        color: white;
+        margin-bottom: 24px;
+    }
+
+    .ai-analysis-card {
+        background: linear-gradient(135deg, var(--success-50), var(--info-50));
+        border: 2px solid var(--success-200);
+    }
+
+    .analysis-loading {
+        text-align: center;
+        padding: 40px;
+    }
+
+    .analysis-loading i {
+        font-size: 3rem;
+        color: var(--primary-500);
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .feasibility-score {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 2rem;
+        margin: 0 auto;
+    }
+
+    .feasibility-very_high, .feasibility-high { background: linear-gradient(135deg, var(--success-100), var(--success-200)); color: var(--success-700); }
+    .feasibility-medium { background: linear-gradient(135deg, var(--warning-100), var(--warning-200)); color: var(--warning-700); }
+    .feasibility-low, .feasibility-very_low { background: linear-gradient(135deg, var(--danger-100), var(--danger-200)); color: var(--danger-700); }
+
+    .analysis-section {
+        padding: 16px;
+        background: white;
+        border-radius: var(--radius-lg);
+        margin-bottom: 16px;
+    }
+
+    .analysis-section h6 {
+        color: var(--neutral-600);
+        margin-bottom: 12px;
+    }
+
+    .analysis-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .analysis-list li {
+        padding: 8px 0;
+        border-bottom: 1px solid var(--neutral-100);
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .analysis-list li:last-child {
+        border-bottom: none;
+    }
+
+    .comment-card {
+        background: var(--neutral-50);
+        border-radius: var(--radius-lg);
+        padding: 16px;
+        margin-bottom: 12px;
+    }
+
+    .like-btn {
+        transition: all 0.2s ease;
+    }
+
+    .like-btn.liked {
+        color: var(--danger-500);
+    }
+
+    .like-btn.liked i {
+        animation: heartBeat 0.5s ease;
+    }
+
+    @keyframes heartBeat {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+    }
+
+    .idea-content {
+        white-space: pre-wrap;
+        line-height: 1.8;
+    }
+
+    .encouragement-box {
+        background: linear-gradient(135deg, var(--accent-100), var(--warning-100));
+        border-radius: var(--radius-xl);
+        padding: 20px;
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .encouragement-box i {
+        font-size: 2rem;
+        color: var(--accent-500);
+        margin-bottom: 12px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/ideas">Góc Ý Tưởng</a></li>
+        <li class="breadcrumb-item active">{{ idea.title | truncate(30) }}</li>
+    </ol>
+</nav>
+
+<!-- Idea Header -->
+<div class="idea-header">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+        <div class="flex-grow-1">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <span class="badge bg-light text-{{ categoryColors[idea.category] }}">
+                    <i class="fas {{ categoryIcons[idea.category] }} me-1"></i>
+                    {{ categoryLabels[idea.category] }}
+                </span>
+                {% if idea.isFeatured %}
+                <span class="badge bg-warning text-dark">
+                    <i class="fas fa-star me-1"></i>Nổi bật
+                </span>
+                {% endif %}
+                {% if idea.isAnalyzed %}
+                <span class="badge bg-success">
+                    <i class="fas fa-robot me-1"></i>Đã phân tích
+                </span>
+                {% endif %}
+            </div>
+            <h1 class="h2 mb-3">{{ idea.title }}</h1>
+            <div class="d-flex align-items-center gap-3">
+                <div class="d-flex align-items-center gap-2">
+                    <div id="authorAvatar" data-avatar="{{ idea.student.avatar or '' }}" data-name="{{ idea.student.name }}"></div>
+                    <div>
+                        <strong>{{ idea.student.name }}</strong>
+                        <small class="d-block opacity-75">{{ idea.createdAt | date('DD/MM/YYYY HH:mm') }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-light like-btn {{ 'liked' if studentLiked else '' }}" id="likeBtn" onclick="toggleLike()">
+                <i class="fas fa-heart"></i>
+                <span id="likeCount">{{ idea.likeCount }}</span>
+            </button>
+            <button class="btn btn-light" disabled>
+                <i class="fas fa-eye"></i> {{ idea.viewCount }}
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Main Content -->
+    <div class="col-lg-8">
+        <!-- Idea Content -->
+        <div class="card mb-4">
+            <div class="card-body p-4">
+                <div class="idea-content">{{ idea.content }}</div>
+
+                {% if idea.tags and idea.tags.length > 0 %}
+                <div class="mt-4 pt-3 border-top">
+                    <i class="fas fa-tags text-muted me-2"></i>
+                    {% for tag in idea.tags %}
+                    <span class="badge bg-primary-subtle text-primary me-1">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- AI Analysis Section -->
+        <div class="card ai-analysis-card mb-4">
+            <div class="card-header bg-transparent">
+                <h5 class="mb-0">
+                    <i class="fas fa-robot me-2 text-success"></i>Phân Tích AI
+                </h5>
+            </div>
+            <div class="card-body" id="analysisContent">
+                {% if idea.isAnalyzed %}
+                <!-- Feasibility Score -->
+                <div class="text-center mb-4">
+                    <div class="feasibility-score feasibility-{{ idea.aiAnalysis.feasibility.level }}">
+                        {{ idea.aiAnalysis.feasibility.score }}%
+                        <small style="font-size: 0.5em; font-weight: 400;">khả thi</small>
+                    </div>
+                    <p class="mt-3 mb-0">{{ idea.aiAnalysis.feasibility.summary }}</p>
+                </div>
+
+                <div class="row g-3">
+                    <!-- Strengths -->
+                    <div class="col-md-6">
+                        <div class="analysis-section h-100">
+                            <h6><i class="fas fa-check-circle text-success me-2"></i>Điểm mạnh</h6>
+                            <ul class="analysis-list">
+                                {% for strength in idea.aiAnalysis.strengths %}
+                                <li><i class="fas fa-star text-success"></i> {{ strength }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Challenges -->
+                    <div class="col-md-6">
+                        <div class="analysis-section h-100">
+                            <h6><i class="fas fa-exclamation-circle text-warning me-2"></i>Thách thức</h6>
+                            <ul class="analysis-list">
+                                {% for challenge in idea.aiAnalysis.challenges %}
+                                <li><i class="fas fa-exclamation-triangle text-warning"></i> {{ challenge }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Suggestions -->
+                    <div class="col-md-6">
+                        <div class="analysis-section h-100">
+                            <h6><i class="fas fa-lightbulb text-info me-2"></i>Gợi ý</h6>
+                            <ul class="analysis-list">
+                                {% for suggestion in idea.aiAnalysis.suggestions %}
+                                <li><i class="fas fa-arrow-right text-info"></i> {{ suggestion }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Resources -->
+                    <div class="col-md-6">
+                        <div class="analysis-section h-100">
+                            <h6><i class="fas fa-book text-primary me-2"></i>Tài nguyên</h6>
+                            <ul class="analysis-list">
+                                {% for resource in idea.aiAnalysis.resources %}
+                                <li><i class="fas fa-link text-primary"></i> {{ resource }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Encouragement -->
+                <div class="encouragement-box">
+                    <i class="fas fa-heart"></i>
+                    <p class="mb-0 fw-medium">{{ idea.aiAnalysis.encouragement }}</p>
+                </div>
+                {% else %}
+                <!-- Not Analyzed Yet -->
+                <div class="text-center py-4" id="notAnalyzed">
+                    <div class="mb-4">
+                        <i class="fas fa-robot" style="font-size: 4rem; color: var(--neutral-300);"></i>
+                    </div>
+                    <h5 class="text-muted mb-3">Ý tưởng chưa được phân tích</h5>
+                    <p class="text-muted mb-4">Nhấn nút bên dưới để AI phân tích tính khả thi của ý tưởng này!</p>
+                    <button class="btn btn-success btn-lg" onclick="analyzeIdea()">
+                        <i class="fas fa-magic me-2"></i>Phân Tích Ngay (+3 ⭐)
+                    </button>
+                </div>
+
+                <!-- Loading State -->
+                <div class="analysis-loading d-none" id="analysisLoading">
+                    <i class="fas fa-spinner"></i>
+                    <p class="mt-3 text-muted">AI đang phân tích ý tưởng của bạn...</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Comments Section -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-comments me-2 text-primary"></i>
+                    Bình Luận ({{ idea.commentCount }})
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Comment Form -->
+                <div class="mb-4">
+                    <div class="d-flex gap-3">
+                        <select class="form-select" style="width: 200px;" id="commentStudentSelect">
+                            <option value="">Chọn học sinh</option>
+                            {% for student in students %}
+                            <option value="{{ student._id }}" data-avatar="{{ student.avatar or '' }}" data-name="{{ student.name }}">
+                                {{ student.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div class="flex-grow-1">
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Viết bình luận..." id="commentInput" maxlength="500">
+                                <button class="btn btn-primary" onclick="addComment()">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comments List -->
+                <div id="commentsList">
+                    {% if idea.comments and idea.comments.length > 0 %}
+                    {% for comment in idea.comments | reverse %}
+                    <div class="comment-card">
+                        <div class="d-flex gap-3">
+                            <div class="comment-avatar" data-avatar="{{ comment.author.avatar if comment.author else '' }}" data-name="{{ comment.authorName }}"></div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between">
+                                    <strong>{{ comment.authorName }}</strong>
+                                    <small class="text-muted">{{ comment.createdAt | date('DD/MM/YYYY HH:mm') }}</small>
+                                </div>
+                                <p class="mb-0 mt-1">{{ comment.content }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center text-muted py-4" id="noComments">
+                        <i class="fas fa-comment-slash" style="font-size: 2rem;"></i>
+                        <p class="mt-2 mb-0">Chưa có bình luận nào. Hãy là người đầu tiên!</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Author Info -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user me-2 text-primary"></i>Tác giả</h5>
+            </div>
+            <div class="card-body text-center">
+                <div id="authorAvatarLarge" class="mb-3" data-avatar="{{ idea.student.avatar or '' }}" data-name="{{ idea.student.name }}"></div>
+                <h5>{{ idea.student.name }}</h5>
+                <p class="text-muted mb-3">
+                    <i class="fas fa-star text-warning"></i> {{ idea.student.total_stars }} sao
+                </p>
+                <a href="/student/{{ idea.student._id }}" class="btn btn-outline-primary btn-sm">
+                    Xem hồ sơ
+                </a>
+            </div>
+        </div>
+
+        <!-- Idea Stats -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-bar me-2 text-primary"></i>Thống kê</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="d-flex justify-content-between py-2 border-bottom">
+                        <span><i class="fas fa-eye me-2 text-secondary"></i>Lượt xem</span>
+                        <strong>{{ idea.viewCount }}</strong>
+                    </li>
+                    <li class="d-flex justify-content-between py-2 border-bottom">
+                        <span><i class="fas fa-heart me-2 text-danger"></i>Lượt thích</span>
+                        <strong>{{ idea.likeCount }}</strong>
+                    </li>
+                    <li class="d-flex justify-content-between py-2 border-bottom">
+                        <span><i class="fas fa-comment me-2 text-primary"></i>Bình luận</span>
+                        <strong>{{ idea.commentCount }}</strong>
+                    </li>
+                    <li class="d-flex justify-content-between py-2">
+                        <span><i class="fas fa-star me-2 text-warning"></i>Sao nhận được</span>
+                        <strong class="text-warning">+{{ idea.starsEarned }}</strong>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Related Ideas -->
+        {% if relatedIdeas and relatedIdeas.length > 0 %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-th-large me-2 text-primary"></i>Ý tưởng tương tự</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for related in relatedIdeas %}
+                <a href="/ideas/{{ related._id }}" class="list-group-item list-group-item-action">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="related-avatar" data-avatar="{{ related.student.avatar or '' }}" data-name="{{ related.student.name }}"></div>
+                        <div style="flex: 1; min-width: 0;">
+                            <h6 class="mb-0 text-truncate">{{ related.title }}</h6>
+                            <small class="text-muted">{{ related.student.name }}</small>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const ideaId = '{{ idea._id }}';
+let currentStudentId = null;
+
+// Render avatars
+document.addEventListener('DOMContentLoaded', function() {
+    // Author avatar in header
+    const authorAvatar = document.getElementById('authorAvatar');
+    if (authorAvatar) {
+        authorAvatar.innerHTML = AvatarSystem.renderWithFallback(
+            authorAvatar.dataset.avatar,
+            authorAvatar.dataset.name,
+            'md', 'avatar-bordered'
+        );
+    }
+
+    // Author avatar large
+    const authorAvatarLarge = document.getElementById('authorAvatarLarge');
+    if (authorAvatarLarge) {
+        authorAvatarLarge.innerHTML = AvatarSystem.renderWithFallback(
+            authorAvatarLarge.dataset.avatar,
+            authorAvatarLarge.dataset.name,
+            'xl', 'avatar-bordered'
+        );
+    }
+
+    // Comment avatars
+    document.querySelectorAll('.comment-avatar').forEach(container => {
+        container.innerHTML = AvatarSystem.renderWithFallback(
+            container.dataset.avatar,
+            container.dataset.name,
+            'sm', ''
+        );
+    });
+
+    // Related avatars
+    document.querySelectorAll('.related-avatar').forEach(container => {
+        container.innerHTML = AvatarSystem.renderWithFallback(
+            container.dataset.avatar,
+            container.dataset.name,
+            'sm', ''
+        );
+    });
+});
+
+// Analyze idea
+async function analyzeIdea() {
+    const notAnalyzed = document.getElementById('notAnalyzed');
+    const loading = document.getElementById('analysisLoading');
+
+    notAnalyzed.classList.add('d-none');
+    loading.classList.remove('d-none');
+
+    try {
+        const response = await fetch(`/ideas/${ideaId}/analyze`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            Toast.success('Phân tích hoàn tất!', `+${data.starsEarned} sao`);
+            // Reload page to show analysis
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            throw new Error(data.error);
+        }
+    } catch (error) {
+        Toast.error('Lỗi', error.message || 'Không thể phân tích ý tưởng');
+        notAnalyzed.classList.remove('d-none');
+        loading.classList.add('d-none');
+    }
+}
+
+// Toggle like
+async function toggleLike() {
+    const studentId = prompt('Nhập ID học sinh của bạn để thích ý tưởng này:');
+    if (!studentId) return;
+
+    try {
+        const response = await fetch(`/ideas/${ideaId}/like`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ studentId })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            const btn = document.getElementById('likeBtn');
+            const count = document.getElementById('likeCount');
+
+            if (data.liked) {
+                btn.classList.add('liked');
+                Toast.success('Đã thích!', 'Cảm ơn bạn đã thích ý tưởng này');
+            } else {
+                btn.classList.remove('liked');
+            }
+            count.textContent = data.likeCount;
+        }
+    } catch (error) {
+        Toast.error('Lỗi', 'Không thể thực hiện');
+    }
+}
+
+// Add comment
+async function addComment() {
+    const studentSelect = document.getElementById('commentStudentSelect');
+    const input = document.getElementById('commentInput');
+    const studentId = studentSelect.value;
+    const content = input.value.trim();
+
+    if (!studentId) {
+        Toast.warning('Chọn học sinh', 'Vui lòng chọn học sinh trước khi bình luận');
+        return;
+    }
+
+    if (!content) {
+        Toast.warning('Nhập nội dung', 'Vui lòng nhập nội dung bình luận');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/ideas/${ideaId}/comment`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ studentId, content })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            Toast.success('Đã bình luận!', `+${data.starsEarned} sao`);
+
+            // Add comment to list
+            const noComments = document.getElementById('noComments');
+            if (noComments) noComments.remove();
+
+            const commentsList = document.getElementById('commentsList');
+            const option = studentSelect.options[studentSelect.selectedIndex];
+
+            const commentHtml = `
+                <div class="comment-card">
+                    <div class="d-flex gap-3">
+                        <div class="new-comment-avatar" data-avatar="${option.dataset.avatar || ''}" data-name="${option.dataset.name}"></div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between">
+                                <strong>${option.dataset.name}</strong>
+                                <small class="text-muted">Vừa xong</small>
+                            </div>
+                            <p class="mb-0 mt-1">${content}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            commentsList.insertAdjacentHTML('afterbegin', commentHtml);
+
+            // Render new avatar
+            const newAvatar = commentsList.querySelector('.new-comment-avatar');
+            if (newAvatar) {
+                newAvatar.innerHTML = AvatarSystem.renderWithFallback(
+                    newAvatar.dataset.avatar,
+                    newAvatar.dataset.name,
+                    'sm', ''
+                );
+                newAvatar.classList.remove('new-comment-avatar');
+                newAvatar.classList.add('comment-avatar');
+            }
+
+            input.value = '';
+        }
+    } catch (error) {
+        Toast.error('Lỗi', 'Không thể thêm bình luận');
+    }
+}
+
+// Enter to submit comment
+document.getElementById('commentInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') addComment();
+});
+</script>
+{% endblock %}

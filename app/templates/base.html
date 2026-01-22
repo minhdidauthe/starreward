@@ -4,58 +4,508 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Tặng Sao</title>
+    <meta name="theme-color" content="#8b5cf6">
+    <title>{% block title %}StarEdu - Hệ Thống Tặng Sao{% endblock %}</title>
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/avatars.css') }}">
+
+    {% block extra_css %}{% endblock %}
 </head>
 
 <body>
-    <div class="sidebar">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
         <div class="sidebar-brand">
-            <i class="fas fa-graduation-cap"></i> StarEdu
+            <i class="fas fa-star"></i>
+            <span>StarEdu</span>
         </div>
+
         <nav class="nav flex-column">
-            <a class="nav-link {{ 'active' if request.endpoint == 'main.index' else '' }}"
-                href="{{ url_for('main.index') }}">
-                <i class="fas fa-home"></i> Trang Chủ
+            <a class="nav-link {{ 'active' if request.path == '/dashboard' else '' }}" href="/dashboard">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
             </a>
-            <a class="nav-link {{ 'active' if 'learning' in request.endpoint else '' }}"
-                href="{{ url_for('learning.index') }}">
-                <i class="fas fa-book"></i> Góc Học Tập
+            <a class="nav-link {{ 'active' if request.path == '/' else '' }}" href="{{ url_for('main.index') }}">
+                <i class="fas fa-home"></i>
+                <span>Trang Chủ</span>
             </a>
-            <a class="nav-link {{ 'active' if 'exam' in request.endpoint else '' }}" href="{{ url_for('exam.index') }}">
-                <i class="fas fa-file-alt"></i> Góc Thi Cử
+            <a class="nav-link {{ 'active' if '/learning' in request.path else '' }}" href="{{ url_for('learning.index') }}">
+                <i class="fas fa-book-open"></i>
+                <span>Góc Học Tập</span>
             </a>
-            <a class="nav-link" href="#">
-                <i class="fas fa-lightbulb"></i> Góc Khám Phá
+            <a class="nav-link {{ 'active' if '/exam' in request.path else '' }}" href="{{ url_for('exam.index') }}">
+                <i class="fas fa-clipboard-check"></i>
+                <span>Góc Thi Cử</span>
+            </a>
+            <a class="nav-link {{ 'active' if '/explore' in request.path else '' }}" href="/explore">
+                <i class="fas fa-compass"></i>
+                <span>Góc Khám Phá</span>
+            </a>
+            <a class="nav-link {{ 'active' if '/ideas' in request.path else '' }}" href="/ideas">
+                <i class="fas fa-lightbulb"></i>
+                <span>Góc Ý Tưởng</span>
+            </a>
+            <a class="nav-link {{ 'active' if '/blog' in request.path else '' }}" href="/blog">
+                <i class="fas fa-heart"></i>
+                <span>Góc Phụ Huynh</span>
             </a>
         </nav>
-    </div>
 
-    <div class="main-content">
-        <div class="container-fluid">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-            {% for category, message in messages %}
-            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <!-- Sidebar Footer - User Info or Login -->
+        <div class="sidebar-footer" style="margin-top: auto; padding: 16px; border-top: 1px solid rgba(0,0,0,0.05);">
+            {% if user %}
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-400), var(--primary-600));
+                    display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
+                    {{ user.fullName[0] | upper }}
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                    <div style="font-weight: 600; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        {{ user.fullName }}
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">{{ user.role }}</div>
+                </div>
             </div>
-            {% endfor %}
+            <a href="/auth/logout" class="btn btn-outline-danger btn-sm w-100">
+                <i class="fas fa-sign-out-alt me-2"></i>Đăng Xuất
+            </a>
+            {% else %}
+            <a href="/auth/login" class="btn btn-primary btn-sm w-100 mb-2">
+                <i class="fas fa-sign-in-alt me-2"></i>Đăng Nhập
+            </a>
+            <a href="/auth/register" class="btn btn-outline-primary btn-sm w-100">
+                <i class="fas fa-user-plus me-2"></i>Đăng Ký
+            </a>
             {% endif %}
-            {% endwith %}
+        </div>
+    </aside>
 
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container-fluid">
+            <!-- Flash Messages -->
+            {% set messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    <div class="d-flex align-items-center gap-2">
+                        {% if category == 'success' %}
+                            <i class="fas fa-check-circle"></i>
+                        {% elif category == 'danger' %}
+                            <i class="fas fa-exclamation-circle"></i>
+                        {% elif category == 'warning' %}
+                            <i class="fas fa-exclamation-triangle"></i>
+                        {% else %}
+                            <i class="fas fa-info-circle"></i>
+                        {% endif %}
+                        <span>{{ message }}</span>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Page Content -->
             {% block content %}{% endblock %}
         </div>
-    </div>
+    </main>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-nav">
+        <div class="mobile-nav-items">
+            <a class="mobile-nav-item {{ 'active' if request.path == '/dashboard' else '' }}" href="/dashboard">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
+            </a>
+            <a class="mobile-nav-item {{ 'active' if '/learning' in request.path else '' }}" href="{{ url_for('learning.index') }}">
+                <i class="fas fa-book-open"></i>
+                <span>Học Tập</span>
+            </a>
+            <a class="mobile-nav-item {{ 'active' if '/exam' in request.path else '' }}" href="{{ url_for('exam.index') }}">
+                <i class="fas fa-clipboard-check"></i>
+                <span>Thi Cử</span>
+            </a>
+            {% if user %}
+            <a class="mobile-nav-item" href="/auth/logout">
+                <i class="fas fa-user-circle"></i>
+                <span>{{ user.fullName.split(' ')[-1] }}</span>
+            </a>
+            {% else %}
+            <a class="mobile-nav-item {{ 'active' if '/auth' in request.path else '' }}" href="/auth/login">
+                <i class="fas fa-sign-in-alt"></i>
+                <span>Đăng Nhập</span>
+            </a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
 
     <!-- Bootstrap JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Avatar System -->
+    <script src="{{ url_for('static', filename='js/avatars.js') }}"></script>
+
+    <!-- Sonner-Style Toast Notification System -->
+    <script>
+    /**
+     * Sonner-style Toast Notification System
+     * Inspired by vuetify-sonner & sonner
+     * Features: Promise toasts, Loading states, Actions, Stacking, Swipe to dismiss
+     */
+    const Toast = {
+        container: null,
+        toasts: new Map(),
+        counter: 0,
+        position: 'bottom-center', // bottom-center, top-center, top-right, bottom-right
+        maxToasts: 5,
+        defaultDuration: 4000,
+
+        // Icons configuration
+        icons: {
+            success: 'fa-check-circle',
+            error: 'fa-times-circle',
+            warning: 'fa-exclamation-triangle',
+            info: 'fa-info-circle',
+            loading: 'fa-spinner'
+        },
+
+        init(options = {}) {
+            this.container = document.getElementById('toastContainer');
+            if (options.position) {
+                this.position = options.position;
+                this.container.setAttribute('data-position', this.position);
+            }
+            if (options.maxToasts) this.maxToasts = options.maxToasts;
+
+            // Setup swipe to dismiss on mobile
+            this.setupSwipeToDismiss();
+        },
+
+        // Main show method
+        show(type, title, message, options = {}) {
+            if (!this.container) this.init();
+
+            const id = ++this.counter;
+            const duration = options.duration ?? this.defaultDuration;
+            const dismissible = options.dismissible ?? true;
+            const filled = options.filled ?? false;
+
+            // Limit max toasts
+            if (this.toasts.size >= this.maxToasts) {
+                const firstToast = this.toasts.values().next().value;
+                if (firstToast) this.dismiss(firstToast.id);
+            }
+
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}${filled ? '-filled' : ''}`;
+            toast.setAttribute('data-toast-id', id);
+
+            // Build HTML
+            let html = `
+                <div class="toast-icon">
+                    <i class="fas ${this.icons[type] || this.icons.info}"></i>
+                </div>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    ${message ? `<div class="toast-message">${message}</div>` : ''}
+                </div>
+            `;
+
+            // Add close button if dismissible
+            if (dismissible) {
+                html += `
+                    <button class="toast-close" onclick="Toast.dismiss(${id})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+            }
+
+            // Add action buttons if provided
+            if (options.action) {
+                html += `
+                    <div class="toast-action">
+                        <button class="toast-btn-primary" onclick="Toast.handleAction(${id}, 'primary')">${options.action.label}</button>
+                        ${options.action.cancel ? `<button class="toast-btn-secondary" onclick="Toast.dismiss(${id})">${options.action.cancel}</button>` : ''}
+                    </div>
+                `;
+            }
+
+            // Add progress bar
+            if (duration > 0 && !options.action) {
+                html += `<div class="toast-progress" style="animation: toastProgress ${duration}ms linear forwards"></div>`;
+            }
+
+            toast.innerHTML = html;
+            this.container.appendChild(toast);
+
+            // Store toast info
+            const toastInfo = {
+                id,
+                element: toast,
+                type,
+                options,
+                actionCallback: options.action?.onClick
+            };
+            this.toasts.set(id, toastInfo);
+
+            // Auto dismiss
+            if (duration > 0 && !options.action) {
+                toastInfo.timeout = setTimeout(() => this.dismiss(id), duration);
+            }
+
+            // Pause on hover
+            toast.addEventListener('mouseenter', () => {
+                if (toastInfo.timeout) {
+                    clearTimeout(toastInfo.timeout);
+                    const progress = toast.querySelector('.toast-progress');
+                    if (progress) progress.style.animationPlayState = 'paused';
+                }
+            });
+
+            toast.addEventListener('mouseleave', () => {
+                if (duration > 0 && !options.action) {
+                    const progress = toast.querySelector('.toast-progress');
+                    if (progress) progress.style.animationPlayState = 'running';
+                    toastInfo.timeout = setTimeout(() => this.dismiss(id), duration / 2);
+                }
+            });
+
+            return id;
+        },
+
+        // Dismiss a toast
+        dismiss(id) {
+            const toastInfo = this.toasts.get(id);
+            if (!toastInfo) return;
+
+            if (toastInfo.timeout) clearTimeout(toastInfo.timeout);
+
+            toastInfo.element.classList.add('toast-hide');
+            setTimeout(() => {
+                toastInfo.element.remove();
+                this.toasts.delete(id);
+            }, 200);
+        },
+
+        // Dismiss all toasts
+        dismissAll() {
+            this.toasts.forEach((_, id) => this.dismiss(id));
+        },
+
+        // Handle action button click
+        handleAction(id, action) {
+            const toastInfo = this.toasts.get(id);
+            if (toastInfo?.actionCallback) {
+                toastInfo.actionCallback();
+            }
+            this.dismiss(id);
+        },
+
+        // Convenience methods
+        success(title, message, options = {}) {
+            return this.show('success', title, message, options);
+        },
+
+        error(title, message, options = {}) {
+            return this.show('error', title, message, { duration: 5000, ...options });
+        },
+
+        warning(title, message, options = {}) {
+            return this.show('warning', title, message, options);
+        },
+
+        info(title, message, options = {}) {
+            return this.show('info', title, message, options);
+        },
+
+        // Loading toast - returns object with update/dismiss methods
+        loading(title, message = '') {
+            const id = this.show('loading', title, message, { duration: 0, dismissible: false });
+
+            return {
+                id,
+                success: (newTitle, newMessage) => this.update(id, 'success', newTitle, newMessage),
+                error: (newTitle, newMessage) => this.update(id, 'error', newTitle, newMessage),
+                dismiss: () => this.dismiss(id)
+            };
+        },
+
+        // Update existing toast
+        update(id, type, title, message, options = {}) {
+            const toastInfo = this.toasts.get(id);
+            if (!toastInfo) return;
+
+            const toast = toastInfo.element;
+
+            // Update class
+            toast.className = `toast toast-${type}`;
+
+            // Update icon
+            const icon = toast.querySelector('.toast-icon i');
+            if (icon) {
+                icon.className = `fas ${this.icons[type]}`;
+            }
+
+            // Update content
+            const titleEl = toast.querySelector('.toast-title');
+            const messageEl = toast.querySelector('.toast-message');
+            if (titleEl) titleEl.textContent = title;
+            if (messageEl) {
+                if (message) {
+                    messageEl.textContent = message;
+                    messageEl.style.display = '';
+                } else {
+                    messageEl.style.display = 'none';
+                }
+            }
+
+            // Add close button if not present
+            if (!toast.querySelector('.toast-close')) {
+                const closeBtn = document.createElement('button');
+                closeBtn.className = 'toast-close';
+                closeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                closeBtn.onclick = () => this.dismiss(id);
+                toast.appendChild(closeBtn);
+            }
+
+            // Auto dismiss after update
+            const duration = options.duration ?? 3000;
+            if (duration > 0) {
+                toastInfo.timeout = setTimeout(() => this.dismiss(id), duration);
+            }
+        },
+
+        // Promise toast - handles async operations
+        promise(promise, messages) {
+            const loader = this.loading(
+                messages.loading?.title || 'Đang xử lý...',
+                messages.loading?.message || ''
+            );
+
+            promise
+                .then((result) => {
+                    const success = messages.success;
+                    loader.success(
+                        typeof success === 'function' ? success(result).title : success?.title || 'Thành công!',
+                        typeof success === 'function' ? success(result).message : success?.message || ''
+                    );
+                    return result;
+                })
+                .catch((error) => {
+                    const errorMsg = messages.error;
+                    loader.error(
+                        typeof errorMsg === 'function' ? errorMsg(error).title : errorMsg?.title || 'Có lỗi xảy ra!',
+                        typeof errorMsg === 'function' ? errorMsg(error).message : errorMsg?.message || error.message
+                    );
+                    throw error;
+                });
+
+            return promise;
+        },
+
+        // Custom toast with rich content
+        custom(html, options = {}) {
+            if (!this.container) this.init();
+
+            const id = ++this.counter;
+            const duration = options.duration ?? this.defaultDuration;
+
+            const toast = document.createElement('div');
+            toast.className = 'toast toast-custom';
+            toast.setAttribute('data-toast-id', id);
+            toast.innerHTML = html;
+
+            this.container.appendChild(toast);
+
+            const toastInfo = { id, element: toast, type: 'custom', options };
+            this.toasts.set(id, toastInfo);
+
+            if (duration > 0) {
+                toastInfo.timeout = setTimeout(() => this.dismiss(id), duration);
+            }
+
+            return id;
+        },
+
+        // Action toast with buttons
+        action(title, message, options) {
+            return this.show('info', title, message, {
+                duration: 0,
+                action: options,
+                ...options
+            });
+        },
+
+        // Setup swipe to dismiss on touch devices
+        setupSwipeToDismiss() {
+            let startX = 0;
+            let currentToast = null;
+
+            this.container.addEventListener('touchstart', (e) => {
+                const toast = e.target.closest('.toast');
+                if (toast) {
+                    startX = e.touches[0].clientX;
+                    currentToast = toast;
+                }
+            }, { passive: true });
+
+            this.container.addEventListener('touchmove', (e) => {
+                if (!currentToast) return;
+                const deltaX = e.touches[0].clientX - startX;
+                if (Math.abs(deltaX) > 10) {
+                    currentToast.style.transform = `translateX(${deltaX}px)`;
+                    currentToast.style.opacity = 1 - Math.abs(deltaX) / 200;
+                }
+            }, { passive: true });
+
+            this.container.addEventListener('touchend', (e) => {
+                if (!currentToast) return;
+                const deltaX = e.changedTouches[0].clientX - startX;
+
+                if (Math.abs(deltaX) > 100) {
+                    const id = parseInt(currentToast.getAttribute('data-toast-id'));
+                    this.dismiss(id);
+                } else {
+                    currentToast.style.transform = '';
+                    currentToast.style.opacity = '';
+                }
+                currentToast = null;
+            }, { passive: true });
+        },
+
+        // Set position
+        setPosition(position) {
+            this.position = position;
+            if (this.container) {
+                this.container.setAttribute('data-position', position);
+            }
+        }
+    };
+
+    // Initialize Toast on DOM ready
+    document.addEventListener('DOMContentLoaded', () => Toast.init());
+
+    // Expose global shorthand
+    window.toast = Toast;
+    </script>
+
+    {% block extra_js %}{% endblock %}
 </body>
 
 </html>

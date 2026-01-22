@@ -1,0 +1,366 @@
+{% extends "base.html" %}
+
+{% block title %}Demo Toast - StarEdu{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2 class="mb-1">Demo Toast Notifications</h2>
+    <p class="text-muted">Hệ thống thông báo theo phong cách Sonner</p>
+</div>
+
+<div class="row g-4">
+    <!-- Basic Toasts -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bell me-2 text-primary"></i>Basic Toasts</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">Các loại toast cơ bản</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-success" onclick="Toast.success('Thành công!', 'Thao tác đã được thực hiện.')">
+                        <i class="fas fa-check me-1"></i>Success
+                    </button>
+                    <button class="btn btn-danger" onclick="Toast.error('Lỗi!', 'Có lỗi xảy ra trong quá trình xử lý.')">
+                        <i class="fas fa-times me-1"></i>Error
+                    </button>
+                    <button class="btn btn-warning" onclick="Toast.warning('Cảnh báo!', 'Hãy kiểm tra lại thông tin.')">
+                        <i class="fas fa-exclamation me-1"></i>Warning
+                    </button>
+                    <button class="btn btn-info" onclick="Toast.info('Thông tin', 'Đây là một thông báo quan trọng.')">
+                        <i class="fas fa-info me-1"></i>Info
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filled Toasts -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-fill-drip me-2 text-primary"></i>Filled Toasts</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">Toast với background màu đậm</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-success" onclick="Toast.success('Thành công!', 'Dữ liệu đã được lưu.', {filled: true})">
+                        <i class="fas fa-check me-1"></i>Filled Success
+                    </button>
+                    <button class="btn btn-danger" onclick="Toast.error('Lỗi!', 'Không thể kết nối server.', {filled: true})">
+                        <i class="fas fa-times me-1"></i>Filled Error
+                    </button>
+                    <button class="btn btn-warning" onclick="Toast.warning('Cảnh báo!', 'Phiên đăng nhập sắp hết hạn.', {filled: true})">
+                        <i class="fas fa-exclamation me-1"></i>Filled Warning
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading & Promise -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-spinner me-2 text-primary"></i>Loading & Promise</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">Toast loading với Promise</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-primary" onclick="demoLoading()">
+                        <i class="fas fa-spinner me-1"></i>Loading Toast
+                    </button>
+                    <button class="btn btn-primary" onclick="demoPromiseSuccess()">
+                        <i class="fas fa-cloud-upload-alt me-1"></i>Promise (Success)
+                    </button>
+                    <button class="btn btn-primary" onclick="demoPromiseError()">
+                        <i class="fas fa-cloud-download-alt me-1"></i>Promise (Error)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Toasts -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-mouse-pointer me-2 text-primary"></i>Action Toasts</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">Toast với nút hành động</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-primary" onclick="demoAction()">
+                        <i class="fas fa-undo me-1"></i>Undo Action
+                    </button>
+                    <button class="btn btn-primary" onclick="demoActionConfirm()">
+                        <i class="fas fa-trash me-1"></i>Confirm Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Position -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-arrows-alt me-2 text-primary"></i>Positions</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">Thay đổi vị trí toast</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-outline-primary" onclick="changePosition('bottom-center')">
+                        <i class="fas fa-arrow-down me-1"></i>Bottom Center
+                    </button>
+                    <button class="btn btn-outline-primary" onclick="changePosition('top-center')">
+                        <i class="fas fa-arrow-up me-1"></i>Top Center
+                    </button>
+                    <button class="btn btn-outline-primary" onclick="changePosition('top-right')">
+                        <i class="fas fa-arrow-right me-1"></i>Top Right
+                    </button>
+                    <button class="btn btn-outline-primary" onclick="changePosition('bottom-right')">
+                        <i class="fas fa-arrow-right me-1"></i>Bottom Right
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stacking Demo -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-layer-group me-2 text-primary"></i>Stacking Effect</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">Hiệu ứng xếp chồng (hover để mở rộng)</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-primary" onclick="demoStacking()">
+                        <i class="fas fa-clone me-1"></i>Show Multiple Toasts
+                    </button>
+                    <button class="btn btn-outline-danger" onclick="Toast.dismissAll()">
+                        <i class="fas fa-times me-1"></i>Dismiss All
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Duration -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-clock me-2 text-primary"></i>Custom Duration</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">Toast với thời gian tùy chỉnh</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-outline-primary" onclick="Toast.info('2 giây', 'Toast này hiển thị 2 giây', {duration: 2000})">
+                        <i class="fas fa-stopwatch me-1"></i>2 seconds
+                    </button>
+                    <button class="btn btn-outline-primary" onclick="Toast.info('10 giây', 'Toast này hiển thị 10 giây', {duration: 10000})">
+                        <i class="fas fa-stopwatch me-1"></i>10 seconds
+                    </button>
+                    <button class="btn btn-outline-primary" onclick="Toast.info('Persistent', 'Toast này không tự tắt', {duration: 0})">
+                        <i class="fas fa-infinity me-1"></i>Persistent
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rich Content -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-images me-2 text-primary"></i>Rich Content</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">Toast với nội dung phong phú</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-primary" onclick="demoRichContent()">
+                        <i class="fas fa-star me-1"></i>Achievement Toast
+                    </button>
+                    <button class="btn btn-primary" onclick="demoNotification()">
+                        <i class="fas fa-envelope me-1"></i>Notification Toast
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Code Examples -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-code me-2 text-primary"></i>Code Examples</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-4">
+            <div class="col-md-6">
+                <h6>Basic Usage</h6>
+                <pre class="bg-light p-3 rounded"><code>// Simple toasts
+Toast.success('Title', 'Message');
+Toast.error('Title', 'Message');
+Toast.warning('Title', 'Message');
+Toast.info('Title', 'Message');
+
+// With options
+Toast.success('Title', 'Message', {
+    duration: 5000,
+    filled: true
+});</code></pre>
+            </div>
+            <div class="col-md-6">
+                <h6>Loading & Promise</h6>
+                <pre class="bg-light p-3 rounded"><code>// Loading toast
+const loader = Toast.loading('Đang xử lý...');
+// Later...
+loader.success('Hoàn thành!');
+// or
+loader.error('Thất bại!');
+
+// Promise toast
+Toast.promise(fetch('/api/data'), {
+    loading: { title: 'Đang tải...' },
+    success: { title: 'Thành công!' },
+    error: { title: 'Lỗi!' }
+});</code></pre>
+            </div>
+            <div class="col-md-6">
+                <h6>Action Toast</h6>
+                <pre class="bg-light p-3 rounded"><code>Toast.action('Đã xóa', 'File đã bị xóa', {
+    label: 'Hoàn tác',
+    cancel: 'Đóng',
+    onClick: () => {
+        // Undo action
+        console.log('Undoing...');
+    }
+});</code></pre>
+            </div>
+            <div class="col-md-6">
+                <h6>Position & Settings</h6>
+                <pre class="bg-light p-3 rounded"><code>// Change position
+Toast.setPosition('top-right');
+// Options: bottom-center, top-center,
+//          top-right, bottom-right
+
+// Dismiss all
+Toast.dismissAll();
+
+// Initialize with options
+Toast.init({
+    position: 'top-center',
+    maxToasts: 3
+});</code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Demo functions
+function demoLoading() {
+    const loader = Toast.loading('Đang xử lý...', 'Vui lòng đợi trong giây lát');
+
+    setTimeout(() => {
+        loader.success('Hoàn thành!', 'Dữ liệu đã được xử lý thành công');
+    }, 2500);
+}
+
+function demoPromiseSuccess() {
+    const fakePromise = new Promise((resolve) => {
+        setTimeout(() => resolve({ data: 'success' }), 2000);
+    });
+
+    Toast.promise(fakePromise, {
+        loading: { title: 'Đang tải lên...', message: 'Đợi xíu nhé!' },
+        success: { title: 'Upload thành công!', message: 'File đã được tải lên' },
+        error: { title: 'Upload thất bại!', message: 'Vui lòng thử lại' }
+    });
+}
+
+function demoPromiseError() {
+    const fakePromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Network error')), 2000);
+    });
+
+    Toast.promise(fakePromise, {
+        loading: { title: 'Đang kết nối...', message: 'Đang kiểm tra server' },
+        success: { title: 'Kết nối thành công!' },
+        error: (err) => ({ title: 'Kết nối thất bại!', message: err.message })
+    }).catch(() => {}); // Prevent unhandled rejection
+}
+
+function demoAction() {
+    Toast.action('Đã xóa bài viết', 'Bài viết đã được chuyển vào thùng rác', {
+        label: 'Hoàn tác',
+        cancel: 'Đóng',
+        onClick: () => {
+            Toast.success('Đã hoàn tác!', 'Bài viết đã được khôi phục');
+        }
+    });
+}
+
+function demoActionConfirm() {
+    Toast.show('warning', 'Xác nhận xóa?', 'Bạn có chắc muốn xóa file này?', {
+        duration: 0,
+        action: {
+            label: 'Xóa',
+            cancel: 'Hủy',
+            onClick: () => {
+                Toast.success('Đã xóa!', 'File đã được xóa thành công');
+            }
+        }
+    });
+}
+
+function changePosition(position) {
+    Toast.setPosition(position);
+    Toast.info('Vị trí mới', `Toast đã chuyển sang ${position}`);
+}
+
+function demoStacking() {
+    Toast.success('Thông báo 1', 'Đây là toast đầu tiên');
+    setTimeout(() => Toast.info('Thông báo 2', 'Đây là toast thứ hai'), 300);
+    setTimeout(() => Toast.warning('Thông báo 3', 'Đây là toast thứ ba'), 600);
+    setTimeout(() => Toast.error('Thông báo 4', 'Hover để xem tất cả'), 900);
+}
+
+function demoRichContent() {
+    Toast.custom(`
+        <div class="d-flex align-items-center gap-3">
+            <div style="width: 48px; height: 48px; border-radius: 12px;
+                background: linear-gradient(135deg, #fbbf24, #f59e0b);
+                display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-trophy" style="font-size: 1.5rem; color: white;"></i>
+            </div>
+            <div>
+                <div class="toast-title">🎉 Achievement Unlocked!</div>
+                <div class="toast-message">Bạn đã nhận được 50 sao thưởng</div>
+            </div>
+        </div>
+    `, { duration: 5000 });
+}
+
+function demoNotification() {
+    Toast.custom(`
+        <div class="d-flex align-items-start gap-3" style="width: 100%;">
+            <img src="https://ui-avatars.com/api/?name=Teacher&background=8b5cf6&color=fff"
+                style="width: 40px; height: 40px; border-radius: 50%;" alt="Avatar">
+            <div style="flex: 1;">
+                <div class="toast-title">Cô Nguyễn Thị A</div>
+                <div class="toast-message">Đã gửi bài tập mới cho bạn: "Bài tập Toán chương 3"</div>
+                <div class="d-flex gap-2 mt-2">
+                    <button class="toast-btn-primary" onclick="Toast.dismiss(this.closest('.toast').dataset.toastId); Toast.success('Đã mở', 'Đang mở bài tập...')">Xem ngay</button>
+                    <button class="toast-btn-secondary" onclick="Toast.dismiss(parseInt(this.closest('.toast').dataset.toastId))">Để sau</button>
+                </div>
+            </div>
+        </div>
+    `, { duration: 0 });
+}
+</script>
+{% endblock %}

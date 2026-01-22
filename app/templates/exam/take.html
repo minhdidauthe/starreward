@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}{{ exam.title }} - Làm Bài{% endblock %}
+
+{% block content %}
+<!-- Exam Header -->
+<div class="card mb-4 sticky-top" style="top: 0; z-index: 100;">
+    <div class="card-body py-2">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="mb-0">{{ exam.title }}</h5>
+                <small class="text-muted">{{ questions.length }} câu hỏi</small>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <!-- Timer -->
+                <div class="d-flex align-items-center gap-2 px-3 py-2 rounded" style="background: var(--danger-50);">
+                    <i class="fas fa-clock text-danger"></i>
+                    <span id="timer" class="fw-bold text-danger">{{ exam.duration_minutes }}:00</span>
+                </div>
+                <!-- Submit Button -->
+                <button type="button" class="btn btn-primary" onclick="submitExam()">
+                    <i class="fas fa-paper-plane me-2"></i>Nộp Bài
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Exam Form -->
+<form id="examForm" action="/exam/submit/{{ exam._id }}" method="POST">
+    <div class="row">
+        <!-- Questions -->
+        <div class="col-lg-9">
+            {% for question in questions %}
+            <div class="card mb-3 question-card" id="question-{{ loop.index }}">
+                <div class="card-body">
+                    <div class="d-flex gap-3">
+                        <div class="question-number" style="width: 40px; height: 40px; border-radius: 50%;
+                            background: var(--primary-100); display: flex; align-items: center; justify-content: center;
+                            color: var(--primary-600); font-weight: 600; flex-shrink: 0;">
+                            {{ loop.index }}
+                        </div>
+                        <div class="flex-grow-1">
+                            <p class="mb-3 fw-medium">{{ question.content }}</p>
+
+                            <div class="options">
+                                {% for option in question.options %}
+                                <label class="option-label d-flex align-items-center gap-3 p-3 mb-2 rounded border"
+                                    style="cursor: pointer; transition: all 0.2s;">
+                                    <input type="radio" name="answers[{{ question._id }}]" value="{{ option }}"
+                                        class="form-check-input" style="margin: 0;">
+                                    <span>{{ option }}</span>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- Submit Section -->
+            <div class="card mb-4">
+                <div class="card-body text-center py-4">
+                    <p class="text-muted mb-3">Bạn đã hoàn thành bài thi?</p>
+                    <button type="button" class="btn btn-primary btn-lg" onclick="submitExam()">
+                        <i class="fas fa-paper-plane me-2"></i>Nộp Bài
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question Navigation -->
+        <div class="col-lg-3">
+            <div class="card sticky-top" style="top: 80px;">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-th me-2"></i>Danh Sách Câu Hỏi
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for question in questions %}
+                        <a href="#question-{{ loop.index }}"
+                            class="question-nav-btn btn btn-outline-secondary btn-sm"
+                            data-question="{{ loop.index }}"
+                            style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                            {{ loop.index }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                    <hr>
+                    <div class="small">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-success">&nbsp;</span>
+                            <span>Đã trả lời: <strong id="answeredCount">0</strong>/{{ questions.length }}</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-secondary">&nbsp;</span>
+                            <span>Chưa trả lời: <strong id="unansweredCount">{{ questions.length }}</strong></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.option-label:hover {
+    background: var(--primary-50);
+    border-color: var(--primary-300) !important;
+}
+.option-label:has(input:checked) {
+    background: var(--primary-100);
+    border-color: var(--primary-500) !important;
+}
+.question-nav-btn.answered {
+    background: var(--success-500) !important;
+    border-color: var(--success-500) !important;
+    color: white !important;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Timer
+let timeLeft = {{ exam.duration_minutes }} * 60;
+const timerEl = document.getElementById('timer');
+
+const timerInterval = setInterval(() => {
+    timeLeft--;
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    timerEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+    if (timeLeft <= 300) {
+        timerEl.parentElement.style.background = 'var(--danger-100)';
+    }
+
+    if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        submitExam();
+    }
+}, 1000);
+
+// Track answered questions
+document.querySelectorAll('input[type="radio"]').forEach(radio => {
+    radio.addEventListener('change', updateAnswerCount);
+});
+
+function updateAnswerCount() {
+    const answered = document.querySelectorAll('input[type="radio"]:checked').length;
+    const total = {{ questions.length }};
+    document.getElementById('answeredCount').textContent = answered;
+    document.getElementById('unansweredCount').textContent = total - answered;
+
+    // Update nav buttons
+    document.querySelectorAll('.question-card').forEach((card, index) => {
+        const hasAnswer = card.querySelector('input[type="radio"]:checked');
+        const navBtn = document.querySelector(`.question-nav-btn[data-question="${index + 1}"]`);
+        if (hasAnswer) {
+            navBtn.classList.add('answered');
+        } else {
+            navBtn.classList.remove('answered');
+        }
+    });
+}
+
+function submitExam() {
+    const answered = document.querySelectorAll('input[type="radio"]:checked').length;
+    const total = {{ questions.length }};
+
+    if (answered < total) {
+        if (!confirm(`Bạn còn ${total - answered} câu chưa trả lời. Bạn có chắc muốn nộp bài?`)) {
+            return;
+        }
+    }
+
+    clearInterval(timerInterval);
+    document.getElementById('examForm').submit();
+}
+</script>
+{% endblock %}

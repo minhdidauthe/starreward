@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}{{ lesson.title }} - {{ subject.name }}{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/learning/">Góc Học Tập</a></li>
+        <li class="breadcrumb-item"><a href="/learning/subject/{{ subject._id }}">{{ subject.name }}</a></li>
+        <li class="breadcrumb-item"><a href="/learning/chapter/{{ chapter._id }}">{{ chapter.name }}</a></li>
+        <li class="breadcrumb-item active">{{ lesson.title }}</li>
+    </ol>
+</nav>
+
+<!-- Lesson Header -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <p class="text-muted small mb-1">
+                    {{ subject.name }} / {{ chapter.name }}
+                </p>
+                <h2 class="mb-2">{{ lesson.title }}</h2>
+                <p class="text-muted mb-0">{{ lesson.description }}</p>
+            </div>
+            {% if lesson.duration %}
+            <span class="badge bg-primary-soft text-primary" style="background: var(--primary-100); padding: 8px 16px;">
+                <i class="fas fa-clock me-1"></i>{{ lesson.duration }} phút
+            </span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Lesson Content -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-book-reader me-2 text-primary"></i>
+            Nội Dung Bài Học
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if lesson.content %}
+            <div class="lesson-content">
+                {{ lesson.content | safe }}
+            </div>
+        {% else %}
+            <p class="text-muted mb-0">Nội dung bài học đang được cập nhật...</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Learning Materials -->
+{% if materials and materials.length > 0 %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-paperclip me-2 text-primary"></i>
+            Tài Liệu Học Tập
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="list-group list-group-flush">
+            {% for material in materials %}
+            <div class="list-group-item d-flex align-items-center gap-3 px-0">
+                <div class="material-icon" style="width: 40px; height: 40px; border-radius: 8px;
+                    background: var(--primary-100); display: flex; align-items: center; justify-content: center;">
+                    {% if material.type == 'video' %}
+                        <i class="fas fa-play-circle text-primary"></i>
+                    {% elif material.type == 'pdf' %}
+                        <i class="fas fa-file-pdf text-danger"></i>
+                    {% elif material.type == 'audio' %}
+                        <i class="fas fa-headphones text-success"></i>
+                    {% else %}
+                        <i class="fas fa-link text-primary"></i>
+                    {% endif %}
+                </div>
+                <div class="flex-grow-1">
+                    <h6 class="mb-0">{{ material.title }}</h6>
+                    <small class="text-muted">{{ material.type | capitalize }}</small>
+                </div>
+                <a href="{{ material.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-external-link-alt me-1"></i>Mở
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Navigation -->
+<div class="d-flex justify-content-between mt-4">
+    {% if prevLesson %}
+    <a href="/learning/lesson/{{ prevLesson._id }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Bài Trước
+    </a>
+    {% else %}
+    <a href="/learning/chapter/{{ chapter._id }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Quay Lại
+    </a>
+    {% endif %}
+
+    {% if nextLesson %}
+    <a href="/learning/lesson/{{ nextLesson._id }}" class="btn btn-primary">
+        Bài Tiếp<i class="fas fa-arrow-right ms-2"></i>
+    </a>
+    {% else %}
+    <a href="/learning/chapter/{{ chapter._id }}" class="btn btn-success">
+        <i class="fas fa-check me-2"></i>Hoàn Thành Chương
+    </a>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.lesson-content {
+    font-size: 1.05rem;
+    line-height: 1.8;
+}
+.lesson-content h3,
+.lesson-content h4 {
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--primary-600);
+}
+.lesson-content p {
+    margin-bottom: 1rem;
+}
+.lesson-content ul,
+.lesson-content ol {
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+}
+.lesson-content li {
+    margin-bottom: 0.5rem;
+}
+.lesson-content code {
+    background: var(--primary-50);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--primary-600);
+}
+.lesson-content pre {
+    background: var(--gray-100);
+    padding: 1rem;
+    border-radius: 8px;
+    overflow-x: auto;
+}
+</style>
+{% endblock %}

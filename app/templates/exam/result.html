@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Kết Quả - {{ exam.title }}{% endblock %}
+
+{% block content %}
+<!-- Result Header -->
+<div class="row justify-content-center mb-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body p-4 text-center">
+                <!-- Score Circle -->
+                <div class="mb-4">
+                    <div style="width: 150px; height: 150px; margin: 0 auto; border-radius: 50%;
+                        background: linear-gradient(135deg,
+                            {% if score >= 80 %}var(--success-400), var(--success-600)
+                            {% elif score >= 50 %}var(--warning-400), var(--warning-600)
+                            {% else %}var(--danger-400), var(--danger-600){% endif %});
+                        display: flex; align-items: center; justify-content: center; flex-direction: column;
+                        color: white; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+                        <div style="font-size: 2.5rem; font-weight: 700;">{{ score }}</div>
+                        <div style="font-size: 0.9rem; opacity: 0.9;">điểm</div>
+                    </div>
+                </div>
+
+                <!-- Result Message -->
+                <h3 class="mb-2">
+                    {% if score >= 80 %}
+                        <i class="fas fa-trophy text-warning me-2"></i>Xuất sắc!
+                    {% elif score >= 50 %}
+                        <i class="fas fa-thumbs-up text-primary me-2"></i>Khá tốt!
+                    {% else %}
+                        <i class="fas fa-book text-info me-2"></i>Cần cố gắng hơn!
+                    {% endif %}
+                </h3>
+
+                <p class="text-muted mb-4">{{ exam.title }}</p>
+
+                <!-- Stats -->
+                <div class="row g-3 mb-4">
+                    <div class="col-4">
+                        <div class="p-3 rounded" style="background: var(--success-50);">
+                            <div class="h4 mb-1 text-success">{{ correctCount }}</div>
+                            <div class="small text-muted">Đúng</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-3 rounded" style="background: var(--danger-50);">
+                            <div class="h4 mb-1 text-danger">{{ totalQuestions - correctCount }}</div>
+                            <div class="small text-muted">Sai</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-3 rounded" style="background: var(--primary-50);">
+                            <div class="h4 mb-1 text-primary">{{ totalQuestions }}</div>
+                            <div class="small text-muted">Tổng</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="d-flex gap-3 justify-content-center">
+                    <a href="/exam/" class="btn btn-outline-secondary">
+                        <i class="fas fa-list me-2"></i>Danh Sách Đề
+                    </a>
+                    <a href="/exam/start/{{ exam._id }}" class="btn btn-primary">
+                        <i class="fas fa-redo me-2"></i>Làm Lại
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Results -->
+<h4 class="mb-3">
+    <i class="fas fa-list-check me-2 text-primary"></i>
+    Chi Tiết Kết Quả
+</h4>
+
+{% for result in results %}
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="d-flex gap-3">
+            <div style="width: 40px; height: 40px; border-radius: 50%;
+                background: {% if result.isCorrect %}var(--success-100){% else %}var(--danger-100){% endif %};
+                display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                {% if result.isCorrect %}
+                    <i class="fas fa-check text-success"></i>
+                {% else %}
+                    <i class="fas fa-times text-danger"></i>
+                {% endif %}
+            </div>
+            <div class="flex-grow-1">
+                <p class="mb-3 fw-medium">{{ result.content }}</p>
+
+                <div class="options">
+                    {% for option in result.options %}
+                    <div class="p-2 px-3 mb-2 rounded border
+                        {% if option == result.correctAnswer %}border-success bg-success-subtle{% endif %}
+                        {% if option == result.userAnswer and not result.isCorrect %}border-danger bg-danger-subtle{% endif %}"
+                        style="{% if option == result.correctAnswer %}border-width: 2px !important;{% endif %}">
+                        <div class="d-flex align-items-center gap-2">
+                            {% if option == result.correctAnswer %}
+                                <i class="fas fa-check-circle text-success"></i>
+                            {% elif option == result.userAnswer and not result.isCorrect %}
+                                <i class="fas fa-times-circle text-danger"></i>
+                            {% else %}
+                                <i class="far fa-circle text-muted"></i>
+                            {% endif %}
+                            <span>{{ option }}</span>
+                            {% if option == result.correctAnswer %}
+                                <span class="badge bg-success ms-auto">Đáp án đúng</span>
+                            {% endif %}
+                            {% if option == result.userAnswer and option != result.correctAnswer %}
+                                <span class="badge bg-danger ms-auto">Bạn chọn</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% if not result.userAnswer %}
+                <div class="alert alert-warning py-2 mt-2 mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Bạn chưa trả lời câu này
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Back to Top -->
+<div class="text-center py-4">
+    <a href="#" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-up me-2"></i>Lên Đầu Trang
+    </a>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.bg-success-subtle {
+    background-color: rgba(25, 135, 84, 0.1) !important;
+}
+.bg-danger-subtle {
+    background-color: rgba(220, 53, 69, 0.1) !important;
+}
+</style>
+{% endblock %}

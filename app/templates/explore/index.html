@@ -1,0 +1,537 @@
+{% extends "base.html" %}
+
+{% block title %}Góc Khám Phá - StarEdu{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">Góc Khám Phá</h2>
+        <p class="text-muted mb-0">Học mà chơi, chơi mà học!</p>
+    </div>
+</div>
+
+<!-- Featured Activities Carousel -->
+{% if featuredActivities and featuredActivities.length > 0 %}
+<div class="card mb-4" style="background: linear-gradient(135deg, var(--primary-500) 0%, var(--secondary-500) 100%); border: none;">
+    <div class="card-body p-4">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <h4 class="text-white mb-0">
+                <i class="fas fa-fire me-2"></i>Nổi Bật
+            </h4>
+            <a href="#" class="btn btn-light btn-sm">Xem tất cả</a>
+        </div>
+        <div class="row g-3">
+            {% for activity in featuredActivities %}
+            <div class="col-md-4 col-6">
+                <a href="/explore/activity/{{ activity._id }}" class="text-decoration-none">
+                    <div class="card h-100 border-0" style="background: rgba(255,255,255,0.95); transition: transform 0.2s;">
+                        <div class="card-body p-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <div style="width: 50px; height: 50px; border-radius: 12px;
+                                    background: linear-gradient(135deg, var(--{{ activity.color }}-100), var(--{{ activity.color }}-200));
+                                    display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas {{ activity.icon }}" style="font-size: 1.25rem; color: var(--{{ activity.color }}-500);"></i>
+                                </div>
+                                <div style="flex: 1; min-width: 0;">
+                                    <h6 class="mb-1 text-truncate">{{ activity.title }}</h6>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge bg-{{ activity.color }}-subtle text-{{ activity.color }}">{{ activity.type }}</span>
+                                        <small class="text-muted">
+                                            <i class="fas fa-star text-warning"></i> +{{ activity.starsReward }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Categories -->
+<h4 class="mb-3">
+    <i class="fas fa-th-large me-2 text-primary"></i>
+    Danh Mục
+</h4>
+<div class="row g-3 mb-4">
+    {% if categories and categories.length > 0 %}
+        {% for category in categories %}
+        <div class="col-lg-3 col-md-4 col-6">
+            <a href="/explore/category/{{ category.slug }}" class="text-decoration-none">
+                <div class="card h-100 category-card" style="transition: all 0.2s; cursor: pointer;">
+                    <div class="card-body text-center p-4">
+                        <div style="width: 64px; height: 64px; border-radius: 16px; margin: 0 auto 16px;
+                            background: linear-gradient(135deg, var(--{{ category.color }}-100), var(--{{ category.color }}-200));
+                            display: flex; align-items: center; justify-content: center;">
+                            <i class="fas {{ category.icon }}" style="font-size: 1.75rem; color: var(--{{ category.color }}-500);"></i>
+                        </div>
+                        <h6 class="mb-1">{{ category.name }}</h6>
+                        <small class="text-muted">{{ category.description }}</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    {% else %}
+        <!-- Default categories when no data -->
+        <div class="col-lg-3 col-md-4 col-6">
+            <a href="/explore/category/games" class="text-decoration-none">
+                <div class="card h-100 category-card">
+                    <div class="card-body text-center p-4">
+                        <div style="width: 64px; height: 64px; border-radius: 16px; margin: 0 auto 16px;
+                            background: linear-gradient(135deg, var(--primary-100), var(--primary-200));
+                            display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-gamepad" style="font-size: 1.75rem; color: var(--primary-500);"></i>
+                        </div>
+                        <h6 class="mb-1">Trò Chơi</h6>
+                        <small class="text-muted">Học qua trò chơi vui nhộn</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-4 col-6">
+            <a href="/explore/category/stories" class="text-decoration-none">
+                <div class="card h-100 category-card">
+                    <div class="card-body text-center p-4">
+                        <div style="width: 64px; height: 64px; border-radius: 16px; margin: 0 auto 16px;
+                            background: linear-gradient(135deg, var(--success-100), var(--success-200));
+                            display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-book-reader" style="font-size: 1.75rem; color: var(--success-500);"></i>
+                        </div>
+                        <h6 class="mb-1">Truyện Hay</h6>
+                        <small class="text-muted">Kho tàng truyện cổ tích</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-4 col-6">
+            <a href="/explore/category/videos" class="text-decoration-none">
+                <div class="card h-100 category-card">
+                    <div class="card-body text-center p-4">
+                        <div style="width: 64px; height: 64px; border-radius: 16px; margin: 0 auto 16px;
+                            background: linear-gradient(135deg, var(--danger-100), var(--danger-200));
+                            display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-play-circle" style="font-size: 1.75rem; color: var(--danger-500);"></i>
+                        </div>
+                        <h6 class="mb-1">Video</h6>
+                        <small class="text-muted">Video học tập thú vị</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-4 col-6">
+            <a href="/explore/category/crafts" class="text-decoration-none">
+                <div class="card h-100 category-card">
+                    <div class="card-body text-center p-4">
+                        <div style="width: 64px; height: 64px; border-radius: 16px; margin: 0 auto 16px;
+                            background: linear-gradient(135deg, var(--warning-100), var(--warning-200));
+                            display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-palette" style="font-size: 1.75rem; color: var(--warning-500);"></i>
+                        </div>
+                        <h6 class="mb-1">Thủ Công</h6>
+                        <small class="text-muted">Sáng tạo với đôi tay</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-4 col-6">
+            <a href="/explore/category/music" class="text-decoration-none">
+                <div class="card h-100 category-card">
+                    <div class="card-body text-center p-4">
+                        <div style="width: 64px; height: 64px; border-radius: 16px; margin: 0 auto 16px;
+                            background: linear-gradient(135deg, var(--info-100), var(--info-200));
+                            display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-music" style="font-size: 1.75rem; color: var(--info-500);"></i>
+                        </div>
+                        <h6 class="mb-1">Âm Nhạc</h6>
+                        <small class="text-muted">Bài hát và nhạc cụ</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-4 col-6">
+            <a href="/explore/category/puzzles" class="text-decoration-none">
+                <div class="card h-100 category-card">
+                    <div class="card-body text-center p-4">
+                        <div style="width: 64px; height: 64px; border-radius: 16px; margin: 0 auto 16px;
+                            background: linear-gradient(135deg, var(--secondary-100), var(--secondary-200));
+                            display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-puzzle-piece" style="font-size: 1.75rem; color: var(--secondary-500);"></i>
+                        </div>
+                        <h6 class="mb-1">Câu Đố</h6>
+                        <small class="text-muted">Thử thách trí tuệ</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-4 col-6">
+            <a href="/explore/category/experiments" class="text-decoration-none">
+                <div class="card h-100 category-card">
+                    <div class="card-body text-center p-4">
+                        <div style="width: 64px; height: 64px; border-radius: 16px; margin: 0 auto 16px;
+                            background: linear-gradient(135deg, var(--accent-100), var(--accent-200));
+                            display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-flask" style="font-size: 1.75rem; color: var(--accent-500);"></i>
+                        </div>
+                        <h6 class="mb-1">Thí Nghiệm</h6>
+                        <small class="text-muted">Khoa học vui</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-lg-3 col-md-4 col-6">
+            <a href="/explore/category/quiz" class="text-decoration-none">
+                <div class="card h-100 category-card">
+                    <div class="card-body text-center p-4">
+                        <div style="width: 64px; height: 64px; border-radius: 16px; margin: 0 auto 16px;
+                            background: linear-gradient(135deg, var(--primary-100), var(--primary-200));
+                            display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-question-circle" style="font-size: 1.75rem; color: var(--primary-500);"></i>
+                        </div>
+                        <h6 class="mb-1">Quiz</h6>
+                        <small class="text-muted">Trắc nghiệm vui</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- New Activities -->
+<h4 class="mb-3">
+    <i class="fas fa-sparkles me-2 text-warning"></i>
+    Mới Cập Nhật
+</h4>
+<div class="row g-3 mb-4">
+    {% if newActivities and newActivities.length > 0 %}
+        {% for activity in newActivities %}
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 activity-card">
+                <div class="card-body">
+                    <div class="position-relative mb-3">
+                        <span class="badge bg-danger position-absolute" style="top: -8px; right: -8px;">MỚI</span>
+                        <div style="width: 100%; height: 100px; border-radius: 12px;
+                            background: linear-gradient(135deg, var(--{{ activity.color }}-100), var(--{{ activity.color }}-200));
+                            display: flex; align-items: center; justify-content: center;">
+                            <i class="fas {{ activity.icon }}" style="font-size: 2.5rem; color: var(--{{ activity.color }}-500);"></i>
+                        </div>
+                    </div>
+                    <h6 class="mb-2">{{ activity.title }}</h6>
+                    <p class="text-muted small mb-3">{{ activity.description | truncate(60) }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-{{ activity.color }}-subtle text-{{ activity.color }}">
+                                <i class="fas fa-clock me-1"></i>{{ activity.duration }} phút
+                            </span>
+                        </div>
+                        <span class="text-warning fw-bold">
+                            <i class="fas fa-star"></i> +{{ activity.starsReward }}
+                        </span>
+                    </div>
+                    <a href="/explore/activity/{{ activity._id }}" class="btn btn-primary btn-sm w-100 mt-3">
+                        <i class="fas fa-play me-1"></i>Chơi ngay
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <!-- Default new activities -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 activity-card">
+                <div class="card-body">
+                    <div class="position-relative mb-3">
+                        <span class="badge bg-danger position-absolute" style="top: -8px; right: -8px;">MỚI</span>
+                        <div style="width: 100%; height: 100px; border-radius: 12px;
+                            background: linear-gradient(135deg, var(--primary-100), var(--primary-200));
+                            display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-calculator" style="font-size: 2.5rem; color: var(--primary-500);"></i>
+                        </div>
+                    </div>
+                    <h6 class="mb-2">Toán Học Vui</h6>
+                    <p class="text-muted small mb-3">Giải các phép tính nhanh để nhận sao thưởng!</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge bg-primary-subtle text-primary">
+                            <i class="fas fa-clock me-1"></i>5 phút
+                        </span>
+                        <span class="text-warning fw-bold">
+                            <i class="fas fa-star"></i> +10
+                        </span>
+                    </div>
+                    <a href="#" class="btn btn-primary btn-sm w-100 mt-3">
+                        <i class="fas fa-play me-1"></i>Chơi ngay
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 activity-card">
+                <div class="card-body">
+                    <div class="position-relative mb-3">
+                        <span class="badge bg-danger position-absolute" style="top: -8px; right: -8px;">MỚI</span>
+                        <div style="width: 100%; height: 100px; border-radius: 12px;
+                            background: linear-gradient(135deg, var(--success-100), var(--success-200));
+                            display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-spell-check" style="font-size: 2.5rem; color: var(--success-500);"></i>
+                        </div>
+                    </div>
+                    <h6 class="mb-2">Đánh Vần Tiếng Việt</h6>
+                    <p class="text-muted small mb-3">Luyện đánh vần cùng các bạn nhỏ!</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge bg-success-subtle text-success">
+                            <i class="fas fa-clock me-1"></i>10 phút
+                        </span>
+                        <span class="text-warning fw-bold">
+                            <i class="fas fa-star"></i> +15
+                        </span>
+                    </div>
+                    <a href="#" class="btn btn-primary btn-sm w-100 mt-3">
+                        <i class="fas fa-play me-1"></i>Chơi ngay
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 activity-card">
+                <div class="card-body">
+                    <div class="position-relative mb-3">
+                        <span class="badge bg-danger position-absolute" style="top: -8px; right: -8px;">MỚI</span>
+                        <div style="width: 100%; height: 100px; border-radius: 12px;
+                            background: linear-gradient(135deg, var(--warning-100), var(--warning-200));
+                            display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-palette" style="font-size: 2.5rem; color: var(--warning-500);"></i>
+                        </div>
+                    </div>
+                    <h6 class="mb-2">Tô Màu Sáng Tạo</h6>
+                    <p class="text-muted small mb-3">Thỏa sức sáng tạo với bảng màu đa dạng!</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge bg-warning-subtle text-warning">
+                            <i class="fas fa-clock me-1"></i>15 phút
+                        </span>
+                        <span class="text-warning fw-bold">
+                            <i class="fas fa-star"></i> +8
+                        </span>
+                    </div>
+                    <a href="#" class="btn btn-primary btn-sm w-100 mt-3">
+                        <i class="fas fa-play me-1"></i>Chơi ngay
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 activity-card">
+                <div class="card-body">
+                    <div class="position-relative mb-3">
+                        <span class="badge bg-danger position-absolute" style="top: -8px; right: -8px;">MỚI</span>
+                        <div style="width: 100%; height: 100px; border-radius: 12px;
+                            background: linear-gradient(135deg, var(--info-100), var(--info-200));
+                            display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-music" style="font-size: 2.5rem; color: var(--info-500);"></i>
+                        </div>
+                    </div>
+                    <h6 class="mb-2">Học Hát Cùng Bé</h6>
+                    <p class="text-muted small mb-3">Những bài hát thiếu nhi hay nhất!</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge bg-info-subtle text-info">
+                            <i class="fas fa-clock me-1"></i>8 phút
+                        </span>
+                        <span class="text-warning fw-bold">
+                            <i class="fas fa-star"></i> +5
+                        </span>
+                    </div>
+                    <a href="#" class="btn btn-primary btn-sm w-100 mt-3">
+                        <i class="fas fa-play me-1"></i>Chơi ngay
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Popular Activities -->
+<h4 class="mb-3">
+    <i class="fas fa-heart me-2 text-danger"></i>
+    Được Yêu Thích
+</h4>
+<div class="row g-3">
+    {% if popularActivities and popularActivities.length > 0 %}
+        {% for activity in popularActivities %}
+        <div class="col-md-6 col-lg-4">
+            <a href="/explore/activity/{{ activity._id }}" class="text-decoration-none">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center gap-3">
+                            <div style="width: 60px; height: 60px; border-radius: 12px;
+                                background: linear-gradient(135deg, var(--{{ activity.color }}-100), var(--{{ activity.color }}-200));
+                                display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <i class="fas {{ activity.icon }}" style="font-size: 1.5rem; color: var(--{{ activity.color }}-500);"></i>
+                            </div>
+                            <div style="flex: 1; min-width: 0;">
+                                <h6 class="mb-1">{{ activity.title }}</h6>
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <div class="text-warning small">
+                                        {% for i in range(5) %}
+                                            {% if i < activity.rating | round %}
+                                                <i class="fas fa-star"></i>
+                                            {% else %}
+                                                <i class="far fa-star"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    <small class="text-muted">({{ activity.ratingCount }})</small>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-play me-1"></i>{{ activity.playCount }} lượt chơi
+                                    </small>
+                                    <span class="text-warning small fw-bold">
+                                        <i class="fas fa-star"></i> +{{ activity.starsReward }}
+                                    </span>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    {% else %}
+        <!-- Default popular activities -->
+        <div class="col-md-6 col-lg-4">
+            <a href="#" class="text-decoration-none">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center gap-3">
+                            <div style="width: 60px; height: 60px; border-radius: 12px;
+                                background: linear-gradient(135deg, var(--primary-100), var(--primary-200));
+                                display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <i class="fas fa-puzzle-piece" style="font-size: 1.5rem; color: var(--primary-500);"></i>
+                            </div>
+                            <div style="flex: 1; min-width: 0;">
+                                <h6 class="mb-1">Ghép Hình Động Vật</h6>
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <div class="text-warning small">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star-half-alt"></i>
+                                    </div>
+                                    <small class="text-muted">(128)</small>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-play me-1"></i>1,234 lượt chơi
+                                    </small>
+                                    <span class="text-warning small fw-bold">
+                                        <i class="fas fa-star"></i> +10
+                                    </span>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <a href="#" class="text-decoration-none">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center gap-3">
+                            <div style="width: 60px; height: 60px; border-radius: 12px;
+                                background: linear-gradient(135deg, var(--success-100), var(--success-200));
+                                display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <i class="fas fa-brain" style="font-size: 1.5rem; color: var(--success-500);"></i>
+                            </div>
+                            <div style="flex: 1; min-width: 0;">
+                                <h6 class="mb-1">Trí Nhớ Siêu Phàm</h6>
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <div class="text-warning small">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="far fa-star"></i>
+                                    </div>
+                                    <small class="text-muted">(95)</small>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-play me-1"></i>987 lượt chơi
+                                    </small>
+                                    <span class="text-warning small fw-bold">
+                                        <i class="fas fa-star"></i> +15
+                                    </span>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <a href="#" class="text-decoration-none">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center gap-3">
+                            <div style="width: 60px; height: 60px; border-radius: 12px;
+                                background: linear-gradient(135deg, var(--danger-100), var(--danger-200));
+                                display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <i class="fas fa-book-open" style="font-size: 1.5rem; color: var(--danger-500);"></i>
+                            </div>
+                            <div style="flex: 1; min-width: 0;">
+                                <h6 class="mb-1">Truyện Cổ Tích</h6>
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <div class="text-warning small">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                    </div>
+                                    <small class="text-muted">(256)</small>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-play me-1"></i>2,156 lượt chơi
+                                    </small>
+                                    <span class="text-warning small fw-bold">
+                                        <i class="fas fa-star"></i> +5
+                                    </span>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .category-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .activity-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .featured-card:hover {
+        transform: scale(1.02);
+    }
+</style>
+{% endblock %}

@@ -23,7 +23,7 @@ mongoose.connect('mongodb://localhost:27017/star_reward_app')
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, '../app/static'))); // Serve static files
+app.use('/static', express.static(path.join(__dirname, '../app/static'))); // Serve static files at /static
 app.use(session({
     secret: 'secret_key',
     resave: false,
@@ -46,7 +46,9 @@ const urlFor = (endpoint, kwargs) => {
         'main.add_test_data': `/add_test_data/${kwargs ? kwargs.student_id : ''}`,
         'main.clear_test_data': `/clear_test_data/${kwargs ? kwargs.student_id : ''}`,
         'learning.index': '/learning/',
-        'exam.index': '/exam/'
+        'exam.index': '/exam/',
+        'explore.index': '/explore/',
+        'ideas.index': '/ideas/'
     };
     return mapping[endpoint] || '#';
 };
@@ -60,9 +62,27 @@ const env = nunjucks.configure(path.join(__dirname, '../app/templates'), {
 
 // Add global function url_for
 env.addGlobal('url_for', urlFor);
-// Add global function get_flashed_messages
+
+// Add date filter for templates
+const moment = require('moment');
+env.addFilter('date', function(date, format) {
+    return moment(date).format(format || 'DD/MM/YYYY');
+});
+
+// Add truncate filter
+env.addFilter('truncate', function(str, length) {
+    if (!str) return '';
+    if (str.length <= length) return str;
+    return str.substring(0, length) + '...';
+});
+
+// Add global function get_flashed_messages and user session
 app.use((req, res, next) => {
     res.locals.request = req; // Make request available in templates
+
+    // Make user available in all templates
+    env.addGlobal('user', req.session ? req.session.user : null);
+
     env.addGlobal('get_flashed_messages', (kwargs) => {
         const messages = req.flash();
         const result = [];
@@ -84,10 +104,28 @@ app.use((req, res, next) => {
 const mainRoutes = require('./routes/main');
 const learningRoutes = require('./routes/learning');
 const examRoutes = require('./routes/exam');
+const authRoutes = require('./routes/auth');
+const exploreRoutes = require('./routes/explore');
+const ideasRoutes = require('./routes/ideas');
+const blogRoutes = require('./routes/blog');
+
+// Dashboard route
+app.get('/dashboard', (req, res) => {
+    res.render('dashboard.html', { user: req.session ? req.session.user : null });
+});
+
+// Demo Toast route
+app.get('/demo-toast', (req, res) => {
+    res.render('demo-toast.html', { user: req.session ? req.session.user : null });
+});
 
 app.use('/', mainRoutes);
 app.use('/learning', learningRoutes);
 app.use('/exam', examRoutes);
+app.use('/auth', authRoutes);
+app.use('/explore', exploreRoutes);
+app.use('/ideas', ideasRoutes);
+app.use('/blog', blogRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);

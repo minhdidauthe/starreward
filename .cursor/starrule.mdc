@@ -1,27 +1,27 @@
-# Star Reward App Rules
+# Star Reward App Rules (Node.js Version)
 
 ## Cấu trúc dự án
-- `app.py`: File chính chứa logic của ứng dụng
-- `templates/`: Chứa các file HTML template
-- `static/`: Chứa CSS, JavaScript và các tài nguyên tĩnh
-- `database/`: Chứa các file liên quan đến cơ sở dữ liệu
-- `venv/`: Môi trường ảo Python
-- `requirements.txt`: Danh sách các dependencies
+- `src/app.js`: File chính chứa logic và cấu hình server Express.
+- `src/models/`: Định nghĩa Schema MongoDB (Mongoose).
+- `src/routes/`: Chứa các file định nghĩa route (main, learning, exam).
+- `app/templates/`: Chứa các file HTML sử dụng Nunjucks template engine.
+- `app/static/`: Chứa CSS, JavaScript và các tài nguyên tĩnh.
+- `package.json`: Quản lý dependencies và scripts của Node.js.
 
 ## Quy tắc phát triển
-1. Mọi thay đổi code phải được thêm vào file `progress.md`
-2. Các quyết định kỹ thuật quan trọng phải được ghi lại trong `techContext.md`
-3. Các pattern hệ thống phải được ghi lại trong `systemPatterns.md`
-4. Mọi bug và vấn đề phải được ghi lại trong `activeContext.md`
+1. **Template Engine**: Sử dụng Nunjucks. Lưu ý cú pháp tương thích với Jinja2 nhưng cần kiểm tra các thẻ đặc biệt (ví dụ: dùng `{% set %}` thay cho `{% with %}`).
+2. **Database**: Sử dụng MongoDB thông qua Mongoose. Luôn đảm bảo các truy vấn được tối ưu và có xử lý lỗi.
+3. **Frontend**: Sử dụng Bootstrap 5 cho giao diện. Các tài nguyên tĩnh phải được đặt trong `app/static/`.
+4. **Documentation**: Cập nhật `projectbrief.md`, `technical_design.md`, `implementation_plan.md` và `task_list.md` khi có thay đổi lớn về kiến trúc hoặc tính năng.
 
-## Cấu trúc file
-- Sử dụng PEP 8 cho Python code
-- HTML templates phải tuân theo cấu trúc Bootstrap
-- CSS phải được viết theo module
-- JavaScript phải sử dụng ES6+
+## Tiêu chuẩn Code
+- **Javascript**: Sử dụng ES6+ (const/let, arrow functions, async/await).
+- **HTML**: Tuân thủ cấu trúc Semantic HTML và các class của Bootstrap 5.
+- **CSS**: Ưu tiên sử dụng CSS biến (variables) và cấu trúc module.
+- **Git**: Commit message rõ ràng, mô tả đúng thay đổi.
 
 ## Quy trình làm việc
-1. Đọc tất cả các file trong memory bank trước khi bắt đầu task
-2. Cập nhật documentation sau mỗi thay đổi quan trọng
-3. Kiểm tra code với linter trước khi commit
-4. Chạy test trước khi deploy 
+1. Đọc kỹ tài liệu trong thư mục `.cursor/` trước khi bắt đầu task.
+2. Kiểm tra kết nối MongoDB trước khi chạy ứng dụng.
+3. Sử dụng `npm run dev` trong quá trình phát triển để tự động reload.
+4. Kiểm tra giao diện trên cả Desktop và Mobile trước khi hoàn tất.

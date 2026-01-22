@@ -1,0 +1,214 @@
+/* ========================================
+   AVATAR SYSTEM - Anime & Ghibli Style
+   ======================================== */
+
+/* Avatar Container */
+.avatar {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--primary-100), var(--secondary-100));
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-xs { width: 32px; height: 32px; }
+.avatar-sm { width: 48px; height: 48px; }
+.avatar-md { width: 64px; height: 64px; }
+.avatar-lg { width: 80px; height: 80px; }
+.avatar-xl { width: 120px; height: 120px; }
+.avatar-2xl { width: 160px; height: 160px; }
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Avatar with border */
+.avatar-bordered {
+    border: 3px solid white;
+    box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3);
+}
+
+/* Avatar Status Indicator */
+.avatar-status {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+.avatar-status-online { background: var(--success-500); }
+.avatar-status-offline { background: var(--neutral-400); }
+.avatar-status-busy { background: var(--danger-500); }
+
+/* Avatar Fallback (Letter) */
+.avatar-fallback {
+    font-weight: 700;
+    color: white;
+    text-transform: uppercase;
+    font-family: var(--font-display);
+}
+
+.avatar-xs .avatar-fallback { font-size: 0.75rem; }
+.avatar-sm .avatar-fallback { font-size: 1rem; }
+.avatar-md .avatar-fallback { font-size: 1.5rem; }
+.avatar-lg .avatar-fallback { font-size: 2rem; }
+.avatar-xl .avatar-fallback { font-size: 3rem; }
+.avatar-2xl .avatar-fallback { font-size: 4rem; }
+
+/* ========================================
+   ANIME STYLE AVATARS
+   ======================================== */
+
+/* Anime Avatar Gradients */
+.avatar-anime-1 { background: linear-gradient(135deg, #FF6B9D 0%, #C44569 100%); }
+.avatar-anime-2 { background: linear-gradient(135deg, #7B68EE 0%, #4834D4 100%); }
+.avatar-anime-3 { background: linear-gradient(135deg, #20BF6B 0%, #0A8F4F 100%); }
+.avatar-anime-4 { background: linear-gradient(135deg, #FFA502 0%, #E67E22 100%); }
+.avatar-anime-5 { background: linear-gradient(135deg, #00D2D3 0%, #0097A7 100%); }
+.avatar-anime-6 { background: linear-gradient(135deg, #FF4757 0%, #C0392B 100%); }
+.avatar-anime-7 { background: linear-gradient(135deg, #5352ED 0%, #3742FA 100%); }
+.avatar-anime-8 { background: linear-gradient(135deg, #2ED573 0%, #16A085 100%); }
+
+/* ========================================
+   GHIBLI STYLE AVATARS
+   ======================================== */
+
+/* Ghibli soft pastel gradients */
+.avatar-ghibli-1 { background: linear-gradient(135deg, #A8E6CF 0%, #88D8B0 100%); }
+.avatar-ghibli-2 { background: linear-gradient(135deg, #FFD3B6 0%, #FFAAA5 100%); }
+.avatar-ghibli-3 { background: linear-gradient(135deg, #DCEDC1 0%, #A8D8EA 100%); }
+.avatar-ghibli-4 { background: linear-gradient(135deg, #FFE5D9 0%, #FFD5CD 100%); }
+.avatar-ghibli-5 { background: linear-gradient(135deg, #D4A5A5 0%, #C9B1FF 100%); }
+.avatar-ghibli-6 { background: linear-gradient(135deg, #98DDCA 0%, #D5ECC2 100%); }
+.avatar-ghibli-7 { background: linear-gradient(135deg, #FAD4D4 0%, #E8B4B8 100%); }
+.avatar-ghibli-8 { background: linear-gradient(135deg, #B5EAEA 0%, #EDF6E5 100%); }
+
+/* ========================================
+   AVATAR PICKER
+   ======================================== */
+
+.avatar-picker {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    padding: 20px;
+}
+
+.avatar-picker-item {
+    cursor: pointer;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.avatar-picker-item:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.avatar-picker-item.selected {
+    box-shadow: 0 0 0 4px var(--primary-500);
+}
+
+.avatar-picker-item.selected::after {
+    content: '\f00c';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    width: 24px;
+    height: 24px;
+    background: var(--success-500);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    border: 2px solid white;
+}
+
+/* ========================================
+   SVG AVATAR CHARACTERS
+   ======================================== */
+
+.avatar-svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* Avatar Card (for selection) */
+.avatar-card {
+    background: var(--glass-bg);
+    border: 2px solid transparent;
+    border-radius: var(--radius-xl);
+    padding: 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.avatar-card:hover {
+    border-color: var(--primary-300);
+    background: var(--primary-50);
+    transform: translateY(-4px);
+}
+
+.avatar-card.active {
+    border-color: var(--primary-500);
+    background: var(--primary-100);
+}
+
+.avatar-card .avatar {
+    margin-bottom: 12px;
+}
+
+.avatar-card-name {
+    font-weight: 600;
+    color: var(--neutral-800);
+    font-size: 0.875rem;
+}
+
+/* ========================================
+   ANIMATED AVATAR EFFECTS
+   ======================================== */
+
+.avatar-animated {
+    animation: avatar-float 3s ease-in-out infinite;
+}
+
+@keyframes avatar-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+.avatar-glow {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+}
+
+.avatar-ring {
+    position: relative;
+}
+
+.avatar-ring::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid var(--primary-400);
+    animation: avatar-ring-pulse 2s ease-in-out infinite;
+}
+
+@keyframes avatar-ring-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.05); }
+}

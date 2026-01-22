@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+
+{% block title %}Góc Ý Tưởng - StarEdu{% endblock %}
+
+{% block extra_css %}
+<style>
+    .idea-card {
+        transition: all 0.3s ease;
+        border: none;
+        overflow: hidden;
+    }
+
+    .idea-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px rgba(139, 92, 246, 0.15);
+    }
+
+    .idea-card-header {
+        padding: 16px;
+        background: linear-gradient(135deg, var(--primary-50), var(--secondary-50));
+    }
+
+    .category-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .feasibility-meter {
+        height: 6px;
+        border-radius: 3px;
+        background: var(--neutral-100);
+        overflow: hidden;
+    }
+
+    .feasibility-fill {
+        height: 100%;
+        border-radius: 3px;
+        transition: width 0.5s ease;
+    }
+
+    .featured-idea {
+        background: linear-gradient(135deg, var(--accent-50), var(--warning-50));
+        border: 2px solid var(--accent-200);
+    }
+
+    .idea-stats {
+        display: flex;
+        gap: 16px;
+        font-size: 0.875rem;
+        color: var(--neutral-500);
+    }
+
+    .idea-stats span {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .filter-tabs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .filter-tab {
+        padding: 8px 16px;
+        border-radius: 20px;
+        border: 1px solid var(--neutral-200);
+        background: white;
+        color: var(--neutral-600);
+        text-decoration: none;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+    }
+
+    .filter-tab:hover {
+        border-color: var(--primary-300);
+        color: var(--primary-600);
+    }
+
+    .filter-tab.active {
+        background: var(--primary-500);
+        border-color: var(--primary-500);
+        color: white;
+    }
+
+    .hero-section {
+        background: linear-gradient(135deg, var(--primary-500) 0%, var(--secondary-500) 100%);
+        border-radius: var(--radius-2xl);
+        padding: 40px;
+        color: white;
+        margin-bottom: 32px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="row align-items-center">
+        <div class="col-lg-8">
+            <h1 class="display-5 fw-bold mb-3">
+                <i class="fas fa-lightbulb me-3"></i>Góc Ý Tưởng
+            </h1>
+            <p class="lead mb-4 opacity-90">
+                Nơi các bạn nhỏ chia sẻ những ý tưởng sáng tạo. AI sẽ phân tích và đánh giá tính khả thi của mỗi ý tưởng!
+            </p>
+            <a href="/ideas/create" class="btn btn-light btn-lg">
+                <i class="fas fa-plus me-2"></i>Đăng Ý Tưởng Mới
+            </a>
+        </div>
+        <div class="col-lg-4 text-center d-none d-lg-block">
+            <i class="fas fa-rocket" style="font-size: 8rem; opacity: 0.3;"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Ideas -->
+{% if featuredIdeas and featuredIdeas.length > 0 %}
+<div class="mb-5">
+    <h4 class="mb-3"><i class="fas fa-star text-warning me-2"></i>Ý Tưởng Nổi Bật</h4>
+    <div class="row g-4">
+        {% for idea in featuredIdeas %}
+        <div class="col-md-4">
+            <div class="card idea-card featured-idea h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div class="student-avatar-sm" data-avatar="{{ idea.student.avatar or '' }}" data-name="{{ idea.student.name }}"></div>
+                        <div>
+                            <strong class="d-block" style="font-size: 0.875rem;">{{ idea.student.name }}</strong>
+                            <small class="text-muted">{{ idea.createdAt | date('DD/MM/YYYY') }}</small>
+                        </div>
+                    </div>
+                    <h5 class="card-title">{{ idea.title }}</h5>
+                    <p class="text-muted small">{{ idea.summary }}</p>
+                    {% if idea.isAnalyzed %}
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">Tính khả thi</small>
+                        <div class="feasibility-meter">
+                            <div class="feasibility-fill bg-success" style="width: {{ idea.aiAnalysis.feasibility.score }}%;"></div>
+                        </div>
+                        <small class="text-success">{{ idea.aiAnalysis.feasibility.score }}%</small>
+                    </div>
+                    {% endif %}
+                    <a href="/ideas/{{ idea._id }}" class="btn btn-primary btn-sm w-100">Xem chi tiết</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-center">
+            <!-- Category Filter -->
+            <div class="col-lg-6">
+                <label class="form-label small text-muted mb-2">Danh mục</label>
+                <div class="filter-tabs">
+                    <a href="/ideas?sort={{ currentSort }}" class="filter-tab {{ 'active' if currentCategory == 'all' else '' }}">
+                        Tất cả
+                    </a>
+                    {% for cat, label in categoryLabels %}
+                    <a href="/ideas?category={{ cat }}&sort={{ currentSort }}"
+                       class="filter-tab {{ 'active' if currentCategory == cat else '' }}">
+                        <i class="fas {{ categoryIcons[cat] }} me-1"></i>{{ label }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Sort -->
+            <div class="col-lg-3">
+                <label class="form-label small text-muted mb-2">Sắp xếp</label>
+                <select class="form-select" onchange="location.href='/ideas?category={{ currentCategory }}&sort='+this.value">
+                    <option value="newest" {{ 'selected' if currentSort == 'newest' else '' }}>Mới nhất</option>
+                    <option value="popular" {{ 'selected' if currentSort == 'popular' else '' }}>Phổ biến nhất</option>
+                    <option value="feasibility" {{ 'selected' if currentSort == 'feasibility' else '' }}>Khả thi nhất</option>
+                </select>
+            </div>
+
+            <!-- Student Filter -->
+            <div class="col-lg-3">
+                <label class="form-label small text-muted mb-2">Học sinh</label>
+                <select class="form-select" onchange="location.href='/ideas?category={{ currentCategory }}&sort={{ currentSort }}&studentId='+this.value">
+                    <option value="">Tất cả học sinh</option>
+                    {% for student in students %}
+                    <option value="{{ student._id }}" {{ 'selected' if currentStudentId == student._id | string else '' }}>
+                        {{ student.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ideas Grid -->
+{% if ideas and ideas.length > 0 %}
+<div class="row g-4">
+    {% for idea in ideas %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card idea-card h-100">
+            <div class="idea-card-header">
+                <div class="d-flex justify-content-between align-items-start">
+                    <span class="category-badge bg-{{ categoryColors[idea.category] }}-subtle text-{{ categoryColors[idea.category] }}">
+                        <i class="fas {{ categoryIcons[idea.category] }}"></i>
+                        {{ categoryLabels[idea.category] }}
+                    </span>
+                    {% if idea.isAnalyzed %}
+                    <span class="badge bg-success">
+                        <i class="fas fa-robot me-1"></i>Đã phân tích
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <div class="student-avatar-sm" data-avatar="{{ idea.student.avatar or '' }}" data-name="{{ idea.student.name }}"></div>
+                    <div>
+                        <strong class="d-block" style="font-size: 0.875rem;">{{ idea.student.name }}</strong>
+                        <small class="text-muted">{{ idea.createdAt | date('DD/MM/YYYY') }}</small>
+                    </div>
+                </div>
+
+                <h5 class="card-title mb-2">{{ idea.title }}</h5>
+                <p class="text-muted small mb-3" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                    {{ idea.summary }}
+                </p>
+
+                {% if idea.isAnalyzed %}
+                {% set score = idea.aiAnalysis.feasibility.score %}
+                {% set scoreColor = 'success' if score >= 70 else ('warning' if score >= 50 else 'danger') %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <small class="text-muted">Tính khả thi</small>
+                        <small class="fw-bold text-{{ scoreColor }}">
+                            {{ score }}%
+                        </small>
+                    </div>
+                    <div class="feasibility-meter">
+                        <div class="feasibility-fill bg-{{ scoreColor }}"
+                             style="width: {{ score }}%;"></div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="idea-stats mb-3">
+                    <span><i class="fas fa-heart text-danger"></i> {{ idea.likeCount }}</span>
+                    <span><i class="fas fa-comment text-primary"></i> {{ idea.commentCount }}</span>
+                    <span><i class="fas fa-eye text-secondary"></i> {{ idea.viewCount }}</span>
+                </div>
+
+                <a href="/ideas/{{ idea._id }}" class="btn btn-outline-primary btn-sm w-100">
+                    Xem chi tiết <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if pagination.totalPages > 1 %}
+<nav class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if pagination.hasPrev %}
+        <li class="page-item">
+            <a class="page-link" href="/ideas?page={{ pagination.page - 1 }}&category={{ currentCategory }}&sort={{ currentSort }}">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        </li>
+        {% endif %}
+
+        {% for p in range(1, pagination.totalPages + 1) %}
+        <li class="page-item {{ 'active' if p == pagination.page else '' }}">
+            <a class="page-link" href="/ideas?page={{ p }}&category={{ currentCategory }}&sort={{ currentSort }}">{{ p }}</a>
+        </li>
+        {% endfor %}
+
+        {% if pagination.hasNext %}
+        <li class="page-item">
+            <a class="page-link" href="/ideas?page={{ pagination.page + 1 }}&category={{ currentCategory }}&sort={{ currentSort }}">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<!-- Empty State -->
+<div class="card">
+    <div class="card-body text-center py-5">
+        <div class="mb-4">
+            <i class="fas fa-lightbulb" style="font-size: 4rem; color: var(--neutral-300);"></i>
+        </div>
+        <h4 class="text-muted mb-2">Chưa có ý tưởng nào</h4>
+        <p class="text-muted mb-4">Hãy là người đầu tiên chia sẻ ý tưởng sáng tạo!</p>
+        <a href="/ideas/create" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Đăng Ý Tưởng Đầu Tiên
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Render student avatars
+    document.querySelectorAll('.student-avatar-sm').forEach(container => {
+        const avatarId = container.dataset.avatar;
+        const name = container.dataset.name;
+        container.innerHTML = AvatarSystem.renderWithFallback(avatarId, name, 'sm', '');
+    });
+});
+</script>
+{% endblock %}

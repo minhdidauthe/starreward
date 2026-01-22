@@ -8,7 +8,9 @@ const dailyTaskSchema = new mongoose.Schema({
 
 const studentSchema = new mongoose.Schema({
     name: { type: String, required: true, maxlength: 100 },
-    total_stars: { type: Number, default: 0 }
+    total_stars: { type: Number, default: 0 },
+    avatar: { type: String, default: null },
+    avatarStyle: { type: String, enum: ['anime', 'ghibli', 'custom'], default: 'anime' }
 }, { strict: false });
 
 const rewardSchema = new mongoose.Schema({

@@ -1,0 +1,615 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }} - Góc Phụ Huynh{% endblock %}
+
+{% block extra_css %}
+<style>
+    .post-header {
+        background: linear-gradient(135deg, var(--primary-500) 0%, var(--accent-500) 100%);
+        border-radius: var(--radius-2xl);
+        padding: 48px;
+        color: white;
+        margin-bottom: 32px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .post-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 400px;
+        height: 400px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+    }
+
+    .post-cover {
+        width: 100%;
+        max-height: 400px;
+        object-fit: cover;
+        border-radius: var(--radius-xl);
+        margin-bottom: 32px;
+    }
+
+    .post-content {
+        font-size: 1.1rem;
+        line-height: 1.9;
+        color: var(--neutral-700);
+    }
+
+    .post-content h2, .post-content h3 {
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        color: var(--neutral-800);
+    }
+
+    .post-content p {
+        margin-bottom: 1.5rem;
+    }
+
+    .post-content blockquote {
+        border-left: 4px solid var(--primary-400);
+        padding-left: 20px;
+        margin: 2rem 0;
+        font-style: italic;
+        color: var(--neutral-600);
+        background: var(--neutral-50);
+        padding: 20px;
+        border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+    }
+
+    .post-content ul, .post-content ol {
+        margin-bottom: 1.5rem;
+        padding-left: 1.5rem;
+    }
+
+    .post-content li {
+        margin-bottom: 0.5rem;
+    }
+
+    .author-card {
+        background: linear-gradient(135deg, var(--primary-50), var(--secondary-50));
+        border: none;
+    }
+
+    .author-avatar-lg {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-400), var(--secondary-400));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        font-weight: 600;
+    }
+
+    .engagement-bar {
+        display: flex;
+        gap: 16px;
+        padding: 16px 0;
+        border-top: 1px solid var(--neutral-200);
+        border-bottom: 1px solid var(--neutral-200);
+        margin: 24px 0;
+    }
+
+    .engagement-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border: 1px solid var(--neutral-200);
+        border-radius: 25px;
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.9rem;
+    }
+
+    .engagement-btn:hover {
+        border-color: var(--primary-300);
+        background: var(--primary-50);
+    }
+
+    .engagement-btn.active {
+        border-color: var(--primary-500);
+        background: var(--primary-100);
+        color: var(--primary-600);
+    }
+
+    .engagement-btn.liked {
+        border-color: var(--danger-500);
+        background: var(--danger-50);
+        color: var(--danger-600);
+    }
+
+    .engagement-btn.bookmarked {
+        border-color: var(--warning-500);
+        background: var(--warning-50);
+        color: var(--warning-600);
+    }
+
+    .share-dropdown .dropdown-menu {
+        min-width: 200px;
+    }
+
+    .share-btn {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        width: 100%;
+        text-align: left;
+    }
+
+    .comment-card {
+        border: none;
+        background: var(--neutral-50);
+    }
+
+    .comment-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-300), var(--secondary-300));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+    }
+
+    .comment-form {
+        background: white;
+        border: 1px solid var(--neutral-200);
+        border-radius: var(--radius-xl);
+        padding: 24px;
+    }
+
+    .related-card {
+        transition: all 0.3s ease;
+        border: none;
+    }
+
+    .related-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .tag-link {
+        display: inline-block;
+        padding: 4px 12px;
+        background: var(--neutral-100);
+        border-radius: 15px;
+        font-size: 0.85rem;
+        color: var(--neutral-600);
+        text-decoration: none;
+        margin: 2px;
+        transition: all 0.2s ease;
+    }
+
+    .tag-link:hover {
+        background: var(--primary-100);
+        color: var(--primary-600);
+    }
+
+    .sidebar-sticky {
+        position: sticky;
+        top: 100px;
+    }
+
+    .toc-link {
+        display: block;
+        padding: 8px 0;
+        color: var(--neutral-600);
+        text-decoration: none;
+        border-left: 2px solid transparent;
+        padding-left: 12px;
+        transition: all 0.2s ease;
+    }
+
+    .toc-link:hover, .toc-link.active {
+        color: var(--primary-600);
+        border-left-color: var(--primary-500);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Post Header -->
+<div class="post-header">
+    <a href="/blog" class="btn btn-light btn-sm mb-4">
+        <i class="fas fa-arrow-left me-2"></i>Quay lại
+    </a>
+
+    <div class="d-flex align-items-center gap-3 mb-3">
+        <span class="badge bg-white text-primary">
+            <i class="fas {{ categoryIcons[post.category] }} me-1"></i>
+            {{ categoryLabels[post.category] }}
+        </span>
+        <span class="opacity-75">
+            <i class="fas fa-clock me-1"></i>{{ post.readingTime }} phút đọc
+        </span>
+        <span class="opacity-75">
+            <i class="fas fa-calendar me-1"></i>{{ post.publishedAt | date('DD/MM/YYYY') }}
+        </span>
+    </div>
+
+    <h1 class="display-5 fw-bold mb-4">{{ post.title }}</h1>
+
+    <div class="d-flex align-items-center gap-3">
+        <div class="author-avatar-lg" style="width: 50px; height: 50px; font-size: 1.2rem;">
+            {{ post.authorName[0] | upper }}
+        </div>
+        <div>
+            <strong class="d-block">{{ post.authorName }}</strong>
+            <span class="opacity-75">{{ roleLabels[post.authorRole] }}</span>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Main Content -->
+    <div class="col-lg-8">
+        <!-- Cover Image -->
+        {% if post.coverImage %}
+        <img src="{{ post.coverImage }}" alt="{{ post.title }}" class="post-cover">
+        {% endif %}
+
+        <!-- Engagement Bar -->
+        <div class="engagement-bar">
+            <button class="engagement-btn {{ 'liked' if isLiked else '' }}" id="likeBtn" onclick="toggleLike()">
+                <i class="fas fa-heart"></i>
+                <span id="likeCount">{{ post.likes }}</span>
+            </button>
+
+            <button class="engagement-btn {{ 'bookmarked' if isBookmarked else '' }}" id="bookmarkBtn" onclick="toggleBookmark()">
+                <i class="fas fa-bookmark"></i>
+                <span>Lưu</span>
+            </button>
+
+            <div class="share-dropdown dropdown">
+                <button class="engagement-btn dropdown-toggle" data-bs-toggle="dropdown">
+                    <i class="fas fa-share-alt"></i>
+                    <span>Chia sẻ</span>
+                </button>
+                <ul class="dropdown-menu">
+                    <li>
+                        <button class="dropdown-item share-btn" onclick="shareOn('facebook')">
+                            <i class="fab fa-facebook text-primary"></i> Facebook
+                        </button>
+                    </li>
+                    <li>
+                        <button class="dropdown-item share-btn" onclick="shareOn('twitter')">
+                            <i class="fab fa-twitter text-info"></i> Twitter
+                        </button>
+                    </li>
+                    <li>
+                        <button class="dropdown-item share-btn" onclick="copyLink()">
+                            <i class="fas fa-link text-secondary"></i> Sao chép link
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="ms-auto text-muted">
+                <i class="fas fa-eye me-1"></i>{{ post.viewCount + 1 }} lượt xem
+            </div>
+        </div>
+
+        <!-- Post Content -->
+        <article class="post-content mb-5">
+            {{ post.content | safe }}
+        </article>
+
+        <!-- Tags -->
+        {% if post.tags and post.tags.length > 0 %}
+        <div class="mb-4">
+            <strong class="d-block mb-2">Tags:</strong>
+            {% for tag in post.tags %}
+            <a href="/blog?search={{ tag }}" class="tag-link">#{{ tag }}</a>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Age Range Info -->
+        {% if post.ageRange %}
+        <div class="alert alert-info mb-4">
+            <i class="fas fa-child me-2"></i>
+            Bài viết phù hợp với phụ huynh có con từ <strong>{{ post.ageRange.min }}</strong> đến <strong>{{ post.ageRange.max }}</strong> tuổi
+        </div>
+        {% endif %}
+
+        <!-- Author Card -->
+        <div class="card author-card mb-5">
+            <div class="card-body">
+                <div class="d-flex gap-4">
+                    <div class="author-avatar-lg">
+                        {{ post.authorName[0] | upper }}
+                    </div>
+                    <div>
+                        <h5 class="mb-1">{{ post.authorName }}</h5>
+                        <p class="text-muted mb-2">{{ roleLabels[post.authorRole] }}</p>
+                        <p class="mb-0">Cảm ơn bạn đã đọc bài viết. Nếu thấy hữu ích, hãy chia sẻ để nhiều phụ huynh khác cùng biết nhé!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comments Section -->
+        <div class="mb-5">
+            <h4 class="mb-4">
+                <i class="fas fa-comments me-2"></i>Bình luận
+                <span class="badge bg-primary">{{ post.comments.length }}</span>
+            </h4>
+
+            <!-- Comment Form -->
+            <div class="comment-form mb-4">
+                <h6 class="mb-3">Để lại bình luận</h6>
+                <form id="commentForm">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <input type="text" name="authorName" class="form-control" placeholder="Tên của bạn *" required>
+                        </div>
+                        <div class="col-md-6">
+                            <input type="email" name="authorEmail" class="form-control" placeholder="Email (không bắt buộc)">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <textarea name="content" class="form-control" rows="4" placeholder="Viết bình luận của bạn..." required></textarea>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="form-check">
+                            <input type="checkbox" name="isParent" class="form-check-input" id="isParentCheck" value="true" checked>
+                            <label class="form-check-label" for="isParentCheck">Tôi là phụ huynh</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-2"></i>Gửi bình luận
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Comments List -->
+            <div id="commentsList">
+                {% if post.comments and post.comments.length > 0 %}
+                    {% for comment in post.comments | reverse %}
+                    <div class="card comment-card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex gap-3">
+                                <div class="comment-avatar">
+                                    {{ comment.authorName[0] | upper }}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <strong>{{ comment.authorName }}</strong>
+                                            {% if comment.isParent %}
+                                            <span class="badge bg-primary-subtle text-primary ms-2">Phụ huynh</span>
+                                            {% endif %}
+                                        </div>
+                                        <small class="text-muted">{{ comment.createdAt | date('DD/MM/YYYY HH:mm') }}</small>
+                                    </div>
+                                    <p class="mb-0">{{ comment.content }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="text-center py-4 text-muted">
+                    <i class="fas fa-comments mb-2" style="font-size: 2rem;"></i>
+                    <p class="mb-0">Chưa có bình luận nào. Hãy là người đầu tiên!</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <div class="sidebar-sticky">
+            <!-- Recent Posts -->
+            {% if recentPosts and recentPosts.length > 0 %}
+            <div class="card mb-4">
+                <div class="card-header bg-transparent">
+                    <h6 class="mb-0"><i class="fas fa-clock me-2"></i>Bài Viết Mới</h6>
+                </div>
+                <div class="card-body">
+                    {% for recent in recentPosts %}
+                    <div class="d-flex gap-3 {{ '' if loop.last else 'mb-3 pb-3 border-bottom' }}">
+                        <div class="flex-shrink-0">
+                            <div style="width: 60px; height: 60px; border-radius: 8px; background: linear-gradient(135deg, var(--primary-100), var(--secondary-100)); display: flex; align-items: center; justify-content: center;">
+                                <i class="fas {{ categoryIcons[recent.category] }} text-primary"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <a href="/blog/{{ recent.slug }}" class="text-decoration-none">
+                                <h6 class="mb-1" style="font-size: 0.9rem;">{{ recent.title | truncate(50) }}</h6>
+                            </a>
+                            <small class="text-muted">{{ recent.publishedAt | date('DD/MM/YYYY') }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Related Posts -->
+            {% if relatedPosts and relatedPosts.length > 0 %}
+            <div class="card mb-4">
+                <div class="card-header bg-transparent">
+                    <h6 class="mb-0"><i class="fas fa-link me-2"></i>Bài Viết Liên Quan</h6>
+                </div>
+                <div class="card-body">
+                    {% for related in relatedPosts %}
+                    <div class="d-flex gap-3 {{ '' if loop.last else 'mb-3 pb-3 border-bottom' }}">
+                        <div class="flex-shrink-0">
+                            <div style="width: 60px; height: 60px; border-radius: 8px; background: linear-gradient(135deg, var(--accent-100), var(--warning-100)); display: flex; align-items: center; justify-content: center;">
+                                <i class="fas {{ categoryIcons[related.category] }} text-accent"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <a href="/blog/{{ related.slug }}" class="text-decoration-none">
+                                <h6 class="mb-1" style="font-size: 0.9rem;">{{ related.title | truncate(50) }}</h6>
+                            </a>
+                            <small class="text-muted">
+                                <i class="fas fa-eye me-1"></i>{{ related.viewCount }}
+                                <i class="fas fa-heart ms-2 me-1"></i>{{ related.likes }}
+                            </small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- CTA -->
+            <div class="card bg-gradient-primary text-white">
+                <div class="card-body text-center py-4">
+                    <i class="fas fa-pen-fancy mb-3" style="font-size: 2rem;"></i>
+                    <h6 class="mb-2">Bạn cũng có kinh nghiệm hay?</h6>
+                    <p class="small opacity-90 mb-3">Chia sẻ câu chuyện của bạn để giúp đỡ các phụ huynh khác!</p>
+                    <a href="/blog/write" class="btn btn-light btn-sm">
+                        <i class="fas fa-edit me-1"></i>Viết Bài
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const postSlug = '{{ post.slug }}';
+
+// Like
+async function toggleLike() {
+    try {
+        const res = await fetch(`/blog/${postSlug}/like`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('likeCount').textContent = data.likes;
+            document.getElementById('likeBtn').classList.toggle('liked', data.liked);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+// Bookmark
+async function toggleBookmark() {
+    try {
+        const res = await fetch(`/blog/${postSlug}/bookmark`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('bookmarkBtn').classList.toggle('bookmarked', data.bookmarked);
+            if (typeof ToastSystem !== 'undefined') {
+                ToastSystem.show(data.bookmarked ? 'Đã lưu bài viết' : 'Đã bỏ lưu', data.bookmarked ? 'success' : 'info');
+            }
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+// Share
+function shareOn(platform) {
+    const url = encodeURIComponent(window.location.href);
+    const title = encodeURIComponent('{{ post.title }}');
+
+    let shareUrl;
+    switch(platform) {
+        case 'facebook':
+            shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+            break;
+        case 'twitter':
+            shareUrl = `https://twitter.com/intent/tweet?url=${url}&text=${title}`;
+            break;
+    }
+
+    if (shareUrl) {
+        window.open(shareUrl, '_blank', 'width=600,height=400');
+        // Track share
+        fetch(`/blog/${postSlug}/share`, { method: 'POST' });
+    }
+}
+
+function copyLink() {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+        if (typeof ToastSystem !== 'undefined') {
+            ToastSystem.show('Đã sao chép link!', 'success');
+        } else {
+            alert('Đã sao chép link!');
+        }
+    });
+}
+
+// Comment form
+document.getElementById('commentForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+    const data = {
+        authorName: formData.get('authorName'),
+        authorEmail: formData.get('authorEmail'),
+        content: formData.get('content'),
+        isParent: formData.get('isParent') === 'true'
+    };
+
+    try {
+        const res = await fetch(`/blog/${postSlug}/comment`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+        if (result.success) {
+            // Add new comment to list
+            const comment = result.comment;
+            const commentHtml = `
+                <div class="card comment-card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex gap-3">
+                            <div class="comment-avatar">
+                                ${comment.authorName[0].toUpperCase()}
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <strong>${comment.authorName}</strong>
+                                        ${comment.isParent ? '<span class="badge bg-primary-subtle text-primary ms-2">Phụ huynh</span>' : ''}
+                                    </div>
+                                    <small class="text-muted">Vừa xong</small>
+                                </div>
+                                <p class="mb-0">${comment.content}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const list = document.getElementById('commentsList');
+            list.insertAdjacentHTML('afterbegin', commentHtml);
+
+            // Clear form
+            this.reset();
+
+            if (typeof ToastSystem !== 'undefined') {
+                ToastSystem.show('Bình luận đã được gửi!', 'success');
+            }
+        } else {
+            alert(result.error || 'Không thể gửi bình luận');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Có lỗi xảy ra');
+    }
+});
+</script>
+{% endblock %}

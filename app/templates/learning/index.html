@@ -1,44 +1,99 @@
 {% extends "base.html" %}
 
+{% block title %}Góc Học Tập - StarEdu{% endblock %}
+
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <h2 class="mb-4">Góc Học Tập</h2>
-        <div class="row">
-            <!-- Subject Card -->
-            <div class="col-md-4 mb-4">
-                <div class="card h-100">
-                    <div class="card-body text-center">
-                        <i class="fas fa-calculator fa-3x text-primary mb-3 floating-icon"></i>
-                        <h4 class="card-title">Toán Học</h4>
-                        <p class="card-text text-muted">Các bài học về số học, hình học và tư duy logic.</p>
-                        <a href="#" class="btn btn-primary">Vào Học</a>
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">Góc Học Tập</h2>
+        <p class="text-muted mb-0">Chọn môn học để bắt đầu</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    {% if subjects and subjects.length > 0 %}
+        {% for subject in subjects %}
+        <div class="col-md-4">
+            <div class="card h-100 reward-card">
+                <div class="card-body text-center p-4">
+                    <!-- Subject Icon -->
+                    <div class="mb-4">
+                        <div style="width: 100px; height: 100px; margin: 0 auto; border-radius: 50%;
+                            background: linear-gradient(135deg, var(--primary-100), var(--primary-200));
+                            display: flex; align-items: center; justify-content: center;">
+                            <i class="fas {{ subject.icon or 'fa-book' }}" style="font-size: 2.5rem; color: var(--primary-500);"></i>
+                        </div>
                     </div>
-                </div>
-            </div>
-            <!-- Subject Card -->
-            <div class="col-md-4 mb-4">
-                <div class="card h-100">
-                    <div class="card-body text-center">
-                        <i class="fas fa-language fa-3x text-success mb-3 floating-icon"></i>
-                        <h4 class="card-title">Tiếng Anh</h4>
-                        <p class="card-text text-muted">Từ vựng, ngữ pháp và luyện nghe nói.</p>
-                        <a href="#" class="btn btn-primary">Vào Học</a>
-                    </div>
-                </div>
-            </div>
-            <!-- Literature -->
-            <div class="col-md-4 mb-4">
-                <div class="card h-100">
-                    <div class="card-body text-center">
-                        <i class="fas fa-book-open fa-3x text-warning mb-3 floating-icon"></i>
-                        <h4 class="card-title">Tiếng Việt</h4>
-                        <p class="card-text text-muted">Tập đọc, chính tả và tập làm văn.</p>
-                        <a href="#" class="btn btn-primary">Vào Học</a>
-                    </div>
+
+                    <!-- Subject Info -->
+                    <h4 class="card-title mb-2">{{ subject.name }}</h4>
+                    <p class="card-text text-muted mb-4">{{ subject.description }}</p>
+
+                    <!-- Action Button -->
+                    <a href="/learning/subject/{{ subject._id }}" class="btn btn-primary">
+                        <i class="fas fa-play-circle me-2"></i>Vào Học
+                    </a>
                 </div>
             </div>
         </div>
-    </div>
+        {% endfor %}
+    {% else %}
+        <!-- Default cards when no subjects in database -->
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center p-4">
+                    <div class="mb-4">
+                        <div style="width: 100px; height: 100px; margin: 0 auto; border-radius: 50%;
+                            background: linear-gradient(135deg, var(--primary-100), var(--primary-200));
+                            display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-calculator" style="font-size: 2.5rem; color: var(--primary-500);"></i>
+                        </div>
+                    </div>
+                    <h4 class="card-title mb-2">Toán Học</h4>
+                    <p class="card-text text-muted mb-4">Các bài học về số học, hình học và tư duy logic.</p>
+                    <a href="#" class="btn btn-primary">
+                        <i class="fas fa-play-circle me-2"></i>Vào Học
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center p-4">
+                    <div class="mb-4">
+                        <div style="width: 100px; height: 100px; margin: 0 auto; border-radius: 50%;
+                            background: linear-gradient(135deg, var(--success-100), var(--success-200));
+                            display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-language" style="font-size: 2.5rem; color: var(--success-500);"></i>
+                        </div>
+                    </div>
+                    <h4 class="card-title mb-2">Tiếng Anh</h4>
+                    <p class="card-text text-muted mb-4">Từ vựng, ngữ pháp và luyện nghe nói.</p>
+                    <a href="#" class="btn btn-primary">
+                        <i class="fas fa-play-circle me-2"></i>Vào Học
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center p-4">
+                    <div class="mb-4">
+                        <div style="width: 100px; height: 100px; margin: 0 auto; border-radius: 50%;
+                            background: linear-gradient(135deg, var(--accent-100), var(--accent-200));
+                            display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-book-open" style="font-size: 2.5rem; color: var(--accent-500);"></i>
+                        </div>
+                    </div>
+                    <h4 class="card-title mb-2">Tiếng Việt</h4>
+                    <p class="card-text text-muted mb-4">Tập đọc, chính tả và tập làm văn.</p>
+                    <a href="#" class="btn btn-primary">
+                        <i class="fas fa-play-circle me-2"></i>Vào Học
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}

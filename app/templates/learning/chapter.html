@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}{{ chapter.name }} - {{ subject.name }}{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/learning/">Góc Học Tập</a></li>
+        <li class="breadcrumb-item"><a href="/learning/subject/{{ subject._id }}">{{ subject.name }}</a></li>
+        <li class="breadcrumb-item active">{{ chapter.name }}</li>
+    </ol>
+</nav>
+
+<!-- Chapter Header -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="d-flex align-items-center gap-4">
+            <div class="chapter-number" style="width: 64px; height: 64px; border-radius: 16px;
+                background: linear-gradient(135deg, var(--primary-400), var(--primary-600));
+                display: flex; align-items: center; justify-content: center;
+                color: white; font-weight: 700; font-size: 1.5rem; flex-shrink: 0;">
+                {{ chapter.order }}
+            </div>
+            <div>
+                <p class="text-muted small mb-1">{{ subject.name }}</p>
+                <h2 class="mb-1">{{ chapter.name }}</h2>
+                <p class="text-muted mb-0">{{ chapter.description }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lessons List -->
+<h4 class="mb-3">
+    <i class="fas fa-list-ol me-2 text-primary"></i>
+    Danh Sách Bài Học ({{ lessons.length if lessons else 0 }})
+</h4>
+
+<div class="list-group">
+    {% if lessons and lessons.length > 0 %}
+        {% for lesson in lessons %}
+        <a href="/learning/lesson/{{ lesson._id }}" class="list-group-item list-group-item-action">
+            <div class="d-flex align-items-center gap-3">
+                <div class="lesson-number" style="width: 40px; height: 40px; border-radius: 50%;
+                    background: var(--primary-100); display: flex; align-items: center; justify-content: center;
+                    color: var(--primary-600); font-weight: 600; flex-shrink: 0;">
+                    {{ lesson.order }}
+                </div>
+                <div class="flex-grow-1">
+                    <h6 class="mb-1">{{ lesson.title }}</h6>
+                    <p class="text-muted small mb-0">{{ lesson.description }}</p>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    {% if lesson.duration %}
+                    <span class="badge bg-light text-dark">
+                        <i class="fas fa-clock me-1"></i>{{ lesson.duration }} phút
+                    </span>
+                    {% endif %}
+                    <i class="fas fa-chevron-right text-muted"></i>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    {% else %}
+        <div class="list-group-item">
+            <div class="alert alert-info mb-0">
+                <i class="fas fa-info-circle me-2"></i>
+                Chưa có bài học nào trong chương này.
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Navigation -->
+<div class="d-flex justify-content-between mt-4">
+    <a href="/learning/subject/{{ subject._id }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Quay Lại
+    </a>
+</div>
+{% endblock %}

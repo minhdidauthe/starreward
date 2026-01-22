@@ -1,0 +1,383 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - StarEdu{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="dashboard-hero mb-5">
+    <div class="row align-items-center">
+        <div class="col-lg-7">
+            <h1 class="display-5 fw-bold mb-3" style="font-family: var(--font-display);">
+                {% if user %}
+                    Chào mừng trở lại, <span class="text-gradient">{{ user.fullName }}!</span>
+                {% else %}
+                    Chào mừng đến với <span class="text-gradient">StarEdu!</span>
+                {% endif %}
+            </h1>
+            <p class="lead text-muted mb-4">
+                Nền tảng học tập thông minh dành cho học sinh tiểu học. Học tập vui vẻ, nhận sao thưởng và khám phá kiến thức mới mỗi ngày!
+            </p>
+            {% if not user %}
+            <div class="d-flex gap-3 flex-wrap">
+                <a href="/auth/register" class="btn btn-primary btn-lg">
+                    <i class="fas fa-rocket me-2"></i>Bắt Đầu Ngay
+                </a>
+                <a href="/auth/login" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-sign-in-alt me-2"></i>Đăng Nhập
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        <div class="col-lg-5 text-center mt-4 mt-lg-0">
+            <div class="hero-illustration">
+                <i class="fas fa-graduation-cap" style="font-size: 8rem; opacity: 0.9;
+                    background: linear-gradient(135deg, var(--primary-400), var(--accent-400));
+                    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+                    background-clip: text; animation: float 3s ease-in-out infinite;"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Section -->
+<div class="row g-4 mb-5">
+    <div class="col-6 col-lg-3">
+        <div class="card h-100 text-center py-4">
+            <div class="card-body">
+                <div class="stat-icon mb-3">
+                    <i class="fas fa-users" style="font-size: 2rem; color: var(--primary-500);"></i>
+                </div>
+                <h3 class="fw-bold mb-1" style="color: var(--primary-600);">1,200+</h3>
+                <p class="text-muted mb-0 small">Học sinh</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card h-100 text-center py-4">
+            <div class="card-body">
+                <div class="stat-icon mb-3">
+                    <i class="fas fa-book-open" style="font-size: 2rem; color: var(--success-500);"></i>
+                </div>
+                <h3 class="fw-bold mb-1" style="color: var(--success-600);">500+</h3>
+                <p class="text-muted mb-0 small">Bài học</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card h-100 text-center py-4">
+            <div class="card-body">
+                <div class="stat-icon mb-3">
+                    <i class="fas fa-clipboard-check" style="font-size: 2rem; color: var(--secondary-500);"></i>
+                </div>
+                <h3 class="fw-bold mb-1" style="color: var(--secondary-600);">200+</h3>
+                <p class="text-muted mb-0 small">Đề thi</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card h-100 text-center py-4">
+            <div class="card-body">
+                <div class="stat-icon mb-3">
+                    <i class="fas fa-star" style="font-size: 2rem; color: var(--accent-500);"></i>
+                </div>
+                <h3 class="fw-bold mb-1" style="color: var(--accent-600);">50,000+</h3>
+                <p class="text-muted mb-0 small">Sao thưởng</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<h2 class="mb-4">
+    <i class="fas fa-sparkles me-2 text-primary"></i>
+    Tính Năng Nổi Bật
+</h2>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 reward-card">
+            <div class="card-body p-4">
+                <div class="feature-icon mb-3" style="width: 64px; height: 64px; border-radius: 16px;
+                    background: linear-gradient(135deg, var(--primary-100), var(--primary-200));
+                    display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-star" style="font-size: 1.75rem; color: var(--primary-500);"></i>
+                </div>
+                <h5 class="card-title">Hệ Thống Tặng Sao</h5>
+                <p class="card-text text-muted">
+                    Tích lũy sao thưởng qua việc hoàn thành bài học, làm bài tập và đạt thành tích tốt. Đổi sao lấy phần thưởng hấp dẫn!
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 reward-card">
+            <div class="card-body p-4">
+                <div class="feature-icon mb-3" style="width: 64px; height: 64px; border-radius: 16px;
+                    background: linear-gradient(135deg, var(--success-100), var(--success-200));
+                    display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-book-reader" style="font-size: 1.75rem; color: var(--success-500);"></i>
+                </div>
+                <h5 class="card-title">Góc Học Tập</h5>
+                <p class="card-text text-muted">
+                    Bài học sinh động với nội dung phong phú cho các môn Toán, Tiếng Anh, Tiếng Việt. Học theo chương trình chuẩn.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 reward-card">
+            <div class="card-body p-4">
+                <div class="feature-icon mb-3" style="width: 64px; height: 64px; border-radius: 16px;
+                    background: linear-gradient(135deg, var(--secondary-100), var(--secondary-200));
+                    display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-tasks" style="font-size: 1.75rem; color: var(--secondary-500);"></i>
+                </div>
+                <h5 class="card-title">Góc Thi Cử</h5>
+                <p class="card-text text-muted">
+                    Đề thi tự luyện đa dạng, chấm điểm tự động và xem chi tiết kết quả. Ôn tập hiệu quả trước kỳ thi.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 reward-card">
+            <div class="card-body p-4">
+                <div class="feature-icon mb-3" style="width: 64px; height: 64px; border-radius: 16px;
+                    background: linear-gradient(135deg, var(--accent-100), var(--accent-200));
+                    display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-trophy" style="font-size: 1.75rem; color: var(--accent-500);"></i>
+                </div>
+                <h5 class="card-title">Bảng Xếp Hạng</h5>
+                <p class="card-text text-muted">
+                    Cạnh tranh lành mạnh với bạn bè. Xem thứ hạng của mình và cố gắng vươn lên top đầu!
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 reward-card">
+            <div class="card-body p-4">
+                <div class="feature-icon mb-3" style="width: 64px; height: 64px; border-radius: 16px;
+                    background: linear-gradient(135deg, var(--danger-100), var(--danger-200));
+                    display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-chart-line" style="font-size: 1.75rem; color: var(--danger-500);"></i>
+                </div>
+                <h5 class="card-title">Theo Dõi Tiến Độ</h5>
+                <p class="card-text text-muted">
+                    Phụ huynh có thể theo dõi tiến độ học tập của con. Báo cáo chi tiết và trực quan.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 reward-card">
+            <div class="card-body p-4">
+                <div class="feature-icon mb-3" style="width: 64px; height: 64px; border-radius: 16px;
+                    background: linear-gradient(135deg, var(--purple-100, #f3e8ff), var(--purple-200, #e9d5ff));
+                    display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-mobile-alt" style="font-size: 1.75rem; color: var(--primary-500);"></i>
+                </div>
+                <h5 class="card-title">Đa Nền Tảng</h5>
+                <p class="card-text text-muted">
+                    Học mọi lúc mọi nơi trên điện thoại, máy tính bảng hoặc laptop. Giao diện thân thiện, dễ sử dụng.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Subjects Preview -->
+<h2 class="mb-4">
+    <i class="fas fa-book me-2 text-primary"></i>
+    Các Môn Học
+</h2>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="card h-100 text-center">
+            <div class="card-body p-4">
+                <div class="mb-4">
+                    <div style="width: 100px; height: 100px; margin: 0 auto; border-radius: 50%;
+                        background: linear-gradient(135deg, var(--primary-100), var(--primary-200));
+                        display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-calculator" style="font-size: 2.5rem; color: var(--primary-500);"></i>
+                    </div>
+                </div>
+                <h4 class="card-title mb-2">Toán Học</h4>
+                <p class="card-text text-muted mb-4">Số học, hình học và tư duy logic</p>
+                <a href="/learning/" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-right me-2"></i>Khám Phá
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 text-center">
+            <div class="card-body p-4">
+                <div class="mb-4">
+                    <div style="width: 100px; height: 100px; margin: 0 auto; border-radius: 50%;
+                        background: linear-gradient(135deg, var(--success-100), var(--success-200));
+                        display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-language" style="font-size: 2.5rem; color: var(--success-500);"></i>
+                    </div>
+                </div>
+                <h4 class="card-title mb-2">Tiếng Anh</h4>
+                <p class="card-text text-muted mb-4">Từ vựng, ngữ pháp và luyện nghe nói</p>
+                <a href="/learning/" class="btn btn-outline-success">
+                    <i class="fas fa-arrow-right me-2"></i>Khám Phá
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 text-center">
+            <div class="card-body p-4">
+                <div class="mb-4">
+                    <div style="width: 100px; height: 100px; margin: 0 auto; border-radius: 50%;
+                        background: linear-gradient(135deg, var(--accent-100), var(--accent-200));
+                        display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-book-open" style="font-size: 2.5rem; color: var(--accent-500);"></i>
+                    </div>
+                </div>
+                <h4 class="card-title mb-2">Tiếng Việt</h4>
+                <p class="card-text text-muted mb-4">Tập đọc, chính tả và tập làm văn</p>
+                <a href="/learning/" class="btn btn-outline-warning">
+                    <i class="fas fa-arrow-right me-2"></i>Khám Phá
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CTA Section -->
+{% if not user %}
+<div class="card bg-gradient-primary text-white mb-4">
+    <div class="card-body p-5 text-center">
+        <h2 class="mb-3" style="font-family: var(--font-display);">
+            <i class="fas fa-rocket me-2"></i>
+            Sẵn sàng bắt đầu hành trình học tập?
+        </h2>
+        <p class="lead mb-4 opacity-90">
+            Đăng ký ngay hôm nay và nhận 100 sao thưởng miễn phí!
+        </p>
+        <a href="/auth/register" class="btn btn-light btn-lg">
+            <i class="fas fa-user-plus me-2"></i>Đăng Ký Miễn Phí
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<!-- About Section -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2 text-primary"></i>
+                    Về StarEdu
+                </h5>
+            </div>
+            <div class="card-body">
+                <p>
+                    <strong>StarEdu</strong> là nền tảng học tập trực tuyến dành cho học sinh tiểu học,
+                    được phát triển với mục tiêu mang đến trải nghiệm học tập vui vẻ và hiệu quả.
+                </p>
+                <ul class="mb-0">
+                    <li>Nội dung bám sát chương trình giáo dục phổ thông</li>
+                    <li>Phương pháp gamification - học qua trò chơi</li>
+                    <li>Theo dõi tiến độ học tập chi tiết</li>
+                    <li>Hỗ trợ cả học sinh và phụ huynh</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-headset me-2 text-primary"></i>
+                    Liên Hệ & Hỗ Trợ
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary-100);
+                        display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-envelope text-primary"></i>
+                    </div>
+                    <div>
+                        <div class="small text-muted">Email</div>
+                        <div>support@staredu.vn</div>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--success-100);
+                        display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-phone text-success"></i>
+                    </div>
+                    <div>
+                        <div class="small text-muted">Hotline</div>
+                        <div>1900 1234 56</div>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--secondary-100);
+                        display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-clock text-secondary"></i>
+                    </div>
+                    <div>
+                        <div class="small text-muted">Giờ làm việc</div>
+                        <div>8:00 - 22:00 (Thứ 2 - CN)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+}
+
+.dashboard-hero {
+    padding: 40px;
+    background: var(--glass-bg);
+    border-radius: var(--radius-2xl);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-lg);
+}
+
+.hero-illustration {
+    position: relative;
+}
+
+.stat-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--primary-50);
+}
+
+@media (max-width: 768px) {
+    .dashboard-hero {
+        padding: 24px;
+        text-align: center;
+    }
+
+    .dashboard-hero .d-flex {
+        justify-content: center;
+    }
+
+    .hero-illustration i {
+        font-size: 5rem !important;
+    }
+}
+</style>
+{% endblock %}
