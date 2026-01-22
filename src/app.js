@@ -108,6 +108,7 @@ const authRoutes = require('./routes/auth');
 const exploreRoutes = require('./routes/explore');
 const ideasRoutes = require('./routes/ideas');
 const blogRoutes = require('./routes/blog');
+const adminRoutes = require('./routes/admin');
 
 // Dashboard route
 app.get('/dashboard', (req, res) => {
@@ -126,6 +127,7 @@ app.use('/auth', authRoutes);
 app.use('/explore', exploreRoutes);
 app.use('/ideas', ideasRoutes);
 app.use('/blog', blogRoutes);
+app.use('/admin', adminRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);

@@ -2,6 +2,7 @@ const { DailyTask } = require('../models/Basic');
 const { Subject, Chapter, Lesson } = require('../models/Learning');
 const { Exam, Question } = require('../models/Exam');
 const { ExploreCategory, ExploreActivity } = require('../models/Explore');
+const User = require('../models/User');
 
 // ============================================
 // Seed Default Daily Tasks
@@ -861,10 +862,64 @@ const seedExploreData = async () => {
 };
 
 // ============================================
+// Seed Admin User
+// ============================================
+const seedAdminUser = async () => {
+    const adminCount = await User.countDocuments({ role: 'admin' });
+    if (adminCount === 0) {
+        await User.create({
+            username: 'admin',
+            email: 'admin@starreward.com',
+            password: 'admin123',
+            fullName: 'Administrator',
+            role: 'admin'
+        });
+        console.log('✓ Admin user created (username: admin, password: admin123)');
+    }
+
+    // Create some sample users for testing
+    const userCount = await User.countDocuments();
+    if (userCount < 5) {
+        const sampleUsers = [
+            {
+                username: 'student1',
+                email: 'student1@test.com',
+                password: 'password123',
+                fullName: 'Nguyễn Văn A',
+                role: 'student'
+            },
+            {
+                username: 'parent1',
+                email: 'parent1@test.com',
+                password: 'password123',
+                fullName: 'Trần Thị B',
+                role: 'parent'
+            },
+            {
+                username: 'teacher1',
+                email: 'teacher1@test.com',
+                password: 'password123',
+                fullName: 'Lê Văn C',
+                role: 'teacher'
+            }
+        ];
+
+        for (const userData of sampleUsers) {
+            const exists = await User.findOne({ username: userData.username });
+            if (!exists) {
+                await User.create(userData);
+            }
+        }
+        console.log('✓ Sample users created');
+    }
+};
+
+// ============================================
 // Main Seed Function
 // ============================================
 const initSeedData = async () => {
     try {
+        await seedAdminUser();
         await seedDailyTasks();
         await seedLearningData();
         await seedExamData();

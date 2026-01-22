@@ -136,7 +136,28 @@ router.get('/logout', (req, res) => {
     });
 });
 
+// Middleware to check if user is admin
+const isAdmin = (req, res, next) => {
+    if (req.session && req.session.user && req.session.user.role === 'admin') {
+        return next();
+    }
+    req.flash('danger', 'Bạn không có quyền truy cập trang này!');
+    res.redirect('/');
+};
+
+// Middleware to check if user is teacher or admin
+const isTeacherOrAdmin = (req, res, next) => {
+    if (req.session && req.session.user &&
+        (req.session.user.role === 'admin' || req.session.user.role === 'teacher')) {
+        return next();
+    }
+    req.flash('danger', 'Bạn không có quyền truy cập trang này!');
+    res.redirect('/');
+};
+
 // Export middleware for use in other routes
 module.exports = router;
 module.exports.isAuthenticated = isAuthenticated;
 module.exports.isGuest = isGuest;
+module.exports.isAdmin = isAdmin;
+module.exports.isTeacherOrAdmin = isTeacherOrAdmin;

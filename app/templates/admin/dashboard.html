@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Star Reward{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">
+                <i class="bi bi-speedometer2 me-2"></i>Admin Dashboard
+            </h1>
+            <p class="text-muted mb-0">Quản lý hệ thống Star Reward</p>
+        </div>
+        <div>
+            <a href="/admin/users/create/new" class="btn btn-primary">
+                <i class="bi bi-person-plus me-2"></i>Tạo người dùng mới
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Tổng người dùng</p>
+                            <h3 class="mb-0 fw-bold">{{ stats.totalUsers }}</h3>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 p-3 rounded">
+                            <i class="bi bi-people fs-4 text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Học sinh</p>
+                            <h3 class="mb-0 fw-bold">{{ stats.totalStudents }}</h3>
+                        </div>
+                        <div class="bg-success bg-opacity-10 p-3 rounded">
+                            <i class="bi bi-person-badge fs-4 text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Phụ huynh</p>
+                            <h3 class="mb-0 fw-bold">{{ stats.totalParents }}</h3>
+                        </div>
+                        <div class="bg-info bg-opacity-10 p-3 rounded">
+                            <i class="bi bi-person-heart fs-4 text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Giáo viên</p>
+                            <h3 class="mb-0 fw-bold">{{ stats.totalTeachers }}</h3>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 p-3 rounded">
+                            <i class="bi bi-mortarboard fs-4 text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row g-3 mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightning-charge me-2"></i>Thao tác nhanh
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <a href="/admin/users" class="btn btn-outline-primary w-100 py-3">
+                                <i class="bi bi-people d-block fs-3 mb-2"></i>
+                                Quản lý người dùng
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="/admin/users/create/new" class="btn btn-outline-success w-100 py-3">
+                                <i class="bi bi-person-plus d-block fs-3 mb-2"></i>
+                                Tạo người dùng
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="/admin/users?role=student" class="btn btn-outline-info w-100 py-3">
+                                <i class="bi bi-person-badge d-block fs-3 mb-2"></i>
+                                Danh sách học sinh
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="/admin/users?role=teacher" class="btn btn-outline-warning w-100 py-3">
+                                <i class="bi bi-mortarboard d-block fs-3 mb-2"></i>
+                                Danh sách giáo viên
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Users -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clock-history me-2"></i>Người dùng mới nhất
+                        </h5>
+                        <a href="/admin/users" class="btn btn-sm btn-outline-primary">
+                            Xem tất cả
+                            <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Tên đăng nhập</th>
+                                    <th>Họ tên</th>
+                                    <th>Email</th>
+                                    <th>Vai trò</th>
+                                    <th>Ngày tạo</th>
+                                    <th>Đăng nhập cuối</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in recentUsers %}
+                                <tr>
+                                    <td>
+                                        <i class="bi bi-person-circle me-2"></i>
+                                        <strong>{{ user.username }}</strong>
+                                    </td>
+                                    <td>{{ user.fullName }}</td>
+                                    <td>{{ user.email }}</td>
+                                    <td>
+                                        {% if user.role == 'admin' %}
+                                            <span class="badge bg-danger">Admin</span>
+                                        {% elif user.role == 'teacher' %}
+                                            <span class="badge bg-warning">Giáo viên</span>
+                                        {% elif user.role == 'parent' %}
+                                            <span class="badge bg-info">Phụ huynh</span>
+                                        {% else %}
+                                            <span class="badge bg-success">Học sinh</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {{ user.createdAt.toLocaleDateString('vi-VN') }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        {% if user.lastLogin %}
+                                            <small class="text-muted">
+                                                {{ user.lastLogin.toLocaleDateString('vi-VN') }}
+                                            </small>
+                                        {% else %}
+                                            <small class="text-muted">Chưa đăng nhập</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="/admin/users/{{ user._id }}" class="btn btn-outline-primary" title="Xem">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="/admin/users/{{ user._id }}/edit" class="btn btn-outline-warning" title="Sửa">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
