@@ -591,6 +591,7 @@ router.post('/blog/import-reddit', isAdmin, async (req, res) => {
             subreddit,
             sortBy,
             limitPosts,
+            memesLimit,
             category,
             tags,
             autoPublish,
@@ -602,6 +603,42 @@ router.post('/blog/import-reddit', isAdmin, async (req, res) => {
             failed: 0,
             posts: []
         };
+
+        // Import Trending Memes
+        if (importMethod === 'memes') {
+            try {
+                const limit = parseInt(memesLimit) || 20;
+                const memes = await redditCrawlerService.fetchTrendingMemes({
+                    limit: Math.min(limit, 50) // Max 50
+                });
+
+                for (const meme of memes) {
+                    try {
+                        const blogPostData = redditCrawlerService.convertRedditPostToBlogPost(meme, {
+                            category: category || 'experience',
+                            tags: tags ? tags.split(',').map(t => t.trim()) : [],
+                            autoPublish: autoPublish === 'on',
+                            authorName: req.session.user.fullName,
+                            authorEmail: req.session.user.email
+                        });
+
+                        await BlogPost.create(blogPostData);
+                        importResults.success++;
+                    } catch (error) {
+                        console.error('Error creating post from meme:', error);
+                        importResults.failed++;
+                    }
+                }
+
+                req.flash('success', `Đã import ${importResults.success} memes thành công! ${importResults.failed > 0 ? `(${importResults.failed} thất bại)` : ''}`);
+                return res.redirect('/admin/blog/posts');
+
+            } catch (error) {
+                console.error('Error importing memes:', error);
+                req.flash('danger', `Lỗi khi import memes: ${error.message}`);
+                return res.redirect('/admin/blog/import-reddit');
+            }
+        }
 
         // Import by URL
         if (importMethod === 'url' && redditUrl) {

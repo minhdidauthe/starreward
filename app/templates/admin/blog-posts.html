@@ -120,8 +120,8 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="badge bg-{{ categoryColors[post.category] || 'secondary' }}">
-                                        <i class="bi bi-{{ categoryIcons[post.category] || 'folder' }} me-1"></i>
+                                    <span class="badge bg-{{ categoryColors[post.category] if categoryColors[post.category] else 'secondary' }}">
+                                        <i class="bi bi-{{ categoryIcons[post.category] if categoryIcons[post.category] else 'folder' }} me-1"></i>
                                         {{ categoryLabels[post.category] }}
                                     </span>
                                 </td>
@@ -146,8 +146,8 @@
                                 </td>
                                 <td>
                                     <div class="small">
-                                        <div><i class="bi bi-eye me-1"></i>{{ post.viewCount || 0 }}</div>
-                                        <div><i class="bi bi-heart me-1"></i>{{ post.likes || 0 }}</div>
+                                        <div><i class="bi bi-eye me-1"></i>{{ post.viewCount if post.viewCount else 0 }}</div>
+                                        <div><i class="bi bi-heart me-1"></i>{{ post.likes if post.likes else 0 }}</div>
                                     </div>
                                 </td>
                                 <td>

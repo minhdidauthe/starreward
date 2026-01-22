@@ -35,7 +35,13 @@
                             <label class="form-label fw-bold">Chọn phương thức import</label>
                             <div class="btn-group w-100" role="group">
                                 <input type="radio" class="btn-check" name="importMethod"
-                                       id="methodUrl" value="url" checked>
+                                       id="methodMemes" value="memes" checked>
+                                <label class="btn btn-outline-primary" for="methodMemes">
+                                    <i class="bi bi-emoji-laughing me-2"></i>Trending Memes
+                                </label>
+
+                                <input type="radio" class="btn-check" name="importMethod"
+                                       id="methodUrl" value="url">
                                 <label class="btn btn-outline-primary" for="methodUrl">
                                     <i class="bi bi-link-45deg me-2"></i>URL Post
                                 </label>
@@ -45,6 +51,25 @@
                                 <label class="btn btn-outline-primary" for="methodSubreddit">
                                     <i class="bi bi-collection me-2"></i>Subreddit
                                 </label>
+                            </div>
+                        </div>
+
+                        <!-- Memes Method -->
+                        <div id="memesMethod">
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <strong>Trending Memes từ RapidAPI</strong><br>
+                                Tự động lấy memes hot nhất từ Reddit (r/memes, r/dankmemes, v.v.)
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="memesLimit" class="form-label fw-bold">
+                                    Số lượng memes
+                                </label>
+                                <input type="number" class="form-control"
+                                       id="memesLimit" name="memesLimit"
+                                       min="1" max="50" value="20">
+                                <div class="form-text">Tối đa 50 memes mỗi lần</div>
                             </div>
                         </div>
 
@@ -234,15 +259,23 @@
 // Toggle import methods
 document.querySelectorAll('input[name="importMethod"]').forEach(radio => {
     radio.addEventListener('change', function() {
-        if (this.value === 'url') {
+        // Hide all methods
+        document.getElementById('memesMethod').classList.add('d-none');
+        document.getElementById('urlMethod').classList.add('d-none');
+        document.getElementById('subredditMethod').classList.add('d-none');
+
+        // Reset required fields
+        document.getElementById('redditUrl').required = false;
+        document.getElementById('subreddit').required = false;
+
+        // Show selected method
+        if (this.value === 'memes') {
+            document.getElementById('memesMethod').classList.remove('d-none');
+        } else if (this.value === 'url') {
             document.getElementById('urlMethod').classList.remove('d-none');
-            document.getElementById('subredditMethod').classList.add('d-none');
             document.getElementById('redditUrl').required = true;
-            document.getElementById('subreddit').required = false;
         } else {
-            document.getElementById('urlMethod').classList.add('d-none');
             document.getElementById('subredditMethod').classList.remove('d-none');
-            document.getElementById('redditUrl').required = false;
             document.getElementById('subreddit').required = true;
         }
     });
@@ -266,7 +299,7 @@ document.getElementById('importForm').addEventListener('submit', function(e) {
             alert('Vui lòng nhập URL Reddit hợp lệ!');
             return false;
         }
-    } else {
+    } else if (method === 'subreddit') {
         const subreddit = document.getElementById('subreddit').value.trim();
         if (!subreddit) {
             e.preventDefault();

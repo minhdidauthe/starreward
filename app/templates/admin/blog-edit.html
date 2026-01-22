@@ -108,19 +108,19 @@
                     <div class="card-body">
                         <div class="row text-center">
                             <div class="col-3">
-                                <div class="fs-4 fw-bold text-primary">{{ post.viewCount || 0 }}</div>
+                                <div class="fs-4 fw-bold text-primary">{{ post.viewCount if post.viewCount else 0 }}</div>
                                 <div class="small text-muted">Lượt xem</div>
                             </div>
                             <div class="col-3">
-                                <div class="fs-4 fw-bold text-danger">{{ post.likes || 0 }}</div>
+                                <div class="fs-4 fw-bold text-danger">{{ post.likes if post.likes else 0 }}</div>
                                 <div class="small text-muted">Likes</div>
                             </div>
                             <div class="col-3">
-                                <div class="fs-4 fw-bold text-success">{{ post.commentCount || 0 }}</div>
+                                <div class="fs-4 fw-bold text-success">{{ post.commentCount if post.commentCount else 0 }}</div>
                                 <div class="small text-muted">Comments</div>
                             </div>
                             <div class="col-3">
-                                <div class="fs-4 fw-bold text-info">{{ post.shareCount || 0 }}</div>
+                                <div class="fs-4 fw-bold text-info">{{ post.shareCount if post.shareCount else 0 }}</div>
                                 <div class="small text-muted">Shares</div>
                             </div>
                         </div>
