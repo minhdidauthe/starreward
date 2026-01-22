@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}Tạo bài viết mới - Admin - Star Reward{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<style>
+.ql-editor {
+    min-height: 300px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">
+                <i class="bi bi-plus-circle me-2"></i>Tạo bài viết mới
+            </h1>
+            <p class="text-muted mb-0">Thêm nội dung blog mới</p>
+        </div>
+        <div>
+            <a href="/admin/blog/posts" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Quay lại
+            </a>
+        </div>
+    </div>
+
+    <form method="POST" action="/admin/blog/create" id="blogForm">
+        <div class="row">
+            <!-- Main Content -->
+            <div class="col-lg-8">
+                <!-- Title -->
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="title" class="form-label fw-bold">
+                                Tiêu đề <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control form-control-lg"
+                                   id="title" name="title" required
+                                   placeholder="Nhập tiêu đề bài viết...">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="excerpt" class="form-label fw-bold">Mô tả ngắn</label>
+                            <textarea class="form-control" id="excerpt" name="excerpt"
+                                      rows="3" maxlength="500"
+                                      placeholder="Mô tả ngắn gọn về nội dung bài viết (tùy chọn, tối đa 500 ký tự)"></textarea>
+                            <div class="form-text">Nếu để trống, hệ thống sẽ tự động tạo từ nội dung</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content Editor -->
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0">
+                            <i class="bi bi-file-text me-2"></i>Nội dung <span class="text-danger">*</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="editor"></div>
+                        <input type="hidden" name="content" id="content">
+                    </div>
+                </div>
+
+                <!-- Cover Image -->
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0">
+                            <i class="bi bi-image me-2"></i>Ảnh bìa
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="coverImage" class="form-label">URL ảnh bìa</label>
+                            <input type="url" class="form-control" id="coverImage"
+                                   name="coverImage"
+                                   placeholder="https://example.com/image.jpg">
+                            <div class="form-text">Nhập URL của ảnh bìa (tùy chọn)</div>
+                        </div>
+                        <div id="imagePreview" class="d-none">
+                            <img src="" alt="Preview" class="img-fluid rounded"
+                                 style="max-height: 200px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Publish Settings -->
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0">
+                            <i class="bi bi-gear me-2"></i>Cài đặt
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Status -->
+                        <div class="mb-3">
+                            <label for="status" class="form-label fw-bold">Trạng thái</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="draft">Bản nháp</option>
+                                <option value="published" selected>Xuất bản ngay</option>
+                                <option value="featured">Nổi bật</option>
+                            </select>
+                        </div>
+
+                        <!-- Featured & Pinned -->
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox"
+                                       id="isFeatured" name="isFeatured">
+                                <label class="form-check-label" for="isFeatured">
+                                    <i class="bi bi-star text-warning me-1"></i>Đánh dấu nổi bật
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox"
+                                       id="isPinned" name="isPinned">
+                                <label class="form-check-label" for="isPinned">
+                                    <i class="bi bi-pin text-primary me-1"></i>Ghim lên đầu
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <hr>
+                        <button type="submit" class="btn btn-primary w-100 mb-2">
+                            <i class="bi bi-check-circle me-2"></i>Lưu bài viết
+                        </button>
+                        <a href="/admin/blog/posts" class="btn btn-outline-secondary w-100">
+                            <i class="bi bi-x-circle me-2"></i>Hủy
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Category -->
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0">
+                            <i class="bi bi-folder me-2"></i>Chủ đề
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <select class="form-select" name="category" id="category">
+                            {% for key, label in categoryLabels %}
+                            <option value="{{ key }}" {% if key == 'experience' %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Tags -->
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0">
+                            <i class="bi bi-tags me-2"></i>Thẻ tag
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <input type="text" class="form-control" name="tags"
+                               placeholder="tag1, tag2, tag3...">
+                        <div class="form-text">Phân cách bằng dấu phẩy</div>
+                    </div>
+                </div>
+
+                <!-- Age Range -->
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0">
+                            <i class="bi bi-people me-2"></i>Độ tuổi phù hợp
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label for="ageMin" class="form-label small">Từ</label>
+                                <input type="number" class="form-control"
+                                       id="ageMin" name="ageMin"
+                                       min="0" max="18" value="0">
+                            </div>
+                            <div class="col-6">
+                                <label for="ageMax" class="form-label small">Đến</label>
+                                <input type="number" class="form-control"
+                                       id="ageMax" name="ageMax"
+                                       min="0" max="18" value="18">
+                            </div>
+                        </div>
+                        <div class="form-text">Tuổi (0-18)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Quill Editor -->
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<script>
+// Initialize Quill editor
+var quill = new Quill('#editor', {
+    theme: 'snow',
+    modules: {
+        toolbar: [
+            [{ 'header': [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'indent': '-1'}, { 'indent': '+1' }],
+            ['link', 'image'],
+            [{ 'align': [] }],
+            ['clean']
+        ]
+    },
+    placeholder: 'Nhập nội dung bài viết...'
+});
+
+// Submit form
+document.getElementById('blogForm').addEventListener('submit', function(e) {
+    // Get content from Quill
+    var content = quill.root.innerHTML;
+    document.getElementById('content').value = content;
+
+    // Validate
+    var title = document.getElementById('title').value.trim();
+    if (!title) {
+        e.preventDefault();
+        alert('Vui lòng nhập tiêu đề!');
+        return false;
+    }
+
+    if (!content || content === '<p><br></p>') {
+        e.preventDefault();
+        alert('Vui lòng nhập nội dung!');
+        return false;
+    }
+});
+
+// Image preview
+document.getElementById('coverImage').addEventListener('input', function(e) {
+    var url = e.target.value;
+    var preview = document.getElementById('imagePreview');
+    var img = preview.querySelector('img');
+
+    if (url) {
+        img.src = url;
+        preview.classList.remove('d-none');
+    } else {
+        preview.classList.add('d-none');
+    }
+});
+</script>
+{% endblock %}

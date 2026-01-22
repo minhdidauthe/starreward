@@ -1,0 +1,337 @@
+{% extends "base.html" %}
+
+{% block title %}Chỉnh sửa: {{ post.title }} - Admin - Star Reward{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<style>
+.ql-editor {
+    min-height: 300px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">
+                <i class="bi bi-pencil me-2"></i>Chỉnh sửa bài viết
+            </h1>
+            <p class="text-muted mb-0">{{ post.title }}</p>
+        </div>
+        <div>
+            <a href="/blog/{{ post.slug }}" class="btn btn-outline-info me-2" target="_blank">
+                <i class="bi bi-eye me-2"></i>Xem bài viết
+            </a>
+            <a href="/admin/blog/posts" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Quay lại
+            </a>
+        </div>
+    </div>
+
+    <form method="POST" action="/admin/blog/posts/{{ post._id }}/edit" id="blogForm">
+        <div class="row">
+            <!-- Main Content -->
+            <div class="col-lg-8">
+                <!-- Title -->
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="title" class="form-label fw-bold">
+                                Tiêu đề <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control form-control-lg"
+                                   id="title" name="title" required
+                                   value="{{ post.title }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="excerpt" class="form-label fw-bold">Mô tả ngắn</label>
+                            <textarea class="form-control" id="excerpt" name="excerpt"
+                                      rows="3" maxlength="500">{{ post.excerpt }}</textarea>
+                            <div class="form-text">Mô tả ngắn gọn (tối đa 500 ký tự)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content Editor -->
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0">
+                            <i class="bi bi-file-text me-2"></i>Nội dung <span class="text-danger">*</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="editor">{{ post.content | safe }}</div>
+                        <input type="hidden" name="content" id="content">
+                    </div>
+                </div>
+
+                <!-- Cover Image -->
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0">
+                            <i class="bi bi-image me-2"></i>Ảnh bìa
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="coverImage" class="form-label">URL ảnh bìa</label>
+                            <input type="url" class="form-control" id="coverImage"
+                                   name="coverImage"
+                                   value="{{ post.coverImage }}"
+                                   placeholder="https://example.com/image.jpg">
+                        </div>
+                        {% if post.coverImage %}
+                        <div id="imagePreview">
+                            <img src="{{ post.coverImage }}" alt="Preview"
+                                 class="img-fluid rounded" style="max-height: 200px;">
+                        </div>
+                        {% else %}
+                        <div id="imagePreview" class="d-none">
+                            <img src="" alt="Preview" class="img-fluid rounded"
+                                 style="max-height: 200px;">
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Statistics -->
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0">
+                            <i class="bi bi-graph-up me-2"></i>Thống kê
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-3">
+                                <div class="fs-4 fw-bold text-primary">{{ post.viewCount || 0 }}</div>
+                                <div class="small text-muted">Lượt xem</div>
+                            </div>
+                            <div class="col-3">
+                                <div class="fs-4 fw-bold text-danger">{{ post.likes || 0 }}</div>
+                                <div class="small text-muted">Likes</div>
+                            </div>
+                            <div class="col-3">
+                                <div class="fs-4 fw-bold text-success">{{ post.commentCount || 0 }}</div>
+                                <div class="small text-muted">Comments</div>
+                            </div>
+                            <div class="col-3">
+                                <div class="fs-4 fw-bold text-info">{{ post.shareCount || 0 }}</div>
+                                <div class="small text-muted">Shares</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Publish Settings -->
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0">
+                            <i class="bi bi-gear me-2"></i>Cài đặt
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Status -->
+                        <div class="mb-3">
+                            <label for="status" class="form-label fw-bold">Trạng thái</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="draft" {% if post.status == 'draft' %}selected{% endif %}>Bản nháp</option>
+                                <option value="published" {% if post.status == 'published' %}selected{% endif %}>Đã xuất bản</option>
+                                <option value="featured" {% if post.status == 'featured' %}selected{% endif %}>Nổi bật</option>
+                                <option value="archived" {% if post.status == 'archived' %}selected{% endif %}>Lưu trữ</option>
+                            </select>
+                        </div>
+
+                        <!-- Featured & Pinned -->
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox"
+                                       id="isFeatured" name="isFeatured"
+                                       {% if post.isFeatured %}checked{% endif %}>
+                                <label class="form-check-label" for="isFeatured">
+                                    <i class="bi bi-star text-warning me-1"></i>Đánh dấu nổi bật
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox"
+                                       id="isPinned" name="isPinned"
+                                       {% if post.isPinned %}checked{% endif %}>
+                                <label class="form-check-label" for="isPinned">
+                                    <i class="bi bi-pin text-primary me-1"></i>Ghim lên đầu
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Meta Info -->
+                        <hr>
+                        <div class="small text-muted mb-2">
+                            <strong>Tạo bởi:</strong> {{ post.authorName }}<br>
+                            <strong>Ngày tạo:</strong> {{ post.createdAt.toLocaleString('vi-VN') }}<br>
+                            <strong>Cập nhật:</strong> {{ post.updatedAt.toLocaleString('vi-VN') }}<br>
+                            {% if post.publishedAt %}
+                            <strong>Xuất bản:</strong> {{ post.publishedAt.toLocaleString('vi-VN') }}<br>
+                            {% endif %}
+                            <strong>Slug:</strong> <code class="small">{{ post.slug }}</code>
+                        </div>
+
+                        <!-- Actions -->
+                        <hr>
+                        <button type="submit" class="btn btn-primary w-100 mb-2">
+                            <i class="bi bi-check-circle me-2"></i>Lưu thay đổi
+                        </button>
+                        <button type="button" class="btn btn-danger w-100"
+                                onclick="confirmDelete()">
+                            <i class="bi bi-trash me-2"></i>Xóa bài viết
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Category -->
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0">
+                            <i class="bi bi-folder me-2"></i>Chủ đề
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <select class="form-select" name="category" id="category">
+                            {% for key, label in categoryLabels %}
+                            <option value="{{ key }}" {% if post.category == key %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Tags -->
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0">
+                            <i class="bi bi-tags me-2"></i>Thẻ tag
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <input type="text" class="form-control" name="tags"
+                               value="{{ post.tags.join(', ') }}"
+                               placeholder="tag1, tag2, tag3...">
+                        <div class="form-text">Phân cách bằng dấu phẩy</div>
+                    </div>
+                </div>
+
+                <!-- Age Range -->
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0">
+                            <i class="bi bi-people me-2"></i>Độ tuổi phù hợp
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label for="ageMin" class="form-label small">Từ</label>
+                                <input type="number" class="form-control"
+                                       id="ageMin" name="ageMin"
+                                       min="0" max="18" value="{{ post.ageRange.min }}">
+                            </div>
+                            <div class="col-6">
+                                <label for="ageMax" class="form-label small">Đến</label>
+                                <input type="number" class="form-control"
+                                       id="ageMax" name="ageMax"
+                                       min="0" max="18" value="{{ post.ageRange.max }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle text-danger me-2"></i>Xác nhận xóa
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa bài viết: <strong>{{ post.title }}</strong>?</p>
+                <p class="text-danger mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Hành động này không thể hoàn tác!
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <form method="POST" action="/admin/blog/posts/{{ post._id }}/delete">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-2"></i>Xóa
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quill Editor -->
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<script>
+// Initialize Quill editor
+var quill = new Quill('#editor', {
+    theme: 'snow',
+    modules: {
+        toolbar: [
+            [{ 'header': [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'indent': '-1'}, { 'indent': '+1' }],
+            ['link', 'image'],
+            [{ 'align': [] }],
+            ['clean']
+        ]
+    }
+});
+
+// Submit form
+document.getElementById('blogForm').addEventListener('submit', function(e) {
+    var content = quill.root.innerHTML;
+    document.getElementById('content').value = content;
+
+    if (!content || content === '<p><br></p>') {
+        e.preventDefault();
+        alert('Vui lòng nhập nội dung!');
+        return false;
+    }
+});
+
+// Image preview
+document.getElementById('coverImage').addEventListener('input', function(e) {
+    var url = e.target.value;
+    var preview = document.getElementById('imagePreview');
+    var img = preview.querySelector('img');
+
+    if (url) {
+        img.src = url;
+        preview.classList.remove('d-none');
+    } else {
+        preview.classList.add('d-none');
+    }
+});
+
+// Delete confirmation
+function confirmDelete() {
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+</script>
+{% endblock %}

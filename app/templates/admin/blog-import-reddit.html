@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block title %}Import từ Reddit - Admin - Star Reward{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">
+                <i class="bi bi-download me-2"></i>Import bài viết từ Reddit
+            </h1>
+            <p class="text-muted mb-0">Tự động thu thập và tạo bài viết từ Reddit</p>
+        </div>
+        <div>
+            <a href="/admin/blog" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Quay lại
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Import Form -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-reddit me-2"></i>Thông tin Reddit Post
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="/admin/blog/import-reddit" id="importForm">
+                        <!-- Method Selection -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Chọn phương thức import</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="importMethod"
+                                       id="methodUrl" value="url" checked>
+                                <label class="btn btn-outline-primary" for="methodUrl">
+                                    <i class="bi bi-link-45deg me-2"></i>URL Post
+                                </label>
+
+                                <input type="radio" class="btn-check" name="importMethod"
+                                       id="methodSubreddit" value="subreddit">
+                                <label class="btn btn-outline-primary" for="methodSubreddit">
+                                    <i class="bi bi-collection me-2"></i>Subreddit
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- URL Method -->
+                        <div id="urlMethod">
+                            <div class="mb-3">
+                                <label for="redditUrl" class="form-label fw-bold">
+                                    Reddit Post URL <span class="text-danger">*</span>
+                                </label>
+                                <input type="url" class="form-control form-control-lg"
+                                       id="redditUrl" name="redditUrl"
+                                       placeholder="https://www.reddit.com/r/parenting/comments/...">
+                                <div class="form-text">
+                                    Ví dụ: https://www.reddit.com/r/parenting/comments/abc123/
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subreddit Method -->
+                        <div id="subredditMethod" class="d-none">
+                            <div class="mb-3">
+                                <label for="subreddit" class="form-label fw-bold">
+                                    Tên Subreddit <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">r/</span>
+                                    <input type="text" class="form-control"
+                                           id="subreddit" name="subreddit"
+                                           placeholder="parenting">
+                                </div>
+                                <div class="form-text">
+                                    Các subreddit gợi ý: parenting, education, teachers, homeschool
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="sortBy" class="form-label fw-bold">Sắp xếp theo</label>
+                                <select class="form-select" id="sortBy" name="sortBy">
+                                    <option value="hot" selected>Hot (Nổi bật)</option>
+                                    <option value="new">New (Mới nhất)</option>
+                                    <option value="top">Top (Được vote nhiều)</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="limitPosts" class="form-label fw-bold">
+                                    Số lượng bài viết
+                                </label>
+                                <input type="number" class="form-control"
+                                       id="limitPosts" name="limitPosts"
+                                       min="1" max="50" value="10">
+                                <div class="form-text">Tối đa 50 bài viết mỗi lần</div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Category Mapping -->
+                        <div class="mb-3">
+                            <label for="category" class="form-label fw-bold">
+                                Chủ đề bài viết <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="category" name="category" required>
+                                {% for key, label in categoryLabels %}
+                                <option value="{{ key }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">
+                                Chọn chủ đề phù hợp cho bài viết từ Reddit
+                            </div>
+                        </div>
+
+                        <!-- Tags -->
+                        <div class="mb-3">
+                            <label for="tags" class="form-label fw-bold">Thẻ tag</label>
+                            <input type="text" class="form-control" id="tags"
+                                   name="tags" placeholder="reddit, import, parenting">
+                            <div class="form-text">
+                                Phân cách bằng dấu phẩy (mặc định sẽ thêm "reddit", "import")
+                            </div>
+                        </div>
+
+                        <!-- Auto Publish -->
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox"
+                                       id="autoPublish" name="autoPublish">
+                                <label class="form-check-label" for="autoPublish">
+                                    <strong>Tự động xuất bản</strong>
+                                    <div class="small text-muted">
+                                        Nếu bỏ chọn, bài viết sẽ được lưu dưới dạng bản nháp
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Submit -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-download me-2"></i>
+                                Import Bài Viết
+                            </button>
+                            <a href="/admin/blog" class="btn btn-outline-secondary">
+                                Hủy
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Sidebar -->
+        <div class="col-lg-4">
+            <!-- How it works -->
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>Cách hoạt động
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ol class="mb-0 ps-3">
+                        <li class="mb-2">Nhập URL Reddit post hoặc chọn subreddit</li>
+                        <li class="mb-2">Hệ thống crawl nội dung từ Reddit</li>
+                        <li class="mb-2">Chuyển đổi định dạng Markdown sang HTML</li>
+                        <li class="mb-2">Tự động tạo bài viết mới</li>
+                        <li>Có thể chỉnh sửa sau khi import</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Popular Subreddits -->
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-star me-2"></i>Subreddit phổ biến
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <button type="button" class="list-group-item list-group-item-action border-0 px-0"
+                                onclick="setSubreddit('parenting')">
+                            <i class="bi bi-reddit text-danger me-2"></i>r/parenting
+                            <small class="text-muted d-block">Nuôi dạy con cái</small>
+                        </button>
+                        <button type="button" class="list-group-item list-group-item-action border-0 px-0"
+                                onclick="setSubreddit('education')">
+                            <i class="bi bi-reddit text-danger me-2"></i>r/education
+                            <small class="text-muted d-block">Giáo dục tổng quát</small>
+                        </button>
+                        <button type="button" class="list-group-item list-group-item-action border-0 px-0"
+                                onclick="setSubreddit('Teachers')">
+                            <i class="bi bi-reddit text-danger me-2"></i>r/Teachers
+                            <small class="text-muted d-block">Dành cho giáo viên</small>
+                        </button>
+                        <button type="button" class="list-group-item list-group-item-action border-0 px-0"
+                                onclick="setSubreddit('homeschool')">
+                            <i class="bi bi-reddit text-danger me-2"></i>r/homeschool
+                            <small class="text-muted d-block">Giáo dục tại nhà</small>
+                        </button>
+                        <button type="button" class="list-group-item list-group-item-action border-0 px-0"
+                                onclick="setSubreddit('ScienceTeachers')">
+                            <i class="bi bi-reddit text-danger me-2"></i>r/ScienceTeachers
+                            <small class="text-muted d-block">Giáo viên khoa học</small>
+                        </button>
+                        <button type="button" class="list-group-item list-group-item-action border-0 px-0"
+                                onclick="setSubreddit('EnglishLearning')">
+                            <i class="bi bi-reddit text-danger me-2"></i>r/EnglishLearning
+                            <small class="text-muted d-block">Học tiếng Anh</small>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Note -->
+            <div class="alert alert-info">
+                <i class="bi bi-lightbulb me-2"></i>
+                <strong>Lưu ý:</strong> Tính năng này đang ở giai đoạn phát triển.
+                Kết nối với hệ thống crawler của bạn tại
+                <code>F:\HOC TAP\JAY\Order-Management-System\dashboard-v2\components\blog-corner</code>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Toggle import methods
+document.querySelectorAll('input[name="importMethod"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        if (this.value === 'url') {
+            document.getElementById('urlMethod').classList.remove('d-none');
+            document.getElementById('subredditMethod').classList.add('d-none');
+            document.getElementById('redditUrl').required = true;
+            document.getElementById('subreddit').required = false;
+        } else {
+            document.getElementById('urlMethod').classList.add('d-none');
+            document.getElementById('subredditMethod').classList.remove('d-none');
+            document.getElementById('redditUrl').required = false;
+            document.getElementById('subreddit').required = true;
+        }
+    });
+});
+
+// Set subreddit
+function setSubreddit(name) {
+    document.getElementById('methodSubreddit').checked = true;
+    document.getElementById('methodSubreddit').dispatchEvent(new Event('change'));
+    document.getElementById('subreddit').value = name;
+}
+
+// Form validation
+document.getElementById('importForm').addEventListener('submit', function(e) {
+    const method = document.querySelector('input[name="importMethod"]:checked').value;
+
+    if (method === 'url') {
+        const url = document.getElementById('redditUrl').value;
+        if (!url || !url.includes('reddit.com')) {
+            e.preventDefault();
+            alert('Vui lòng nhập URL Reddit hợp lệ!');
+            return false;
+        }
+    } else {
+        const subreddit = document.getElementById('subreddit').value.trim();
+        if (!subreddit) {
+            e.preventDefault();
+            alert('Vui lòng nhập tên subreddit!');
+            return false;
+        }
+    }
+});
+</script>
+{% endblock %}

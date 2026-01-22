@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block title %}Danh sách bài viết - Admin - Star Reward{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">
+                <i class="bi bi-file-text me-2"></i>Danh sách bài viết
+            </h1>
+            <p class="text-muted mb-0">Tổng số: {{ totalPosts }} bài viết</p>
+        </div>
+        <div>
+            <a href="/admin/blog" class="btn btn-outline-secondary me-2">
+                <i class="bi bi-arrow-left me-2"></i>Quay lại
+            </a>
+            <a href="/admin/blog/import-reddit" class="btn btn-success me-2">
+                <i class="bi bi-download me-2"></i>Import Reddit
+            </a>
+            <a href="/admin/blog/create" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Tạo mới
+            </a>
+        </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="GET" action="/admin/blog/posts" class="row g-3">
+                <div class="col-md-5">
+                    <label class="form-label">Tìm kiếm</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control" name="search"
+                               placeholder="Tìm theo tiêu đề, nội dung, tác giả..."
+                               value="{{ search }}">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Chủ đề</label>
+                    <select class="form-select" name="category">
+                        <option value="">Tất cả chủ đề</option>
+                        {% for key, label in categoryLabels %}
+                        <option value="{{ key }}" {% if categoryFilter == key %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Trạng thái</label>
+                    <select class="form-select" name="status">
+                        <option value="">Tất cả</option>
+                        <option value="published" {% if statusFilter == 'published' %}selected{% endif %}>Đã xuất bản</option>
+                        <option value="draft" {% if statusFilter == 'draft' %}selected{% endif %}>Bản nháp</option>
+                        <option value="featured" {% if statusFilter == 'featured' %}selected{% endif %}>Nổi bật</option>
+                        <option value="archived" {% if statusFilter == 'archived' %}selected{% endif %}>Lưu trữ</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-funnel me-2"></i>Lọc
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Posts Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 40%">Tiêu đề</th>
+                            <th>Tác giả</th>
+                            <th>Chủ đề</th>
+                            <th>Trạng thái</th>
+                            <th>Lượt xem</th>
+                            <th>Ngày tạo</th>
+                            <th class="text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if posts.length > 0 %}
+                            {% for post in posts %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-start">
+                                        {% if post.coverImage %}
+                                        <img src="{{ post.coverImage }}" alt=""
+                                             class="me-2 rounded"
+                                             style="width: 60px; height: 40px; object-fit: cover;">
+                                        {% endif %}
+                                        <div>
+                                            <a href="/admin/blog/posts/{{ post._id }}/edit"
+                                               class="text-decoration-none fw-semibold">
+                                                {{ post.title }}
+                                            </a>
+                                            {% if post.isFeatured %}
+                                                <i class="bi bi-star-fill text-warning ms-1" title="Nổi bật"></i>
+                                            {% endif %}
+                                            {% if post.isPinned %}
+                                                <i class="bi bi-pin-fill text-primary ms-1" title="Ghim"></i>
+                                            {% endif %}
+                                            <div class="small text-muted mt-1">
+                                                {{ post.excerpt | truncate(100) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="small">
+                                        <div class="fw-semibold">{{ post.authorName }}</div>
+                                        <div class="text-muted">{{ post.authorRole }}</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ categoryColors[post.category] || 'secondary' }}">
+                                        <i class="bi bi-{{ categoryIcons[post.category] || 'folder' }} me-1"></i>
+                                        {{ categoryLabels[post.category] }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if post.status == 'published' %}
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-circle me-1"></i>Đã xuất bản
+                                        </span>
+                                    {% elif post.status == 'draft' %}
+                                        <span class="badge bg-warning">
+                                            <i class="bi bi-pencil me-1"></i>Bản nháp
+                                        </span>
+                                    {% elif post.status == 'featured' %}
+                                        <span class="badge bg-info">
+                                            <i class="bi bi-star me-1"></i>Nổi bật
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">
+                                            <i class="bi bi-archive me-1"></i>{{ post.status }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="small">
+                                        <div><i class="bi bi-eye me-1"></i>{{ post.viewCount || 0 }}</div>
+                                        <div><i class="bi bi-heart me-1"></i>{{ post.likes || 0 }}</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {{ post.createdAt.toLocaleDateString('vi-VN') }}
+                                    </small>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="/blog/{{ post.slug }}"
+                                           class="btn btn-outline-info"
+                                           title="Xem"
+                                           target="_blank">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="/admin/blog/posts/{{ post._id }}/edit"
+                                           class="btn btn-outline-warning"
+                                           title="Sửa">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <button type="button"
+                                                class="btn btn-outline-danger"
+                                                title="Xóa"
+                                                onclick="confirmDelete('{{ post._id }}', '{{ post.title }}')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center py-5">
+                                    <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
+                                    <p class="text-muted">Không tìm thấy bài viết nào</p>
+                                    <a href="/admin/blog/create" class="btn btn-primary">
+                                        <i class="bi bi-plus-circle me-2"></i>Tạo bài viết đầu tiên
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        {% if totalPages > 1 %}
+        <div class="card-footer bg-white">
+            <nav>
+                <ul class="pagination justify-content-center mb-0">
+                    <li class="page-item {% if currentPage == 1 %}disabled{% endif %}">
+                        <a class="page-link" href="?page={{ currentPage - 1 }}{% if search %}&search={{ search }}{% endif %}{% if categoryFilter %}&category={{ categoryFilter }}{% endif %}{% if statusFilter %}&status={{ statusFilter }}{% endif %}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+
+                    {% for page in Array.from({length: totalPages}, (_, i) => i + 1) %}
+                        {% if page == currentPage %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page }}</span>
+                            </li>
+                        {% elif page == 1 or page == totalPages or (page >= currentPage - 2 and page <= currentPage + 2) %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page }}{% if search %}&search={{ search }}{% endif %}{% if categoryFilter %}&category={{ categoryFilter }}{% endif %}{% if statusFilter %}&status={{ statusFilter }}{% endif %}">
+                                    {{ page }}
+                                </a>
+                            </li>
+                        {% elif page == currentPage - 3 or page == currentPage + 3 %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    <li class="page-item {% if currentPage == totalPages %}disabled{% endif %}">
+                        <a class="page-link" href="?page={{ currentPage + 1 }}{% if search %}&search={{ search }}{% endif %}{% if categoryFilter %}&category={{ categoryFilter }}{% endif %}{% if statusFilter %}&status={{ statusFilter }}{% endif %}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle text-danger me-2"></i>Xác nhận xóa
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa bài viết: <strong id="deleteTitle"></strong>?</p>
+                <p class="text-danger mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Hành động này không thể hoàn tác!
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <form id="deleteForm" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-2"></i>Xóa
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete(postId, title) {
+    document.getElementById('deleteTitle').textContent = title;
+    document.getElementById('deleteForm').action = `/admin/blog/posts/${postId}/delete`;
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+</script>
+{% endblock %}

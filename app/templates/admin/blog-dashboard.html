@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}Quản lý Blog - Admin - Star Reward{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">
+                <i class="bi bi-file-text me-2"></i>Quản lý Blog
+            </h1>
+            <p class="text-muted mb-0">Tổng quan bài viết và nội dung</p>
+        </div>
+        <div>
+            <a href="/admin/dashboard" class="btn btn-outline-secondary me-2">
+                <i class="bi bi-arrow-left me-2"></i>Dashboard
+            </a>
+            <a href="/admin/blog/import-reddit" class="btn btn-success me-2">
+                <i class="bi bi-download me-2"></i>Import từ Reddit
+            </a>
+            <a href="/admin/blog/create" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Tạo bài viết
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Tổng bài viết</p>
+                            <h3 class="mb-0 fw-bold">{{ stats.totalPosts }}</h3>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 p-3 rounded">
+                            <i class="bi bi-file-earmark-text fs-4 text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Đã xuất bản</p>
+                            <h3 class="mb-0 fw-bold">{{ stats.publishedPosts }}</h3>
+                        </div>
+                        <div class="bg-success bg-opacity-10 p-3 rounded">
+                            <i class="bi bi-check-circle fs-4 text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Bản nháp</p>
+                            <h3 class="mb-0 fw-bold">{{ stats.draftPosts }}</h3>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 p-3 rounded">
+                            <i class="bi bi-pencil-square fs-4 text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Nổi bật</p>
+                            <h3 class="mb-0 fw-bold">{{ stats.featuredPosts }}</h3>
+                        </div>
+                        <div class="bg-info bg-opacity-10 p-3 rounded">
+                            <i class="bi bi-star fs-4 text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <!-- Category Distribution -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pie-chart me-2"></i>Phân bố chủ đề
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if categoryStats.length > 0 %}
+                        {% for stat in categoryStats %}
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="small">
+                                    <i class="bi bi-{{ categoryIcons[stat._id] || 'folder' }} me-1"></i>
+                                    {{ categoryLabels[stat._id] || stat._id }}
+                                </span>
+                                <span class="badge bg-primary">{{ stat.count }}</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar" role="progressbar"
+                                     style="width: {{ (stat.count / stats.totalPosts * 100) }}%"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-3">Chưa có dữ liệu</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Posts -->
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-graph-up me-2"></i>Bài viết được xem nhiều nhất
+                        </h5>
+                        <a href="/admin/blog/posts" class="btn btn-sm btn-outline-primary">
+                            Xem tất cả
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Tiêu đề</th>
+                                    <th>Chủ đề</th>
+                                    <th>Lượt xem</th>
+                                    <th>Likes</th>
+                                    <th>Comments</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if topPosts.length > 0 %}
+                                    {% for post in topPosts %}
+                                    <tr>
+                                        <td>
+                                            <a href="/admin/blog/posts/{{ post._id }}/edit" class="text-decoration-none">
+                                                {{ post.title }}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ categoryColors[post.category] || 'secondary' }}">
+                                                {{ categoryLabels[post.category] }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <i class="bi bi-eye me-1"></i>{{ post.viewCount || 0 }}
+                                        </td>
+                                        <td>
+                                            <i class="bi bi-heart me-1"></i>{{ post.likes || 0 }}
+                                        </td>
+                                        <td>
+                                            <i class="bi bi-chat me-1"></i>{{ post.commentCount || 0 }}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-3 text-muted">
+                                            Chưa có dữ liệu
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Posts -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history me-2"></i>Bài viết mới nhất
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% if recentPosts.length > 0 %}
+                            {% for post in recentPosts %}
+                            <a href="/admin/blog/posts/{{ post._id }}/edit"
+                               class="list-group-item list-group-item-action">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">{{ post.title }}</h6>
+                                        <p class="mb-1 small text-muted">
+                                            {{ post.authorName }} • {{ post.createdAt.toLocaleDateString('vi-VN') }}
+                                        </p>
+                                    </div>
+                                    <span class="badge bg-{{ post.status == 'published' ? 'success' : 'warning' }}">
+                                        {{ post.status == 'published' ? 'Đã xuất bản' : 'Nháp' }}
+                                    </span>
+                                </div>
+                            </a>
+                            {% endfor %}
+                        {% else %}
+                            <div class="list-group-item text-center py-3 text-muted">
+                                Chưa có bài viết nào
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const { BlogPost, categoryLabels, categoryIcons, categoryColors } = require('../models/Blog');
 const { isAdmin } = require('./auth');
 
 // ============================================
@@ -314,6 +315,300 @@ router.post('/users/:id/reset-password', isAdmin, async (req, res) => {
         console.error(err);
         req.flash('danger', 'Đã có lỗi xảy ra!');
         res.redirect(`/admin/users/${req.params.id}/reset-password`);
+    }
+});
+
+// ============================================
+// BLOG MANAGEMENT
+// ============================================
+
+// Blog Dashboard
+router.get('/blog', isAdmin, async (req, res) => {
+    try {
+        const totalPosts = await BlogPost.countDocuments();
+        const publishedPosts = await BlogPost.countDocuments({ status: 'published' });
+        const draftPosts = await BlogPost.countDocuments({ status: 'draft' });
+        const featuredPosts = await BlogPost.countDocuments({ isFeatured: true });
+
+        // Get category distribution
+        const categoryStats = await BlogPost.aggregate([
+            { $group: { _id: '$category', count: { $sum: 1 } } },
+            { $sort: { count: -1 } }
+        ]);
+
+        // Get recent posts
+        const recentPosts = await BlogPost.find()
+            .sort({ createdAt: -1 })
+            .limit(10);
+
+        // Get top posts by views
+        const topPosts = await BlogPost.find({ status: 'published' })
+            .sort({ viewCount: -1 })
+            .limit(5);
+
+        res.render('admin/blog-dashboard.html', {
+            stats: {
+                totalPosts,
+                publishedPosts,
+                draftPosts,
+                featuredPosts
+            },
+            categoryStats,
+            recentPosts,
+            topPosts,
+            categoryLabels
+        });
+    } catch (err) {
+        console.error(err);
+        req.flash('danger', 'Đã có lỗi xảy ra!');
+        res.redirect('/admin/dashboard');
+    }
+});
+
+// Blog Posts List
+router.get('/blog/posts', isAdmin, async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = 20;
+        const skip = (page - 1) * limit;
+        const search = req.query.search || '';
+        const categoryFilter = req.query.category || '';
+        const statusFilter = req.query.status || '';
+
+        // Build query
+        let query = {};
+        if (search) {
+            query.$or = [
+                { title: { $regex: search, $options: 'i' } },
+                { content: { $regex: search, $options: 'i' } },
+                { authorName: { $regex: search, $options: 'i' } }
+            ];
+        }
+        if (categoryFilter) {
+            query.category = categoryFilter;
+        }
+        if (statusFilter) {
+            query.status = statusFilter;
+        }
+
+        const totalPosts = await BlogPost.countDocuments(query);
+        const totalPages = Math.ceil(totalPosts / limit);
+
+        const posts = await BlogPost.find(query)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        res.render('admin/blog-posts.html', {
+            posts,
+            currentPage: page,
+            totalPages,
+            totalPosts,
+            search,
+            categoryFilter,
+            statusFilter,
+            categoryLabels,
+            categoryIcons,
+            categoryColors
+        });
+    } catch (err) {
+        console.error(err);
+        req.flash('danger', 'Đã có lỗi xảy ra!');
+        res.redirect('/admin/blog');
+    }
+});
+
+// Create Blog Post Form
+router.get('/blog/create', isAdmin, (req, res) => {
+    res.render('admin/blog-create.html', {
+        categoryLabels,
+        categoryIcons,
+        categoryColors
+    });
+});
+
+// Create Blog Post
+router.post('/blog/create', isAdmin, async (req, res) => {
+    try {
+        const {
+            title,
+            content,
+            excerpt,
+            category,
+            tags,
+            coverImage,
+            status,
+            isFeatured,
+            isPinned,
+            ageMin,
+            ageMax
+        } = req.body;
+
+        if (!title || !content) {
+            req.flash('danger', 'Vui lòng điền đầy đủ tiêu đề và nội dung!');
+            return res.redirect('/admin/blog/create');
+        }
+
+        // Auto generate excerpt if not provided
+        const finalExcerpt = excerpt || content
+            .replace(/<[^>]+>/g, '')
+            .substring(0, 300) + '...';
+
+        const post = new BlogPost({
+            title,
+            content,
+            excerpt: finalExcerpt,
+            category: category || 'experience',
+            tags: tags ? tags.split(',').map(t => t.trim()).filter(t => t) : [],
+            coverImage,
+            status: status || 'draft',
+            isFeatured: isFeatured === 'on',
+            isPinned: isPinned === 'on',
+            authorName: req.session.user.fullName,
+            authorEmail: req.session.user.email,
+            authorRole: 'admin',
+            ageRange: {
+                min: parseInt(ageMin) || 0,
+                max: parseInt(ageMax) || 18
+            }
+        });
+
+        await post.save();
+
+        req.flash('success', 'Tạo bài viết thành công!');
+        res.redirect(`/admin/blog/posts/${post._id}/edit`);
+    } catch (err) {
+        console.error(err);
+        req.flash('danger', 'Đã có lỗi xảy ra!');
+        res.redirect('/admin/blog/create');
+    }
+});
+
+// Edit Blog Post Form
+router.get('/blog/posts/:id/edit', isAdmin, async (req, res) => {
+    try {
+        const post = await BlogPost.findById(req.params.id);
+        if (!post) {
+            req.flash('danger', 'Không tìm thấy bài viết!');
+            return res.redirect('/admin/blog/posts');
+        }
+
+        res.render('admin/blog-edit.html', {
+            post,
+            categoryLabels,
+            categoryIcons,
+            categoryColors
+        });
+    } catch (err) {
+        console.error(err);
+        req.flash('danger', 'Đã có lỗi xảy ra!');
+        res.redirect('/admin/blog/posts');
+    }
+});
+
+// Update Blog Post
+router.post('/blog/posts/:id/edit', isAdmin, async (req, res) => {
+    try {
+        const post = await BlogPost.findById(req.params.id);
+        if (!post) {
+            req.flash('danger', 'Không tìm thấy bài viết!');
+            return res.redirect('/admin/blog/posts');
+        }
+
+        const {
+            title,
+            content,
+            excerpt,
+            category,
+            tags,
+            coverImage,
+            status,
+            isFeatured,
+            isPinned,
+            ageMin,
+            ageMax
+        } = req.body;
+
+        // Update fields
+        post.title = title;
+        post.content = content;
+        post.excerpt = excerpt || content.replace(/<[^>]+>/g, '').substring(0, 300) + '...';
+        post.category = category;
+        post.tags = tags ? tags.split(',').map(t => t.trim()).filter(t => t) : [];
+        post.coverImage = coverImage;
+        post.status = status;
+        post.isFeatured = isFeatured === 'on';
+        post.isPinned = isPinned === 'on';
+        post.ageRange = {
+            min: parseInt(ageMin) || 0,
+            max: parseInt(ageMax) || 18
+        };
+
+        await post.save();
+
+        req.flash('success', 'Cập nhật bài viết thành công!');
+        res.redirect(`/admin/blog/posts/${post._id}/edit`);
+    } catch (err) {
+        console.error(err);
+        req.flash('danger', 'Đã có lỗi xảy ra!');
+        res.redirect(`/admin/blog/posts/${req.params.id}/edit`);
+    }
+});
+
+// Delete Blog Post
+router.post('/blog/posts/:id/delete', isAdmin, async (req, res) => {
+    try {
+        const post = await BlogPost.findById(req.params.id);
+        if (!post) {
+            req.flash('danger', 'Không tìm thấy bài viết!');
+            return res.redirect('/admin/blog/posts');
+        }
+
+        await BlogPost.findByIdAndDelete(req.params.id);
+
+        req.flash('success', 'Xóa bài viết thành công!');
+        res.redirect('/admin/blog/posts');
+    } catch (err) {
+        console.error(err);
+        req.flash('danger', 'Đã có lỗi xảy ra!');
+        res.redirect('/admin/blog/posts');
+    }
+});
+
+// Import from Reddit (Form)
+router.get('/blog/import-reddit', isAdmin, (req, res) => {
+    res.render('admin/blog-import-reddit.html', {
+        categoryLabels
+    });
+});
+
+// Import from Reddit (Process)
+router.post('/blog/import-reddit', isAdmin, async (req, res) => {
+    try {
+        const {
+            redditUrl,
+            subreddit,
+            postId,
+            category,
+            tags
+        } = req.body;
+
+        // TODO: Integrate with your Reddit crawler
+        // For now, create a placeholder implementation
+
+        req.flash('info', 'Tính năng import từ Reddit đang được phát triển. Vui lòng sử dụng form tạo bài viết thủ công.');
+        res.redirect('/admin/blog/create');
+
+        // Future implementation:
+        // 1. Fetch data from your Reddit crawler API
+        // 2. Parse Reddit post data
+        // 3. Create BlogPost with Reddit data
+        // 4. Redirect to edit page
+
+    } catch (err) {
+        console.error(err);
+        req.flash('danger', 'Đã có lỗi xảy ra!');
+        res.redirect('/admin/blog/import-reddit');
     }
 });
 
