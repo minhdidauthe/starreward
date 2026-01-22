@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require('../models/User');
 const { BlogPost, categoryLabels, categoryIcons, categoryColors } = require('../models/Blog');
 const { isAdmin } = require('./auth');
+const redditCrawlerService = require('../services/redditCrawler');
 
 // ============================================
 // Admin Dashboard
@@ -588,27 +589,131 @@ router.post('/blog/import-reddit', isAdmin, async (req, res) => {
         const {
             redditUrl,
             subreddit,
-            postId,
+            sortBy,
+            limitPosts,
             category,
-            tags
+            tags,
+            autoPublish,
+            importMethod
         } = req.body;
 
-        // TODO: Integrate with your Reddit crawler
-        // For now, create a placeholder implementation
+        let importResults = {
+            success: 0,
+            failed: 0,
+            posts: []
+        };
 
-        req.flash('info', 'Tính năng import từ Reddit đang được phát triển. Vui lòng sử dụng form tạo bài viết thủ công.');
-        res.redirect('/admin/blog/create');
+        // Import by URL
+        if (importMethod === 'url' && redditUrl) {
+            try {
+                const redditPost = await redditCrawlerService.fetchRedditPostByUrl(redditUrl);
 
-        // Future implementation:
-        // 1. Fetch data from your Reddit crawler API
-        // 2. Parse Reddit post data
-        // 3. Create BlogPost with Reddit data
-        // 4. Redirect to edit page
+                const blogPostData = redditCrawlerService.convertRedditPostToBlogPost(redditPost, {
+                    category: category || 'experience',
+                    tags: tags ? tags.split(',').map(t => t.trim()) : [],
+                    autoPublish: autoPublish === 'on',
+                    authorName: req.session.user.fullName,
+                    authorEmail: req.session.user.email
+                });
+
+                const newPost = await BlogPost.create(blogPostData);
+                importResults.success++;
+                importResults.posts.push(newPost);
+
+                req.flash('success', `Đã import thành công bài viết: ${newPost.title}`);
+                return res.redirect(`/admin/blog/posts/${newPost._id}/edit`);
+
+            } catch (error) {
+                console.error('Error importing from URL:', error);
+                req.flash('danger', `Lỗi khi import từ URL: ${error.message}`);
+                return res.redirect('/admin/blog/import-reddit');
+            }
+        }
+
+        // Import from Subreddit
+        if (importMethod === 'subreddit' && subreddit) {
+            try {
+                const limit = parseInt(limitPosts) || 10;
+                const posts = await redditCrawlerService.fetchSubredditPosts(subreddit, {
+                    sort: sortBy || 'hot',
+                    limit: Math.min(limit, 50) // Max 50
+                });
+
+                for (const post of posts) {
+                    try {
+                        const blogPostData = redditCrawlerService.convertRedditPostToBlogPost(post, {
+                            category: category || 'experience',
+                            tags: tags ? tags.split(',').map(t => t.trim()) : [],
+                            autoPublish: autoPublish === 'on',
+                            authorName: req.session.user.fullName,
+                            authorEmail: req.session.user.email
+                        });
+
+                        const newPost = await BlogPost.create(blogPostData);
+                        importResults.success++;
+                        importResults.posts.push(newPost);
+
+                    } catch (error) {
+                        console.error(`Error importing post: ${post.title}`, error);
+                        importResults.failed++;
+                    }
+                }
+
+                if (importResults.success > 0) {
+                    req.flash('success', `Đã import thành công ${importResults.success}/${posts.length} bài viết từ r/${subreddit}`);
+                } else {
+                    req.flash('warning', 'Không import được bài viết nào');
+                }
+
+                return res.redirect('/admin/blog/posts');
+
+            } catch (error) {
+                console.error('Error importing from subreddit:', error);
+                req.flash('danger', `Lỗi khi import từ subreddit: ${error.message}`);
+                return res.redirect('/admin/blog/import-reddit');
+            }
+        }
+
+        // No valid import method
+        req.flash('warning', 'Vui lòng chọn phương thức import và nhập đầy đủ thông tin');
+        res.redirect('/admin/blog/import-reddit');
 
     } catch (err) {
-        console.error(err);
-        req.flash('danger', 'Đã có lỗi xảy ra!');
+        console.error('Import error:', err);
+        req.flash('danger', `Đã có lỗi xảy ra: ${err.message}`);
         res.redirect('/admin/blog/import-reddit');
+    }
+});
+
+// Sync Reddit Trends (New feature)
+router.post('/blog/sync-reddit-trends', isAdmin, async (req, res) => {
+    try {
+        const { category, limit, autoPublish } = req.body;
+
+        const syncResults = await redditCrawlerService.syncRedditToBlog({
+            category: category || 'experience',
+            limit: parseInt(limit) || 10,
+            autoPublish: autoPublish === 'on'
+        });
+
+        // Create blog posts from sync results
+        let created = 0;
+        for (const item of syncResults.success) {
+            try {
+                await BlogPost.create(item.data);
+                created++;
+            } catch (error) {
+                console.error('Error creating post:', error);
+            }
+        }
+
+        req.flash('success', `Đã đồng bộ ${created} bài viết từ Reddit trends`);
+        res.redirect('/admin/blog/posts');
+
+    } catch (err) {
+        console.error('Sync error:', err);
+        req.flash('danger', 'Lỗi khi đồng bộ Reddit trends');
+        res.redirect('/admin/blog');
     }
 });
 
