@@ -208,9 +208,11 @@
                                             {{ post.authorName }} • {{ post.createdAt.toLocaleDateString('vi-VN') }}
                                         </p>
                                     </div>
-                                    <span class="badge bg-{{ post.status == 'published' ? 'success' : 'warning' }}">
-                                        {{ post.status == 'published' ? 'Đã xuất bản' : 'Nháp' }}
-                                    </span>
+                                    {% if post.status == 'published' %}
+                                    <span class="badge bg-success">Đã xuất bản</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">Nháp</span>
+                                    {% endif %}
                                 </div>
                             </a>
                             {% endfor %}
