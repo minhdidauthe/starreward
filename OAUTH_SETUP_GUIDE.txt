@@ -1,0 +1,256 @@
+=============================================================================
+          HƯỚNG DẪN LẤY REDDIT OAUTH CREDENTIALS CHO STAR REWARD
+=============================================================================
+
+📋 CHUẨN BỊ:
+- Tài khoản Reddit (nếu chưa có, đăng ký tại https://www.reddit.com)
+- Trình duyệt web
+- 5-10 phút thời gian
+
+=============================================================================
+BƯỚC 1: TẠO REDDIT APP
+=============================================================================
+
+1. Đăng nhập Reddit và truy cập:
+   👉 https://www.reddit.com/prefs/apps
+
+2. Cuộn xuống phần "developed applications"
+
+3. Click nút "create another app..." (hoặc "are you a developer? create an app...")
+
+4. Điền form với thông tin SAU ĐÂY (CHÍNH XÁC):
+
+   ┌─────────────────────────────────────────────────────────┐
+   │ name: StarReward                                         │
+   │                                                           │
+   │ App type: ○ web app                                      │
+   │           ○ installed app                                │
+   │           ● script          ← CHỌN CÁI NÀY              │
+   │                                                           │
+   │ description: Educational content aggregator for Star     │
+   │              Reward platform                             │
+   │                                                           │
+   │ about url: (để trống)                                    │
+   │                                                           │
+   │ redirect uri: http://localhost:8080                      │
+   └─────────────────────────────────────────────────────────┘
+
+5. Click nút "create app"
+
+6. SAU KHI TẠO XONG, bạn sẽ thấy app mới xuất hiện:
+
+   ┌─────────────────────────────────────────────────────────┐
+   │ StarReward                                  [edit] [delete]│
+   │ personal use script by yourusername                       │
+   │                                                           │
+   │ AbC123XyZ45678  ← ĐÂY LÀ CLIENT ID (14 ký tự)           │
+   │                                                           │
+   │ secret: def456ABC789xyz012345UVWXYZ012  ← CLIENT SECRET  │
+   │                       (27 ký tự)                          │
+   │                                                           │
+   │ Educational content aggregator for Star Reward platform  │
+   │ http://localhost:8080                                     │
+   └─────────────────────────────────────────────────────────┘
+
+7. GHI CHÚ LẠI (copy vào notepad):
+   ✏️ CLIENT_ID: __________________ (14 ký tự)
+   ✏️ CLIENT_SECRET: __________________ (27 ký tự)
+
+⚠️ LƯU Ý: Đây là thông tin nhạy cảm! Không share cho ai!
+
+=============================================================================
+BƯỚC 2: LẤY REFRESH TOKEN (CÁCH ĐơN GIẢN NHẤT)
+=============================================================================
+
+Sử dụng công cụ online của Reddit OAuth Helper:
+
+1. Truy cập:
+   👉 https://not-an-aardvark.github.io/reddit-oauth-helper/
+
+2. Điền thông tin từ Bước 1:
+
+   ┌─────────────────────────────────────────────────────────┐
+   │ Client ID: AbC123XyZ45678                                │
+   │            ↑ Paste CLIENT_ID từ bước 1                   │
+   │                                                           │
+   │ Client Secret: def456ABC789xyz012345UVWXYZ012           │
+   │                ↑ Paste CLIENT_SECRET từ bước 1           │
+   │                                                           │
+   │ Scopes (select all that apply):                          │
+   │ ☑ identity    ← CHỌN CÁI NÀY (xác thực danh tính)      │
+   │ ☑ read        ← CHỌN CÁI NÀY (đọc bài viết)            │
+   │ ☐ edit        ← KHÔNG CHỌN                              │
+   │ ☐ submit      ← KHÔNG CHỌN                              │
+   │ ... (các scope khác không cần)                           │
+   └─────────────────────────────────────────────────────────┘
+
+3. Click nút "Generate tokens"
+
+4. Bạn sẽ được chuyển đến trang đăng nhập Reddit
+   → Đăng nhập với tài khoản Reddit của bạn
+
+5. Reddit sẽ hỏi: "StarReward is requesting permission to..."
+   → Click nút "Allow" (Cho phép)
+
+6. Bạn sẽ được chuyển về trang OAuth Helper với kết quả:
+
+   ┌─────────────────────────────────────────────────────────┐
+   │ ✅ Success!                                              │
+   │                                                           │
+   │ Access Token (expires in 1 hour):                        │
+   │ eyJhbG...xyz123 (không cần dùng)                         │
+   │                                                           │
+   │ Refresh Token (never expires):                           │
+   │ 123456789-AbCdEfGhIjKlMnOpQrStUvWxYz1234567890          │
+   │ ↑ COPY CÁI NÀY                                           │
+   └─────────────────────────────────────────────────────────┘
+
+7. GHI CHÚ LẠI:
+   ✏️ REFRESH_TOKEN: __________________ (50-100 ký tự)
+
+💡 LƯU Ý: Refresh Token không bao giờ hết hạn trừ khi bạn thu hồi quyền
+
+=============================================================================
+BƯỚC 3: CẬP NHẬT FILE .ENV
+=============================================================================
+
+1. Mở file .env trong thư mục Star Reward:
+   📁 E:\Developer\Projects\Star Reward\starreward\.env
+
+2. Tìm phần "Reddit OAuth API" (dòng 16-21)
+
+3. Thay thế các giá trị placeholder:
+
+   TỪ:
+   ──────────────────────────────────────────────────────────
+   REDDIT_CLIENT_ID=your-reddit-client-id
+   REDDIT_CLIENT_SECRET=your-reddit-client-secret
+   REDDIT_REFRESH_TOKEN=your-refresh-token
+   ──────────────────────────────────────────────────────────
+
+   THÀNH:
+   ──────────────────────────────────────────────────────────
+   REDDIT_CLIENT_ID=AbC123XyZ45678
+   REDDIT_CLIENT_SECRET=def456ABC789xyz012345UVWXYZ012
+   REDDIT_REFRESH_TOKEN=123456789-AbCdEfGhIjKlMnOpQrStUvWxYz1234567890
+   ──────────────────────────────────────────────────────────
+   (thay bằng giá trị THỰC của bạn)
+
+4. Lưu file .env (Ctrl+S)
+
+=============================================================================
+BƯỚC 4: KHỞI ĐỘNG LẠI SERVER
+=============================================================================
+
+1. Trong terminal đang chạy Star Reward:
+   - Nhấn Ctrl+C để dừng server
+
+2. Khởi động lại:
+   npm start
+
+3. Kiểm tra log, bạn sẽ thấy:
+   ✅ Reddit OAuth client initialized
+   Server running at http://localhost:8080
+
+=============================================================================
+BƯỚC 5: TEST IMPORT TỪ SUBREDDIT
+=============================================================================
+
+1. Truy cập: http://localhost:8080/admin/blog/import-reddit
+
+2. Chọn tab "Subreddit"
+
+3. Thiết lập:
+   - Tên Subreddit: parenting
+   - Sắp xếp: Hot
+   - Số lượng: 5
+   - Chủ đề: Kinh nghiệm
+   - Tự động xuất bản: (bỏ check để lưu draft)
+
+4. Click "Import Bài Viết"
+
+5. Nếu thành công:
+   ✅ "Đã import 5 bài viết thành công!"
+   → Xem tại /admin/blog/posts
+
+=============================================================================
+TROUBLESHOOTING (XỬ LÝ LỖI)
+=============================================================================
+
+❌ Lỗi: "OAuth credentials not configured"
+✅ Giải pháp: Kiểm tra file .env có đủ 3 biến CLIENT_ID, CLIENT_SECRET,
+   REFRESH_TOKEN và đã khởi động lại server chưa
+
+❌ Lỗi: "Invalid refresh token" hoặc 401 Unauthorized
+✅ Giải pháp:
+   1. Refresh token có thể bị thu hồi
+   2. Tạo lại token tại: https://not-an-aardvark.github.io/reddit-oauth-helper/
+   3. Đảm bảo chọn đúng scopes: identity + read
+
+❌ Lỗi: "Rate limit exceeded"
+✅ Giải pháp: Reddit giới hạn 60 requests/phút. Đợi 1 phút rồi thử lại
+
+❌ Lỗi: "Subreddit is private"
+✅ Giải pháp: Một số subreddit là private/restricted. Thử subreddit public khác
+
+❌ Lỗi: "Invalid client_id"
+✅ Giải pháp:
+   1. Kiểm tra CLIENT_ID có đúng 14 ký tự không
+   2. Copy lại từ https://www.reddit.com/prefs/apps
+   3. Đảm bảo không có khoảng trắng thừa
+
+=============================================================================
+BẢO MẬT
+=============================================================================
+
+❌ KHÔNG BAO GIỜ:
+- Commit file .env lên Git
+- Share CLIENT_SECRET hoặc REFRESH_TOKEN
+- Đăng credentials lên mạng xã hội
+- Share screenshot có chứa credentials
+
+✅ NÊN LÀM:
+- Dùng .env cho credentials (đã có trong .gitignore)
+- Định kỳ rotate refresh token (3-6 tháng)
+- Thu hồi access nếu nghi ngờ bị lộ: https://www.reddit.com/prefs/apps
+
+=============================================================================
+SUBREDDITS GỢI Ý (SAU KHI SETUP XONG)
+=============================================================================
+
+📚 Giáo dục:
+- r/education - Giáo dục tổng quát
+- r/Teachers - Dành cho giáo viên
+- r/teaching - Phương pháp giảng dạy
+- r/homeschool - Giáo dục tại nhà
+
+👨‍👩‍👧‍👦 Nuôi dạy con:
+- r/parenting - Nuôi dạy con cái
+- r/Parenting101 - Tips cho phụ huynh mới
+- r/AskParents - Hỏi đáp về nuôi dạy con
+
+📖 Môn học:
+- r/learnmath - Học toán
+- r/EnglishLearning - Học tiếng Anh
+- r/ScienceTeachers - Giáo viên khoa học
+- r/matheducation - Giáo dục toán học
+
+🔬 STEM:
+- r/AskScience - Hỏi đáp khoa học
+- r/explainlikeimfive - Giải thích đơn giản
+- r/science - Khoa học tổng quát
+
+=============================================================================
+HOÀN TẤT! 🎉
+=============================================================================
+
+Sau khi setup xong, Star Reward có thể:
+✅ Crawl trending memes (không cần OAuth)
+✅ Import từ bất kỳ subreddit nào (với OAuth)
+✅ Import từ URL cụ thể (với OAuth)
+✅ Tự động phân loại và tag bài viết
+✅ Quản lý nội dung giáo dục chất lượng cao
+
+Chúc bạn sử dụng hiệu quả! 🚀
+
+=============================================================================

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reddit API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 5px;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>Reddit API Test</h1>
+
+    <button onclick="testAPI()">Test Reddit API</button>
+
+    <div id="result"></div>
+
+    <script>
+        async function testAPI() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>Loading...</p>';
+
+            try {
+                console.log('Fetching from /admin/api/reddit-direct...');
+
+                const url = '/admin/api/reddit-direct?subreddit=parenting&sort=hot&limit=5';
+                console.log('URL:', url);
+
+                const response = await fetch(url);
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+
+                const text = await response.text();
+                console.log('Response text:', text);
+
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    throw new Error('Failed to parse JSON: ' + text);
+                }
+
+                console.log('Data:', data);
+
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ Success!</p>
+                        <p><strong>Message:</strong> ${data.message}</p>
+                        <p><strong>Posts fetched:</strong> ${data.data.length}</p>
+                        <h3>Posts:</h3>
+                        <ul>
+                            ${data.data.map(post => `
+                                <li>
+                                    <strong>${post.title}</strong><br>
+                                    Score: ${post.score} | Comments: ${post.num_comments}<br>
+                                    Subreddit: r/${post.subreddit}
+                                </li>
+                            `).join('')}
+                        </ul>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <p class="error">❌ Error: ${data.error}</p>
+                    `;
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.innerHTML = `
+                    <p class="error">❌ Exception: ${error.message}</p>
+                    <pre>${error.stack}</pre>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

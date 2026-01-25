@@ -64,6 +64,8 @@ class RedditCrawlerService {
         const { limit = 20 } = options;
 
         try {
+            console.log(`[Reddit] Fetching trending memes via RapidAPI (limit: ${limit})`);
+
             const [trendingResponse, topResponse] = await Promise.all([
                 axios.get(`https://${RAPIDAPI_HOST}/memes/trending`, {
                     headers: {
@@ -87,20 +89,27 @@ class RedditCrawlerService {
             const allMemes = [...trending, ...top];
 
             // Remove duplicates by URL
-            const uniqueMemes = [];
-            const seenUrls = new Set();
-
+            const uniqueMemesMap = new Map();
             for (const meme of allMemes) {
-                if (!seenUrls.has(meme.url)) {
-                    seenUrls.add(meme.url);
-                    uniqueMemes.push(meme);
+                if (meme.url && !uniqueMemesMap.has(meme.url)) {
+                    uniqueMemesMap.set(meme.url, meme);
                 }
             }
 
+            const uniqueMemes = Array.from(uniqueMemesMap.values());
+
+            console.log(`[Reddit] Successfully fetched ${uniqueMemes.length} unique memes`);
+
             return uniqueMemes.slice(0, limit);
         } catch (error) {
-            console.error('Error fetching trending memes from RapidAPI:', error.message);
-            throw new Error('Failed to fetch Reddit memes from RapidAPI');
+            console.error('[Reddit] Error fetching trending memes:', error.message);
+            if (error.response) {
+                console.error('[Reddit] API Error:', {
+                    status: error.response.status,
+                    data: error.response.data
+                });
+            }
+            throw new Error(`Failed to fetch Reddit memes from RapidAPI: ${error.message}`);
         }
     }
 

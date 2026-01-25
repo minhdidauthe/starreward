@@ -1,0 +1,847 @@
+{% extends "base.html" %}
+
+{% block title %}Reddit Content Manager{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Premium Reddit Card Styles */
+    .reddit-card {
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        border-radius: 16px;
+        overflow: hidden;
+        background: #fff;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+    }
+
+    .reddit-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+        border-color: rgba(0, 0, 0, 0.15);
+    }
+
+    .reddit-card.selected {
+        border: 2px solid #6366f1;
+        background-color: #f5f7ff;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    }
+
+    .card-header-img {
+        height: 160px;
+        width: 100%;
+        object-fit: cover;
+        background: #f1f5f9;
+        position: relative;
+    }
+
+    .card-content {
+        padding: 1.25rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .subreddit-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #64748b;
+        margin-bottom: 0.75rem;
+        background: #f1f5f9;
+        padding: 4px 10px;
+        border-radius: 20px;
+    }
+
+    .post-title {
+        font-size: 1rem;
+        font-weight: 700;
+        line-height: 1.4;
+        color: #1e293b;
+        margin-bottom: 0.75rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .score-badge {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(4px);
+        padding: 6px 12px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        z-index: 2;
+    }
+
+    .score-badge.hot {
+        color: #ef4444;
+    }
+
+    .score-badge.medium {
+        color: #f59e0b;
+    }
+
+    .score-badge.low {
+        color: #64748b;
+    }
+
+    .meta-stats {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        font-size: 0.85rem;
+        color: #64748b;
+        margin-top: auto;
+        padding-top: 1rem;
+        border-top: 1px solid #f1f5f9;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .card-actions {
+        padding: 1rem 1.25rem;
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* Custom Checkbox */
+    .custom-checkbox {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .custom-checkbox input {
+        display: none;
+    }
+
+    .checkmark {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #cbd5e1;
+        border-radius: 6px;
+        margin-right: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        background: white;
+    }
+
+    .custom-checkbox input:checked+.checkmark {
+        background: #6366f1;
+        border-color: #6366f1;
+        color: white;
+    }
+
+    .checkmark i {
+        font-size: 12px;
+        display: none;
+    }
+
+    .custom-checkbox input:checked+.checkmark i {
+        display: block;
+    }
+
+    .ai-preview {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(5px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+
+    .loading-overlay.active {
+        display: flex;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>
+                <i class="bi bi-reddit text-danger"></i>
+                Reddit Content Manager
+            </h2>
+            <p class="text-muted">Load trending posts, rewrite with AI, and publish to your blog</p>
+        </div>
+    </div>
+
+    <!-- Fetch Controls -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <!-- Mode Selector -->
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div class="btn-group w-100" role="group">
+                        <input type="radio" class="btn-check" name="viewMode" id="modeFetchNew" value="fetch" checked>
+                        <label class="btn btn-outline-primary" for="modeFetchNew">
+                            <i class="bi bi-download"></i> Fetch New from Reddit
+                        </label>
+
+                        <input type="radio" class="btn-check" name="viewMode" id="modeViewSaved" value="saved">
+                        <label class="btn btn-outline-primary" for="modeViewSaved">
+                            <i class="bi bi-database"></i> View Saved Posts
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fetch New Mode Controls -->
+            <div id="fetchNewControls">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Subreddit</label>
+                        <select class="form-select" id="subreddit">
+                            <option value="parenting">r/parenting</option>
+                            <option value="education">r/education</option>
+                            <option value="Teachers">r/Teachers</option>
+                            <option value="homeschool">r/homeschool</option>
+                            <option value="AskParents">r/AskParents</option>
+                            <option value="learnmath">r/learnmath</option>
+                            <option value="EnglishLearning">r/EnglishLearning</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Sort By</label>
+                        <select class="form-select" id="sortBy">
+                            <option value="hot">Hot</option>
+                            <option value="new">New</option>
+                            <option value="top">Top</option>
+                            <option value="rising">Rising</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Limit</label>
+                        <select class="form-select" id="limit">
+                            <option value="10">10 posts</option>
+                            <option value="20" selected>20 posts</option>
+                            <option value="30">30 posts</option>
+                            <option value="50">50 posts</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">AI Model</label>
+                        <select class="form-select" id="aiModel">
+                            <option value="gemini">Gemini 2.0 Flash</option>
+                            <option value="chatgpt">ChatGPT 4</option>
+                            <option value="claude">Claude 3.5 Sonnet</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <button class="btn btn-primary w-100" id="fetchBtn">
+                            <i class="bi bi-download"></i> Fetch Trends
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View Saved Mode Controls -->
+            <div id="viewSavedControls" style="display: none;">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Subreddit</label>
+                        <select class="form-select" id="filterSubreddit">
+                            <option value="">All Subreddits</option>
+                            <option value="parenting">r/parenting</option>
+                            <option value="education">r/education</option>
+                            <option value="Teachers">r/Teachers</option>
+                            <option value="homeschool">r/homeschool</option>
+                            <option value="AskParents">r/AskParents</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" id="filterStatus">
+                            <option value="">All Status</option>
+                            <option value="fetched">Fetched</option>
+                            <option value="processing">Processing</option>
+                            <option value="published">Published</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">From Date</label>
+                        <input type="date" class="form-control" id="filterFromDate">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">To Date</label>
+                        <input type="date" class="form-control" id="filterToDate">
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label">Min Score</label>
+                        <input type="number" class="form-control" id="filterMinScore" placeholder="0">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <button class="btn btn-success w-100" id="loadSavedBtn">
+                            <i class="bi bi-search"></i> Load Posts
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Configuration -->
+    <div class="card mb-4">
+        <div class="card-header" role="button" data-bs-toggle="collapse" data-bs-target="#aiConfig"
+            aria-expanded="false">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-gear"></i> AI Configuration (CLIProxy)</h5>
+                <i class="bi bi-chevron-down"></i>
+            </div>
+        </div>
+        <div class="collapse" id="aiConfig">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">CLIProxy URL</label>
+                        <input type="text" class="form-control" id="cliproxyUrl" placeholder="http://localhost:5000">
+                        <div class="form-text">The URL where your CLIProxy server is running.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">API Key</label>
+                        <input type="password" class="form-control" id="cliproxyKey" placeholder="sk-...">
+                        <div class="form-text">Your CLIProxy API Key (if authentication is enabled).</div>
+                    </div>
+                    <div class="col-12 text-end">
+                        <button class="btn btn-secondary btn-sm" id="saveConfigBtn">
+                            <i class="bi bi-save"></i> Save Config
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Selection Summary -->
+    <div class="card mb-4" id="selectionSummary" style="display: none;">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h5 class="mb-0">
+                        <i class="bi bi-check-circle text-success"></i>
+                        <span id="selectedCount">0</span> posts selected
+                    </h5>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button class="btn btn-outline-secondary me-2" id="clearSelectionBtn">
+                        <i class="bi bi-x-circle"></i> Clear
+                    </button>
+                    <button class="btn btn-success" id="processSelectedBtn">
+                        <i class="bi bi-magic"></i> Process with AI
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reddit Cards Grid -->
+    <div class="row" id="redditCards">
+        <div class="col-12 text-center py-5">
+            <i class="bi bi-reddit" style="font-size: 3rem; color: #ccc;"></i>
+            <p class="text-muted mt-3">Click "Fetch Trends" to load Reddit posts</p>
+        </div>
+    </div>
+</div>
+
+<!-- AI Preview Modal -->
+<div class="modal fade" id="aiPreviewModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-magic"></i>
+                    AI Rewritten Content Preview
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="aiPreviewBody">
+                <!-- AI results will be inserted here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="publishAllBtn">
+                    <i class="bi bi-send"></i> Publish All
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="text-center text-white">
+        <div class="spinner-border" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3 fs-5" id="loadingText">Processing...</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let selectedPosts = [];
+    let allPosts = [];
+
+    // Load saved config
+    document.addEventListener('DOMContentLoaded', () => {
+        const savedUrl = localStorage.getItem('cliproxyUrl');
+        const savedKey = localStorage.getItem('cliproxyKey');
+
+        if (savedUrl) document.getElementById('cliproxyUrl').value = savedUrl;
+        if (savedKey) document.getElementById('cliproxyKey').value = savedKey;
+    });
+
+    // Save config
+    document.getElementById('saveConfigBtn').addEventListener('click', () => {
+        const url = document.getElementById('cliproxyUrl').value;
+        const key = document.getElementById('cliproxyKey').value;
+
+        localStorage.setItem('cliproxyUrl', url);
+        localStorage.setItem('cliproxyKey', key);
+
+        alert('Configuration saved!');
+    });
+
+    // Mode switching
+    document.querySelectorAll('input[name="viewMode"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            const mode = e.target.value;
+            if (mode === 'fetch') {
+                document.getElementById('fetchNewControls').style.display = 'block';
+                document.getElementById('viewSavedControls').style.display = 'none';
+            } else {
+                document.getElementById('fetchNewControls').style.display = 'none';
+                document.getElementById('viewSavedControls').style.display = 'block';
+            }
+            // Clear cards
+            selectedPosts = [];
+            allPosts = [];
+            updateSelectionSummary();
+        });
+    });
+
+    // Load saved posts from database
+    document.getElementById('loadSavedBtn').addEventListener('click', async () => {
+        const subreddit = document.getElementById('filterSubreddit').value;
+        const status = document.getElementById('filterStatus').value;
+        const fromDate = document.getElementById('filterFromDate').value;
+        const toDate = document.getElementById('filterToDate').value;
+        const minScore = document.getElementById('filterMinScore').value;
+
+        console.log('[Reddit Manager] Loading saved posts with filters:', { subreddit, status, fromDate, toDate, minScore });
+        showLoading('Loading saved posts from database...');
+
+        try {
+            const params = new URLSearchParams();
+            if (subreddit) params.append('subreddit', subreddit);
+            if (status) params.append('status', status);
+            if (fromDate) params.append('fromDate', fromDate);
+            if (toDate) params.append('toDate', toDate);
+            if (minScore) params.append('minScore', minScore);
+            params.append('limit', '50');
+
+            const url = `/admin/api/reddit-posts?${params.toString()}`;
+            console.log('[Reddit Manager] URL:', url);
+
+            const response = await fetch(url);
+            console.log('[Reddit Manager] Response status:', response.status);
+
+            const data = await response.json();
+            console.log('[Reddit Manager] Data:', data);
+
+            if (data.success) {
+                allPosts = data.data;
+                console.log('[Reddit Manager] Posts loaded:', data.data.length);
+                renderCards(data.data);
+
+                // Show pagination info
+                if (data.pagination) {
+                    console.log('[Reddit Manager] Total in DB:', data.pagination.total);
+                }
+            } else {
+                console.error('[Reddit Manager] Error:', data.error);
+                alert('Error: ' + data.error);
+            }
+        } catch (error) {
+            console.error('[Reddit Manager] Exception:', error);
+            alert('Error loading posts: ' + error.message);
+        } finally {
+            hideLoading();
+        }
+    });
+
+    // Fetch Reddit trends
+    document.getElementById('fetchBtn').addEventListener('click', async () => {
+        const subreddit = document.getElementById('subreddit').value;
+        const sort = document.getElementById('sortBy').value;
+        const limit = document.getElementById('limit').value;
+
+        console.log('[Reddit Manager] Fetching:', subreddit, sort, limit);
+        showLoading('Fetching posts from r/' + subreddit + '...');
+
+        try {
+            const url = `/admin/api/reddit-direct?subreddit=${subreddit}&sort=${sort}&limit=${limit}`;
+            console.log('[Reddit Manager] URL:', url);
+
+            const response = await fetch(url);
+            console.log('[Reddit Manager] Response status:', response.status);
+
+            const data = await response.json();
+            console.log('[Reddit Manager] Data:', data);
+
+            if (data.success) {
+                allPosts = data.data;
+                console.log('[Reddit Manager] Posts fetched:', data.data.length);
+                renderCards(data.data);
+            } else {
+                console.error('[Reddit Manager] Error:', data.error);
+                alert('Error: ' + data.error);
+            }
+        } catch (error) {
+            console.error('[Reddit Manager] Exception:', error);
+            alert('Error fetching posts: ' + error.message);
+        } finally {
+            hideLoading();
+        }
+    });
+
+    // Render Reddit cards
+    function renderCards(posts) {
+        const container = document.getElementById('redditCards');
+
+        if (posts.length === 0) {
+            container.innerHTML = `
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-emoji-frown" style="font-size: 3rem; color: #ccc;"></i>
+                <p class="text-muted mt-3">No posts found for this subreddit</p>
+            </div>
+        `;
+            return;
+        }
+
+        container.innerHTML = posts.map(post => {
+            const trendingClass = post.score > 1000 ? 'hot' : post.score > 500 ? 'medium' : 'low';
+            const trendingIcon = post.score > 1000 ? 'bi-fire' : post.score > 500 ? 'bi-graph-up-arrow' : 'bi-activity';
+
+            return `
+            <div class="col-md-4 col-lg-3 mb-4">
+                <div class="card reddit-card h-100 border-0 shadow-sm" data-post-id="${post.id}">
+                    <div class="position-relative overflow-hidden" style="height: 160px; background-color: #f1f5f9;">
+                        ${post.image ? `
+                            <img src="${post.image}" class="w-100 h-100 object-fit-cover" alt="${escapeHtml(post.title)}">
+                        ` : `
+                            <div class="w-100 h-100 d-flex align-items-center justify-content-center">
+                                <i class="bi bi-file-text text-secondary" style="font-size: 3rem; opacity: 0.3;"></i>
+                            </div>
+                        `}
+                        <div class="position-absolute top-0 end-0 m-2 badge rounded-pill bg-white text-dark shadow-sm d-flex align-items-center gap-1" 
+                             style="z-index: 2; font-weight: 600;">
+                            <i class="bi ${trendingIcon} ${trendingClass === 'hot' ? 'text-danger' : trendingClass === 'medium' ? 'text-warning' : 'text-secondary'}"></i>
+                            ${post.score.toLocaleString()}
+                        </div>
+                    </div>
+                    
+                    <div class="card-body d-flex flex-column p-3">
+                        <div class="mb-2">
+                            <span class="badge bg-light text-secondary border rounded-pill fw-normal">
+                                <i class="bi bi-reddit me-1"></i> r/${post.subreddit}
+                            </span>
+                        </div>
+                        
+                        <h6 class="card-title fw-bold text-dark mb-3" style="font-size: 1rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; height: 4.2em;">
+                            ${escapeHtml(post.title)}
+                        </h6>
+                        
+                        <div class="mt-auto d-flex align-items-center justify-content-between pt-3 border-top">
+                            <div class="text-muted small" title="Comments">
+                                <i class="bi bi-chat-dots me-1"></i> ${post.num_comments}
+                            </div>
+                            <a href="${post.url}" target="_blank" rel="noopener noreferrer" 
+                               class="btn btn-sm btn-light rounded-pill px-3" onclick="event.stopPropagation();">
+                                View <i class="bi bi-box-arrow-up-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="card-footer bg-white border-0 p-3 pt-0">
+                        <label class="d-flex align-items-center p-2 rounded border w-100 cursor-pointer hover-bg-light" style="cursor: pointer;" onclick="event.stopPropagation();">
+                            <input type="checkbox" class="form-check-input me-2 post-checkbox" value="${post.id}" id="check-${post.id}" style="width: 1.2em; height: 1.2em;">
+                            <span class="small fw-medium text-secondary">Select for AI Rewrite</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        `;
+        }).join('');
+
+        // Add click handlers
+        document.querySelectorAll('.reddit-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                if (e.target.type !== 'checkbox') {
+                    const checkbox = card.querySelector('.post-checkbox');
+                    checkbox.checked = !checkbox.checked;
+                    checkbox.dispatchEvent(new Event('change'));
+                }
+            });
+        });
+
+        document.querySelectorAll('.post-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', updateSelection);
+        });
+    }
+
+    // Update selection
+    function updateSelection() {
+        const checkboxes = document.querySelectorAll('.post-checkbox:checked');
+        selectedPosts = Array.from(checkboxes).map(cb => {
+            const postId = cb.value;
+            return allPosts.find(p => p.id === postId);
+        });
+
+        // Update UI
+        document.querySelectorAll('.reddit-card').forEach(card => {
+            const postId = card.dataset.postId;
+            const isSelected = selectedPosts.some(p => p.id === postId);
+            card.classList.toggle('selected', isSelected);
+        });
+
+        // Update summary
+        const summary = document.getElementById('selectionSummary');
+        const count = document.getElementById('selectedCount');
+        count.textContent = selectedPosts.length;
+
+        if (selectedPosts.length > 0) {
+            summary.style.display = 'block';
+        } else {
+            summary.style.display = 'none';
+        }
+    }
+
+    // Clear selection
+    document.getElementById('clearSelectionBtn').addEventListener('click', () => {
+        document.querySelectorAll('.post-checkbox').forEach(cb => cb.checked = false);
+        updateSelection();
+    });
+
+    // Process with AI
+    document.getElementById('processSelectedBtn').addEventListener('click', async () => {
+        if (selectedPosts.length === 0) {
+            alert('Please select at least one post');
+            return;
+        }
+
+        const aiModel = document.getElementById('aiModel').value;
+
+        showLoading(`Processing ${selectedPosts.length} posts with ${aiModel.toUpperCase()}...`);
+
+        try {
+            const response = await fetch('/admin/api/reddit-ai-rewrite', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    posts: selectedPosts,
+                    aiModel: aiModel,
+                    proxyUrl: document.getElementById('cliproxyUrl').value,
+                    proxyApiKey: document.getElementById('cliproxyKey').value
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showAIPreview(data.results);
+            } else {
+                alert('Error: ' + data.error);
+            }
+        } catch (error) {
+            alert('Error processing posts: ' + error.message);
+        } finally {
+            hideLoading();
+        }
+    });
+
+    // Show AI preview
+    function showAIPreview(results) {
+        const body = document.getElementById('aiPreviewBody');
+
+        body.innerHTML = results.map((result, index) => `
+        <div class="card mb-3">
+            <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h6 class="mb-0">${index + 1}. ${escapeHtml(result.originalTitle)}</h6>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <span class="badge bg-${result.success ? 'success' : 'danger'}">
+                            ${result.success ? 'Rewritten' : 'Failed'}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                ${result.success ? `
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Vietnamese Title:</label>
+                        <input type="text" class="form-control" value="${escapeHtml(result.vietnameseTitle)}"
+                               data-result-index="${index}" data-field="title">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Category:</label>
+                        <select class="form-select" data-result-index="${index}" data-field="category">
+                            <option value="education" ${result.category === 'education' ? 'selected' : ''}>Giáo dục</option>
+                            <option value="psychology" ${result.category === 'psychology' ? 'selected' : ''}>Tâm lý</option>
+                            <option value="health" ${result.category === 'health' ? 'selected' : ''}>Sức khỏe</option>
+                            <option value="nutrition" ${result.category === 'nutrition' ? 'selected' : ''}>Dinh dưỡng</option>
+                            <option value="activities" ${result.category === 'activities' ? 'selected' : ''}>Hoạt động</option>
+                            <option value="discipline" ${result.category === 'discipline' ? 'selected' : ''}>Kỷ luật</option>
+                            <option value="communication" ${result.category === 'communication' ? 'selected' : ''}>Giao tiếp</option>
+                            <option value="technology" ${result.category === 'technology' ? 'selected' : ''}>Công nghệ</option>
+                            <option value="experience" ${result.category === 'experience' ? 'selected' : ''}>Kinh nghiệm</option>
+                            <option value="other" ${result.category === 'other' ? 'selected' : ''}>Khác</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Vietnamese Content:</label>
+                        <div class="ai-preview border rounded p-3" style="background: #f8f9fa;">
+                            ${result.vietnameseContent}
+                        </div>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input publish-checkbox" type="checkbox"
+                               id="publish-${index}" checked data-result-index="${index}">
+                        <label class="form-check-label" for="publish-${index}">
+                            Publish this post
+                        </label>
+                    </div>
+                ` : `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        ${result.error}
+                    </div>
+                `}
+            </div>
+        </div>
+    `).join('');
+
+        // Store results globally
+        window.aiResults = results;
+
+        const modal = new bootstrap.Modal(document.getElementById('aiPreviewModal'));
+        modal.show();
+    }
+
+    // Publish all selected
+    document.getElementById('publishAllBtn').addEventListener('click', async () => {
+        const checkboxes = document.querySelectorAll('.publish-checkbox:checked');
+        const toPublish = Array.from(checkboxes).map(cb => {
+            const index = parseInt(cb.dataset.resultIndex);
+            const result = window.aiResults[index];
+
+            // Get edited values
+            const titleInput = document.querySelector(`input[data-result-index="${index}"][data-field="title"]`);
+            const categorySelect = document.querySelector(`select[data-result-index="${index}"][data-field="category"]`);
+
+            return {
+                ...result,
+                vietnameseTitle: titleInput ? titleInput.value : result.vietnameseTitle,
+                category: categorySelect ? categorySelect.value : result.category
+            };
+        });
+
+        if (toPublish.length === 0) {
+            alert('No posts selected for publishing');
+            return;
+        }
+
+        showLoading(`Publishing ${toPublish.length} posts...`);
+
+        try {
+            const response = await fetch('/admin/api/reddit-publish', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    posts: toPublish
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                alert(`Successfully published ${data.published} posts!`);
+                bootstrap.Modal.getInstance(document.getElementById('aiPreviewModal')).hide();
+
+                // Clear selection
+                document.querySelectorAll('.post-checkbox').forEach(cb => cb.checked = false);
+                updateSelection();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        } catch (error) {
+            alert('Error publishing posts: ' + error.message);
+        } finally {
+            hideLoading();
+        }
+    });
+
+    // Utility functions
+    function showLoading(text) {
+        document.getElementById('loadingText').textContent = text;
+        document.getElementById('loadingOverlay').classList.add('active');
+    }
+
+    function hideLoading() {
+        document.getElementById('loadingOverlay').classList.remove('active');
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+</script>
+{% endblock %}
