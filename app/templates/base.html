@@ -63,6 +63,10 @@
                 <i class="fas fa-heart"></i>
                 <span>Góc Phụ Huynh</span>
             </a>
+            <a class="nav-link {{ 'active' if '/smarter5th' in request.path else '' }}" href="/smarter5th">
+                <i class="fas fa-brain"></i>
+                <span>5th Grader</span>
+            </a>
 
             {% if user and user.role == 'admin' %}
             <hr style="margin: 12px 0; border-color: rgba(0,0,0,0.1);">

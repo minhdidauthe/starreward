@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Lỗi hệ thống{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height: 60vh;">
+    <div class="text-center">
+        <div style="font-size: 6rem; font-weight: 700; color: #ef4444; line-height: 1;">500</div>
+        <h2 class="mt-3 mb-2">Lỗi hệ thống</h2>
+        <p class="text-muted mb-4">Đã có lỗi xảy ra. Vui lòng thử lại sau.</p>
+        {% if error %}
+        <div class="alert alert-warning text-start mb-4" style="max-width: 500px; margin: 0 auto;">
+            <small><strong>Chi tiết:</strong> {{ error }}</small>
+        </div>
+        {% endif %}
+        <div class="d-flex gap-3 justify-content-center">
+            <a href="/" class="btn btn-primary">
+                <i class="fas fa-home me-2"></i>Về Trang Chủ
+            </a>
+            <a href="javascript:location.reload()" class="btn btn-outline-secondary">
+                <i class="fas fa-redo me-2"></i>Thử Lại
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

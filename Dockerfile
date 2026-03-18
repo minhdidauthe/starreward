@@ -1,16 +1,15 @@
-FROM python:3.11-slim
+FROM node:18-slim
 
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY package*.json ./
+RUN npm ci --only=production
 
 COPY . .
 
-ENV FLASK_APP=app
-ENV FLASK_ENV=development
-ENV PYTHONUNBUFFERED=1
+ENV NODE_ENV=production
+ENV PORT=8080
 
-EXPOSE 5000
+EXPOSE 8080
 
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:create_app()"] 
+CMD ["node", "src/app.js"]

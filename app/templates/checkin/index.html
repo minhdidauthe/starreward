@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Điểm danh - {{ student.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="fas fa-calendar-check text-primary"></i> Điểm Danh Hàng Ngày</h2>
+            <p class="text-muted mb-0">{{ student.name }} - {{ student.total_stars }} ⭐</p>
+        </div>
+        <a href="/student/{{ student._id }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Quay lại
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <!-- Check-in Card -->
+        <div class="col-md-5">
+            <div class="card text-center">
+                <div class="card-body py-5">
+                    {% if streak.checkedInToday %}
+                    <div class="mb-3">
+                        <i class="fas fa-check-circle fa-4x text-success"></i>
+                    </div>
+                    <h4 class="text-success">Đã điểm danh hôm nay!</h4>
+                    <p class="text-muted">Quay lại vào ngày mai nhé</p>
+                    {% else %}
+                    <div class="mb-3">
+                        <i class="fas fa-hand-pointer fa-4x text-primary"></i>
+                    </div>
+                    <h4>Điểm danh hôm nay</h4>
+                    <p class="text-muted mb-4">Nhận 1 sao mỗi ngày + bonus streak!</p>
+                    <button class="btn btn-primary btn-lg px-5" id="btnCheckin"
+                            onclick="doCheckin('{{ student._id }}')">
+                        <i class="fas fa-star me-2"></i>Điểm Danh Ngay!
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Streak Info -->
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-fire text-danger"></i> Streak</h5>
+                    <div class="row text-center g-3 mt-2">
+                        <div class="col-4">
+                            <div class="fs-2 fw-bold text-primary" id="currentStreak">{{ streak.current }}</div>
+                            <small class="text-muted">Hiện tại</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="fs-2 fw-bold text-warning">{{ streak.longest }}</div>
+                            <small class="text-muted">Kỷ lục</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="fs-2 fw-bold text-success">{{ streak.total }}</div>
+                            <small class="text-muted">Tổng ngày</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Next Bonus -->
+            {% if nextBonus %}
+            <div class="card mt-3 border-warning">
+                <div class="card-body">
+                    <h6><i class="fas fa-gift text-warning"></i> Bonus tiếp theo</h6>
+                    <p class="mb-2">
+                        <strong>+{{ nextBonus.bonus }} sao</strong> khi đạt {{ nextBonus.days }} ngày liên tiếp
+                    </p>
+                    <div class="progress" style="height: 10px;">
+                        <div class="progress-bar bg-warning" style="width: {{ ((streak.current / nextBonus.days) * 100) | round }}%"></div>
+                    </div>
+                    <small class="text-muted">Còn {{ nextBonus.remaining }} ngày nữa</small>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Calendar & Bonus Table -->
+        <div class="col-md-7">
+            <!-- Streak Bonuses -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-trophy text-warning"></i> Bảng Streak Bonus</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Mốc</th>
+                                <th>Bonus Sao</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for bonus in streakBonuses %}
+                            <tr class="{{ 'table-success' if streak.current >= bonus.days }}">
+                                <td><i class="fas fa-fire me-2 {{ 'text-danger' if streak.current >= bonus.days else 'text-muted' }}"></i>{{ bonus.days }} ngày</td>
+                                <td><span class="badge bg-warning text-dark">+{{ bonus.bonus }} ⭐</span></td>
+                                <td>
+                                    {% if streak.current >= bonus.days %}
+                                    <span class="badge bg-success"><i class="fas fa-check"></i> Đã đạt</span>
+                                    {% else %}
+                                    <span class="text-muted">Còn {{ bonus.days - streak.current }} ngày</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Recent Check-ins -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-history"></i> Lịch sử điểm danh gần đây</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for ci in checkIns %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-calendar-day text-primary me-2"></i>
+                                {{ ci.date }}
+                                {% if ci.streakDay > 1 %}
+                                <span class="badge bg-info ms-2">Ngày {{ ci.streakDay }}</span>
+                                {% endif %}
+                            </div>
+                            <span class="badge bg-warning text-dark">+{{ ci.starsEarned }} ⭐</span>
+                        </div>
+                        {% endfor %}
+                        {% if checkIns.length === 0 %}
+                        <div class="list-group-item text-center text-muted py-4">
+                            Chưa có lần điểm danh nào
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function doCheckin(studentId) {
+    const btn = document.getElementById('btnCheckin');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang điểm danh...';
+
+    try {
+        const res = await fetch(`/checkin/${studentId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            btn.classList.remove('btn-primary');
+            btn.classList.add('btn-success');
+            btn.innerHTML = `<i class="fas fa-check me-2"></i>Đã điểm danh! +${data.starsEarned} ⭐`;
+
+            document.getElementById('currentStreak').textContent = data.streak.current;
+
+            if (data.bonusMessage) {
+                Toast.success('Streak Bonus!', data.bonusMessage, { duration: 6000 });
+            } else {
+                Toast.success('Điểm danh thành công!', `+${data.starsEarned} sao`);
+            }
+
+            setTimeout(() => location.reload(), 2000);
+        } else {
+            Toast.warning('Thông báo', data.error);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-star me-2"></i>Điểm Danh Ngay!';
+        }
+    } catch (err) {
+        Toast.error('Lỗi', 'Không thể điểm danh');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-star me-2"></i>Điểm Danh Ngay!';
+    }
+}
+</script>
+{% endblock %}

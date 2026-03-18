@@ -1,0 +1,1309 @@
+{% extends "base.html" %}
+
+{% block title %}Playing - Are You Smarter Than a 5th Grader? - StarEdu{% endblock %}
+
+{% block extra_css %}
+<style>
+    .game-wrapper {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    /* Top Bar */
+    .game-topbar {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        border-radius: var(--radius-xl);
+        padding: 16px 24px;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .prize-display {
+        font-family: var(--font-display);
+        font-size: 1.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #FFD700, #FFA500);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .question-counter {
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+
+    /* Main Game Area */
+    .game-main {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    /* Prize Sidebar */
+    .prize-sidebar {
+        width: 200px;
+        flex-shrink: 0;
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+    }
+
+    .prize-sidebar-header {
+        padding: 12px 16px;
+        background: linear-gradient(135deg, #1a1a2e, #0f3460);
+        color: white;
+        text-align: center;
+        font-weight: 700;
+        font-size: 0.85rem;
+    }
+
+    .prize-step {
+        padding: 8px 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.8rem;
+        border-bottom: 1px solid rgba(0,0,0,0.04);
+        transition: all 0.3s ease;
+    }
+
+    .prize-step.current {
+        background: linear-gradient(90deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));
+        font-weight: 700;
+        color: var(--primary-600);
+        border-left: 3px solid var(--primary-500);
+    }
+
+    .prize-step.completed {
+        background: rgba(16, 185, 129, 0.08);
+        color: var(--success-600);
+    }
+
+    .prize-step.checkpoint {
+        background: rgba(255, 215, 0, 0.08);
+        font-weight: 600;
+    }
+
+    .prize-step .step-num {
+        font-weight: 600;
+        width: 24px;
+    }
+
+    /* Question Card */
+    .question-area {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .question-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+    }
+
+    .question-header {
+        padding: 16px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .grade-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .subject-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        background: var(--neutral-100);
+        color: var(--neutral-700);
+    }
+
+    .question-body {
+        padding: 32px 24px;
+    }
+
+    .question-text {
+        font-size: 1.3rem;
+        font-weight: 700;
+        font-family: var(--font-display);
+        color: var(--neutral-800);
+        margin-bottom: 28px;
+        line-height: 1.5;
+    }
+
+    /* Answer Options */
+    .options-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .option-btn {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 20px;
+        border: 2px solid var(--neutral-200);
+        border-radius: var(--radius-lg);
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: left;
+        font-size: 1rem;
+    }
+
+    .option-btn:hover:not(.disabled) {
+        border-color: var(--primary-400);
+        background: var(--primary-50);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .option-btn.selected {
+        border-color: var(--primary-500);
+        background: var(--primary-50);
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+    }
+
+    .option-btn.correct {
+        border-color: var(--success-500);
+        background: var(--success-50);
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+    }
+
+    .option-btn.wrong {
+        border-color: var(--danger-500);
+        background: rgba(239, 68, 68, 0.05);
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+    }
+
+    .option-btn.disabled {
+        pointer-events: none;
+        opacity: 0.7;
+    }
+
+    .option-letter {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: var(--neutral-100);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-family: var(--font-display);
+        color: var(--neutral-600);
+        flex-shrink: 0;
+    }
+
+    .option-btn.selected .option-letter {
+        background: var(--primary-500);
+        color: white;
+    }
+
+    .option-btn.correct .option-letter {
+        background: var(--success-500);
+        color: white;
+    }
+
+    .option-btn.wrong .option-letter {
+        background: var(--danger-500);
+        color: white;
+    }
+
+    /* Lifelines */
+    .lifelines-bar {
+        padding: 16px 24px;
+        border-top: 1px solid rgba(0,0,0,0.06);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .lifeline-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 18px;
+        border-radius: 12px;
+        border: 2px solid var(--neutral-200);
+        background: white;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.2s ease;
+    }
+
+    .lifeline-btn:hover:not(.used) {
+        border-color: var(--primary-400);
+        background: var(--primary-50);
+        transform: translateY(-2px);
+    }
+
+    .lifeline-btn.used {
+        opacity: 0.4;
+        cursor: not-allowed;
+        text-decoration: line-through;
+    }
+
+    .lifeline-btn i {
+        font-size: 1rem;
+    }
+
+    .action-btns {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-confirm {
+        padding: 10px 28px;
+        border-radius: 12px;
+        font-weight: 700;
+        border: none;
+        background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+        color: white;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-confirm:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        color: white;
+    }
+
+    .btn-confirm:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .btn-dropout {
+        padding: 10px 20px;
+        border-radius: 12px;
+        font-weight: 600;
+        border: 2px solid var(--warning-400);
+        background: transparent;
+        color: var(--warning-600);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-dropout:hover {
+        background: var(--warning-50);
+    }
+
+    /* Classmate Panel */
+    .classmate-panel {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-xl);
+        padding: 20px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .classmate-avatar {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-400), var(--primary-600));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    .classmate-answer {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 16px;
+        border-radius: 10px;
+        font-weight: 700;
+        background: var(--primary-100);
+        color: var(--primary-700);
+    }
+
+    .classmate-answer.hidden {
+        filter: blur(8px);
+        user-select: none;
+    }
+
+    /* Result Overlay */
+    .result-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.4s ease;
+    }
+
+    .result-overlay.show {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .result-card {
+        background: white;
+        border-radius: var(--radius-2xl);
+        padding: 48px 40px;
+        text-align: center;
+        max-width: 480px;
+        width: 90%;
+        transform: scale(0.9) translateY(20px);
+        transition: all 0.4s ease;
+    }
+
+    .result-overlay.show .result-card {
+        transform: scale(1) translateY(0);
+    }
+
+    .result-trophy {
+        font-size: 4rem;
+        margin-bottom: 16px;
+        animation: bounce 1s ease infinite;
+    }
+
+    .result-prize {
+        font-family: var(--font-display);
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #FFD700, #FFA500);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    .confetti-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 10000;
+    }
+
+    /* Timer Bar */
+    .timer-bar {
+        height: 4px;
+        background: var(--neutral-200);
+        border-radius: 2px;
+        overflow: hidden;
+        margin-top: 4px;
+    }
+
+    .timer-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--success-500), var(--warning-500), var(--danger-500));
+        border-radius: 2px;
+        transition: width 1s linear;
+    }
+
+    /* Footer */
+    .game-footer {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-xl);
+        padding: 14px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    @media (max-width: 768px) {
+        .game-main {
+            flex-direction: column;
+        }
+        .prize-sidebar {
+            width: 100%;
+            display: none;
+        }
+        .options-grid {
+            grid-template-columns: 1fr;
+        }
+        .question-text {
+            font-size: 1.1rem;
+        }
+        .lifelines-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .action-btns {
+            justify-content: stretch;
+        }
+        .action-btns .btn-confirm,
+        .action-btns .btn-dropout {
+            flex: 1;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="game-wrapper">
+    <!-- Top Bar -->
+    <div class="game-topbar">
+        <div class="d-flex align-items-center gap-3">
+            <a href="/smarter5th" class="btn btn-sm" style="background: rgba(255,255,255,0.15); color: white; border: none;">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div>
+                <div class="question-counter">Question <span id="questionNumber">1</span> of 11</div>
+                <div class="timer-bar" style="width: 120px;">
+                    <div class="timer-fill" id="timerFill" style="width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="prize-display" id="currentPrize">$0</div>
+        <div class="d-flex align-items-center gap-2">
+            <i class="fas fa-clock" style="opacity: 0.6;"></i>
+            <span id="timerDisplay" style="font-family: var(--font-display); font-weight: 700; font-size: 1.1rem;">0:30</span>
+        </div>
+    </div>
+
+    <!-- Classmate Panel -->
+    <div class="classmate-panel" id="classmatePanel">
+        <div class="classmate-avatar" id="classmateEmoji">
+            <i class="fas fa-user-graduate"></i>
+        </div>
+        <div class="flex-1">
+            <div class="fw-bold" id="classmateName">Your Classmate</div>
+            <small class="text-muted" id="classmateStatus">Ready to help!</small>
+        </div>
+        <div class="classmate-answer hidden" id="classmateAnswer">
+            <i class="fas fa-lightbulb"></i> <span id="classmateAnswerText">B</span>
+        </div>
+    </div>
+
+    <!-- Main Game Area -->
+    <div class="game-main">
+        <!-- Prize Sidebar -->
+        <div class="prize-sidebar" id="prizeSidebar">
+            <div class="prize-sidebar-header">
+                <i class="fas fa-coins me-1"></i> Prize Ladder
+            </div>
+            <div id="prizeSteps">
+                <!-- Generated by JS -->
+            </div>
+        </div>
+
+        <!-- Question Area -->
+        <div class="question-area">
+            <div class="question-card">
+                <div class="question-header">
+                    <span class="grade-label" id="gradeLabel" style="background: #E0E7FF; color: #4338CA;">
+                        <i class="fas fa-graduation-cap"></i> <span id="gradeLabelText">1st Grade</span>
+                    </span>
+                    <span class="subject-label" id="subjectLabel">
+                        <i class="fas fa-calculator" id="subjectIcon"></i> <span id="subjectText">Math</span>
+                    </span>
+                </div>
+
+                <div class="question-body">
+                    <div class="question-text" id="questionText">Loading question...</div>
+                    <div class="options-grid" id="optionsGrid">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+
+                <div class="lifelines-bar">
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button class="lifeline-btn" id="lifelinePeek" onclick="useLifeline('peek')">
+                            <i class="fas fa-eye" style="color: #2563EB;"></i> Peek
+                        </button>
+                        <button class="lifeline-btn" id="lifelineCopy" onclick="useLifeline('copy')">
+                            <i class="fas fa-copy" style="color: #059669;"></i> Copy
+                        </button>
+                        <button class="lifeline-btn" id="lifelineSave" onclick="useLifeline('save')">
+                            <i class="fas fa-shield-alt" style="color: #D97706;"></i> Save
+                        </button>
+                    </div>
+                    <div class="action-btns">
+                        <button class="btn-dropout" onclick="dropOut()">
+                            <i class="fas fa-hand-paper me-1"></i> Drop Out
+                        </button>
+                        <button class="btn-confirm" id="confirmBtn" onclick="confirmAnswer()" disabled>
+                            <i class="fas fa-check me-1"></i> Final Answer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="game-footer">
+        <div class="d-flex align-items-center gap-2">
+            <select class="form-select form-select-sm" id="studentSelect" style="min-width: 150px;">
+                <option value="">-- Select Student --</option>
+                {% for student in students %}
+                <option value="{{ student._id }}"
+                    {% if selectedStudentId == student._id | string %}selected{% endif %}>
+                    {{ student.name }} ({{ student.total_stars }} stars)
+                </option>
+                {% endfor %}
+            </select>
+            <span class="text-muted" style="font-size: 0.85rem;">
+                <i class="fas fa-star text-warning me-1"></i>Earn stars by playing!
+            </span>
+        </div>
+        <button class="btn btn-outline-danger btn-sm" onclick="confirmQuit()">
+            <i class="fas fa-times me-1"></i> Quit Game
+        </button>
+    </div>
+</div>
+
+<!-- Result Overlay -->
+<div class="result-overlay" id="resultOverlay">
+    <div class="result-card">
+        <div class="result-trophy" id="resultEmoji">&#127942;</div>
+        <h2 class="mb-2" id="resultTitle">Game Over!</h2>
+        <p class="text-muted mb-3" id="resultMessage">Great effort!</p>
+        <div class="result-prize mb-3" id="resultPrize">$0</div>
+        <div class="d-flex justify-content-center gap-4 mb-4">
+            <div class="text-center">
+                <div class="h4 text-primary mb-0" id="resultQuestions">0/11</div>
+                <small class="text-muted">Questions</small>
+            </div>
+            <div class="text-center">
+                <div class="h4 text-warning mb-0" id="resultStars">+0</div>
+                <small class="text-muted">Stars</small>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/smarter5th/play{% if selectedStudentId %}?studentId={{ selectedStudentId }}{% endif %}" class="btn btn-outline-primary flex-fill" style="border-radius: 12px;">
+                <i class="fas fa-redo me-1"></i> Play Again
+            </a>
+            <a href="/smarter5th" class="btn btn-primary flex-fill" style="border-radius: 12px;">
+                <i class="fas fa-home me-1"></i> Back to Menu
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Confetti Canvas -->
+<canvas class="confetti-canvas" id="confettiCanvas"></canvas>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ============================================================
+// QUESTION BANK - 5 subjects x 5 grades, 3+ questions each
+// ============================================================
+const QUESTIONS = {
+    math: {
+        name: 'Math', icon: 'fa-calculator', color: '#4F46E5', bg: '#EEF2FF',
+        1: [
+            { q: 'What is 7 + 5?', options: ['11', '12', '13', '14'], answer: 1 },
+            { q: 'How many sides does a triangle have?', options: ['2', '3', '4', '5'], answer: 1 },
+            { q: 'What is 15 - 8?', options: ['5', '6', '7', '8'], answer: 2 },
+        ],
+        2: [
+            { q: 'What is 6 x 4?', options: ['20', '22', '24', '28'], answer: 2 },
+            { q: 'What is 100 - 37?', options: ['63', '67', '73', '77'], answer: 0 },
+            { q: 'How many minutes are in one hour?', options: ['30', '45', '60', '100'], answer: 2 },
+        ],
+        3: [
+            { q: 'What is 1/4 + 1/4?', options: ['1/8', '2/8', '1/2', '1/4'], answer: 2 },
+            { q: 'What is the perimeter of a square with side 5 cm?', options: ['15 cm', '20 cm', '25 cm', '10 cm'], answer: 1 },
+            { q: 'What is 9 x 8?', options: ['63', '72', '81', '64'], answer: 1 },
+        ],
+        4: [
+            { q: 'What is the least common multiple (LCM) of 4 and 6?', options: ['8', '10', '12', '24'], answer: 2 },
+            { q: 'What is 3/5 as a decimal?', options: ['0.35', '0.5', '0.6', '0.65'], answer: 2 },
+            { q: 'A rectangle has length 8 and width 5. What is the area?', options: ['13', '26', '35', '40'], answer: 3 },
+        ],
+        5: [
+            { q: 'What is 15% of 200?', options: ['15', '20', '25', '30'], answer: 3 },
+            { q: 'What is the volume of a cube with side 3 cm?', options: ['9 cm³', '18 cm³', '27 cm³', '36 cm³'], answer: 2 },
+            { q: 'Solve: 2x + 3 = 11. What is x?', options: ['3', '4', '5', '6'], answer: 1 },
+        ]
+    },
+    science: {
+        name: 'Science', icon: 'fa-flask', color: '#059669', bg: '#ECFDF5',
+        1: [
+            { q: 'What do plants need to grow?', options: ['Only water', 'Water, sunlight, and soil', 'Only sunlight', 'Only air'], answer: 1 },
+            { q: 'Which animal says "moo"?', options: ['Pig', 'Horse', 'Cow', 'Sheep'], answer: 2 },
+            { q: 'How many legs does a spider have?', options: ['4', '6', '8', '10'], answer: 2 },
+        ],
+        2: [
+            { q: 'What is the boiling point of water?', options: ['50°C', '75°C', '100°C', '150°C'], answer: 2 },
+            { q: 'Which planet is closest to the Sun?', options: ['Venus', 'Mercury', 'Earth', 'Mars'], answer: 1 },
+            { q: 'What gas do humans breathe in?', options: ['Carbon dioxide', 'Nitrogen', 'Oxygen', 'Helium'], answer: 2 },
+        ],
+        3: [
+            { q: 'What is the process by which plants make food called?', options: ['Respiration', 'Photosynthesis', 'Digestion', 'Evaporation'], answer: 1 },
+            { q: 'Which organ pumps blood through the body?', options: ['Brain', 'Lungs', 'Heart', 'Stomach'], answer: 2 },
+            { q: 'How many bones does an adult human have?', options: ['106', '156', '206', '256'], answer: 2 },
+        ],
+        4: [
+            { q: 'What type of rock is formed from cooled lava?', options: ['Sedimentary', 'Metamorphic', 'Igneous', 'Limestone'], answer: 2 },
+            { q: 'What is the largest organ in the human body?', options: ['Heart', 'Brain', 'Liver', 'Skin'], answer: 3 },
+            { q: 'What force keeps us on the ground?', options: ['Magnetism', 'Friction', 'Gravity', 'Electricity'], answer: 2 },
+        ],
+        5: [
+            { q: 'What is the chemical symbol for gold?', options: ['Go', 'Gd', 'Au', 'Ag'], answer: 2 },
+            { q: 'What is the speed of light approximately?', options: ['300 km/s', '3,000 km/s', '30,000 km/s', '300,000 km/s'], answer: 3 },
+            { q: 'Which part of the cell contains genetic material?', options: ['Mitochondria', 'Nucleus', 'Ribosome', 'Cell wall'], answer: 1 },
+        ]
+    },
+    english: {
+        name: 'English', icon: 'fa-spell-check', color: '#D97706', bg: '#FEF3C7',
+        1: [
+            { q: 'Which word rhymes with "cat"?', options: ['Dog', 'Hat', 'Cup', 'Sun'], answer: 1 },
+            { q: 'What is the opposite of "hot"?', options: ['Warm', 'Cold', 'Big', 'Fast'], answer: 1 },
+            { q: 'How many vowels are in the English alphabet?', options: ['3', '4', '5', '6'], answer: 2 },
+        ],
+        2: [
+            { q: 'What is the plural of "child"?', options: ['Childs', 'Children', 'Childrens', 'Childes'], answer: 1 },
+            { q: 'Which is a proper noun?', options: ['dog', 'London', 'city', 'river'], answer: 1 },
+            { q: 'What punctuation mark ends a question?', options: ['Period', 'Exclamation mark', 'Question mark', 'Comma'], answer: 2 },
+        ],
+        3: [
+            { q: 'What is a synonym for "happy"?', options: ['Sad', 'Angry', 'Joyful', 'Tired'], answer: 2 },
+            { q: 'Which word is an adjective? "The big red ball"', options: ['The', 'big', 'ball', 'none'], answer: 1 },
+            { q: '"She quickly ran home." What part of speech is "quickly"?', options: ['Noun', 'Verb', 'Adjective', 'Adverb'], answer: 3 },
+        ],
+        4: [
+            { q: 'What is the past tense of "go"?', options: ['Goed', 'Gone', 'Went', 'Going'], answer: 2 },
+            { q: 'Which sentence uses correct grammar?', options: ['"Me and him went."', '"Him and I went."', '"He and I went."', '"I and he went."'], answer: 2 },
+            { q: 'What is a homophone of "there"?', options: ['The', 'Their', 'Then', 'That'], answer: 1 },
+        ],
+        5: [
+            { q: 'What literary device is "The wind whispered through the trees"?', options: ['Simile', 'Metaphor', 'Personification', 'Alliteration'], answer: 2 },
+            { q: 'What is the prefix in the word "unhappy"?', options: ['un', 'happy', 'un-hap', 'py'], answer: 0 },
+            { q: 'Which sentence is in passive voice?', options: ['"The dog bit the man."', '"The man was bitten by the dog."', '"The dog is biting."', '"Bite the dog!"'], answer: 1 },
+        ]
+    },
+    geography: {
+        name: 'Geography', icon: 'fa-globe-americas', color: '#E11D48', bg: '#FFF1F2',
+        1: [
+            { q: 'Which is bigger, a lake or an ocean?', options: ['Lake', 'Ocean', 'They are the same', 'It depends'], answer: 1 },
+            { q: 'What color is the sky on a clear day?', options: ['Green', 'Red', 'Blue', 'Yellow'], answer: 2 },
+            { q: 'On which continent do penguins live in the wild?', options: ['Asia', 'Europe', 'Antarctica', 'North America'], answer: 2 },
+        ],
+        2: [
+            { q: 'How many continents are there?', options: ['5', '6', '7', '8'], answer: 2 },
+            { q: 'What is the largest ocean on Earth?', options: ['Atlantic', 'Indian', 'Arctic', 'Pacific'], answer: 3 },
+            { q: 'Which direction does the Sun rise from?', options: ['West', 'North', 'East', 'South'], answer: 2 },
+        ],
+        3: [
+            { q: 'What is the longest river in the world?', options: ['Amazon', 'Nile', 'Mississippi', 'Yangtze'], answer: 1 },
+            { q: 'Which country has the most people?', options: ['USA', 'India', 'China', 'Russia'], answer: 1 },
+            { q: 'What is the capital of France?', options: ['London', 'Berlin', 'Madrid', 'Paris'], answer: 3 },
+        ],
+        4: [
+            { q: 'What is the smallest continent by land area?', options: ['Europe', 'Antarctica', 'Australia', 'South America'], answer: 2 },
+            { q: 'Which desert is the largest in the world?', options: ['Gobi', 'Sahara', 'Antarctic', 'Arabian'], answer: 2 },
+            { q: 'The Amazon Rainforest is mostly in which country?', options: ['Colombia', 'Peru', 'Brazil', 'Venezuela'], answer: 2 },
+        ],
+        5: [
+            { q: 'What is the deepest point in the ocean called?', options: ['Grand Canyon', 'Mariana Trench', 'Great Barrier Reef', 'Bermuda Triangle'], answer: 1 },
+            { q: 'Which line of latitude is 0 degrees?', options: ['Tropic of Cancer', 'Prime Meridian', 'Equator', 'Arctic Circle'], answer: 2 },
+            { q: 'What country has the most time zones?', options: ['Russia', 'USA', 'China', 'France'], answer: 3 },
+        ]
+    },
+    history: {
+        name: 'History', icon: 'fa-landmark', color: '#7C3AED', bg: '#F5F3FF',
+        1: [
+            { q: 'What holiday celebrates American independence?', options: ['Christmas', 'Thanksgiving', 'July 4th', 'Halloween'], answer: 2 },
+            { q: 'Who was the first President of the United States?', options: ['Abraham Lincoln', 'Thomas Jefferson', 'George Washington', 'John Adams'], answer: 2 },
+            { q: 'What are the colors of the American flag?', options: ['Red, white, green', 'Red, white, blue', 'Blue, white, yellow', 'Red, blue, green'], answer: 1 },
+        ],
+        2: [
+            { q: 'What ship brought the Pilgrims to America?', options: ['Titanic', 'Santa Maria', 'Mayflower', 'Discovery'], answer: 2 },
+            { q: 'In what year did Christopher Columbus first sail to the Americas?', options: ['1392', '1442', '1492', '1542'], answer: 2 },
+            { q: 'Which ancient civilization built the pyramids?', options: ['Romans', 'Greeks', 'Egyptians', 'Chinese'], answer: 2 },
+        ],
+        3: [
+            { q: 'Who wrote the Declaration of Independence?', options: ['George Washington', 'Benjamin Franklin', 'Thomas Jefferson', 'John Adams'], answer: 2 },
+            { q: 'What was the name of the war between the North and South in America?', options: ['World War I', 'Revolutionary War', 'Civil War', 'Cold War'], answer: 2 },
+            { q: 'Which president freed the slaves?', options: ['George Washington', 'Andrew Jackson', 'Abraham Lincoln', 'Theodore Roosevelt'], answer: 2 },
+        ],
+        4: [
+            { q: 'The ancient city of Rome is in which modern country?', options: ['Greece', 'Spain', 'Italy', 'France'], answer: 2 },
+            { q: 'Who was known as the "Father of the Constitution"?', options: ['Alexander Hamilton', 'James Madison', 'John Jay', 'Benjamin Franklin'], answer: 1 },
+            { q: 'What year did World War II end?', options: ['1943', '1944', '1945', '1946'], answer: 2 },
+        ],
+        5: [
+            { q: 'What was the Renaissance?', options: ['A war', 'A cultural rebirth in Europe', 'A disease', 'An invention'], answer: 1 },
+            { q: 'Who was the first person to walk on the Moon?', options: ['Buzz Aldrin', 'Neil Armstrong', 'John Glenn', 'Yuri Gagarin'], answer: 1 },
+            { q: 'The Magna Carta was signed in which year?', options: ['1066', '1215', '1492', '1776'], answer: 1 },
+        ]
+    }
+};
+
+// ============================================================
+// GAME CONFIG
+// ============================================================
+const PRIZE_LADDER = [
+    { question: 1,  prize: 1000,    grade: 1, label: '$1,000' },
+    { question: 2,  prize: 2000,    grade: 1, label: '$2,000' },
+    { question: 3,  prize: 5000,    grade: 2, label: '$5,000' },
+    { question: 4,  prize: 10000,   grade: 2, label: '$10,000' },
+    { question: 5,  prize: 25000,   grade: 3, label: '$25,000', checkpoint: true },
+    { question: 6,  prize: 50000,   grade: 3, label: '$50,000' },
+    { question: 7,  prize: 100000,  grade: 4, label: '$100,000' },
+    { question: 8,  prize: 175000,  grade: 4, label: '$175,000' },
+    { question: 9,  prize: 300000,  grade: 5, label: '$300,000', checkpoint: true },
+    { question: 10, prize: 500000,  grade: 5, label: '$500,000' },
+    { question: 11, prize: 1000000, grade: 5, label: '$1,000,000', million: true },
+];
+
+const GRADE_COLORS = {
+    1: { bg: '#F1F5F9', color: '#475569', label: '1st Grade' },
+    2: { bg: '#EEF2FF', color: '#4338CA', label: '2nd Grade' },
+    3: { bg: '#ECFDF5', color: '#059669', label: '3rd Grade' },
+    4: { bg: '#FEF3C7', color: '#D97706', label: '4th Grade' },
+    5: { bg: '#FFF1F2', color: '#E11D48', label: '5th Grade' },
+};
+
+const CLASSMATE_NAMES = ['Emma', 'Liam', 'Sophia', 'Noah', 'Olivia', 'Mason', 'Ava', 'Lucas'];
+const LETTERS = ['A', 'B', 'C', 'D'];
+
+// ============================================================
+// GAME STATE
+// ============================================================
+let gameState = {
+    currentQuestion: 0,
+    currentPrize: 0,
+    lastCheckpoint: 0,
+    selectedAnswer: null,
+    questions: [],
+    lifelines: { peek: false, copy: false, save: false },
+    classmateAnswer: null,
+    classmateName: '',
+    gameOver: false,
+    timerSeconds: 30,
+    timerInterval: null,
+    usedSave: false,
+};
+
+// ============================================================
+// INIT GAME
+// ============================================================
+function initGame() {
+    // Pick random classmate
+    gameState.classmateName = CLASSMATE_NAMES[Math.floor(Math.random() * CLASSMATE_NAMES.length)];
+    document.getElementById('classmateName').textContent = gameState.classmateName;
+
+    // Generate 11 questions
+    gameState.questions = generateQuestions();
+
+    // Build prize sidebar
+    buildPrizeSidebar();
+
+    // Load first question
+    loadQuestion();
+}
+
+function generateQuestions() {
+    const questions = [];
+    const subjects = Object.keys(QUESTIONS);
+
+    for (let i = 0; i < PRIZE_LADDER.length; i++) {
+        const grade = PRIZE_LADDER[i].grade;
+        // Pick a random subject, try to vary
+        let subject;
+        let attempts = 0;
+        do {
+            subject = subjects[Math.floor(Math.random() * subjects.length)];
+            attempts++;
+        } while (attempts < 10 && i > 0 && questions[i-1]?.subject === subject);
+
+        const pool = QUESTIONS[subject][grade];
+        const q = pool[Math.floor(Math.random() * pool.length)];
+
+        // Generate classmate answer (70% correct for lower grades, 40% for higher)
+        const correctRate = grade <= 2 ? 0.8 : grade <= 4 ? 0.6 : 0.4;
+        const classmateCorrect = Math.random() < correctRate;
+        const classmateAns = classmateCorrect ? q.answer :
+            (q.answer + 1 + Math.floor(Math.random() * 3)) % 4;
+
+        questions.push({
+            ...q,
+            subject: subject,
+            grade: grade,
+            classmateAnswer: classmateAns,
+            classmateCorrect: classmateCorrect,
+        });
+    }
+
+    return questions;
+}
+
+// ============================================================
+// PRIZE SIDEBAR
+// ============================================================
+function buildPrizeSidebar() {
+    const container = document.getElementById('prizeSteps');
+    let html = '';
+
+    // Reverse order (highest first)
+    for (let i = PRIZE_LADDER.length - 1; i >= 0; i--) {
+        const step = PRIZE_LADDER[i];
+        const classes = ['prize-step'];
+        if (step.checkpoint) classes.push('checkpoint');
+        if (step.million) classes.push('checkpoint');
+
+        html += `<div class="${classes.join(' ')}" id="prizeStep${i}">
+            <span class="step-num">${step.question}</span>
+            <span>${step.label}${step.checkpoint ? ' <i class="fas fa-shield-alt text-warning"></i>' : ''}${step.million ? ' <i class="fas fa-crown text-warning"></i>' : ''}</span>
+        </div>`;
+    }
+
+    container.innerHTML = html;
+}
+
+function updatePrizeSidebar() {
+    // Clear all states
+    for (let i = 0; i < PRIZE_LADDER.length; i++) {
+        const el = document.getElementById(`prizeStep${i}`);
+        el.classList.remove('current', 'completed');
+    }
+
+    // Mark completed
+    for (let i = 0; i < gameState.currentQuestion; i++) {
+        document.getElementById(`prizeStep${i}`).classList.add('completed');
+    }
+
+    // Mark current
+    if (gameState.currentQuestion < PRIZE_LADDER.length) {
+        document.getElementById(`prizeStep${gameState.currentQuestion}`).classList.add('current');
+    }
+}
+
+// ============================================================
+// LOAD QUESTION
+// ============================================================
+function loadQuestion() {
+    if (gameState.currentQuestion >= PRIZE_LADDER.length) {
+        winGame();
+        return;
+    }
+
+    const q = gameState.questions[gameState.currentQuestion];
+    const step = PRIZE_LADDER[gameState.currentQuestion];
+    const subjectData = QUESTIONS[q.subject];
+    const gradeData = GRADE_COLORS[q.grade];
+
+    // Update UI
+    document.getElementById('questionNumber').textContent = gameState.currentQuestion + 1;
+    document.getElementById('currentPrize').textContent =
+        gameState.currentPrize > 0 ? `$${gameState.currentPrize.toLocaleString()}` : '$0';
+
+    // Grade label
+    const gradeLabel = document.getElementById('gradeLabel');
+    gradeLabel.style.background = gradeData.bg;
+    gradeLabel.style.color = gradeData.color;
+    document.getElementById('gradeLabelText').textContent = gradeData.label;
+
+    // Subject label
+    document.getElementById('subjectIcon').className = `fas ${subjectData.icon}`;
+    document.getElementById('subjectText').textContent = subjectData.name;
+    document.getElementById('subjectLabel').style.color = subjectData.color;
+
+    // Question text
+    document.getElementById('questionText').textContent = q.q;
+
+    // Options
+    const optionsHtml = q.options.map((opt, i) => `
+        <button class="option-btn" data-index="${i}" onclick="selectOption(${i})">
+            <span class="option-letter">${LETTERS[i]}</span>
+            <span>${opt}</span>
+        </button>
+    `).join('');
+    document.getElementById('optionsGrid').innerHTML = optionsHtml;
+
+    // Reset selection
+    gameState.selectedAnswer = null;
+    document.getElementById('confirmBtn').disabled = true;
+
+    // Classmate
+    gameState.classmateAnswer = q.classmateAnswer;
+    document.getElementById('classmateAnswer').classList.add('hidden');
+    document.getElementById('classmateAnswerText').textContent = LETTERS[q.classmateAnswer];
+    document.getElementById('classmateStatus').textContent = 'Ready to help!';
+
+    // Update prize sidebar
+    updatePrizeSidebar();
+
+    // Start timer
+    startTimer();
+}
+
+// ============================================================
+// TIMER
+// ============================================================
+function startTimer() {
+    clearInterval(gameState.timerInterval);
+    gameState.timerSeconds = 30;
+    updateTimerDisplay();
+
+    gameState.timerInterval = setInterval(() => {
+        gameState.timerSeconds--;
+        updateTimerDisplay();
+
+        if (gameState.timerSeconds <= 0) {
+            clearInterval(gameState.timerInterval);
+            timeUp();
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    const display = document.getElementById('timerDisplay');
+    const fill = document.getElementById('timerFill');
+    const seconds = gameState.timerSeconds;
+    display.textContent = `0:${seconds.toString().padStart(2, '0')}`;
+    fill.style.width = `${(seconds / 30) * 100}%`;
+
+    if (seconds <= 10) {
+        display.style.color = '#EF4444';
+    } else if (seconds <= 20) {
+        display.style.color = '#F59E0B';
+    } else {
+        display.style.color = 'white';
+    }
+}
+
+function timeUp() {
+    Toast.error("Time's Up!", "You ran out of time!");
+    wrongAnswer();
+}
+
+// ============================================================
+// ANSWER HANDLING
+// ============================================================
+function selectOption(index) {
+    if (gameState.gameOver) return;
+
+    gameState.selectedAnswer = index;
+
+    // Update UI
+    document.querySelectorAll('.option-btn').forEach(btn => {
+        btn.classList.remove('selected');
+    });
+    document.querySelector(`.option-btn[data-index="${index}"]`).classList.add('selected');
+    document.getElementById('confirmBtn').disabled = false;
+}
+
+function confirmAnswer() {
+    if (gameState.selectedAnswer === null || gameState.gameOver) return;
+
+    clearInterval(gameState.timerInterval);
+
+    const q = gameState.questions[gameState.currentQuestion];
+    const isCorrect = gameState.selectedAnswer === q.answer;
+
+    // Disable all options
+    document.querySelectorAll('.option-btn').forEach(btn => btn.classList.add('disabled'));
+    document.getElementById('confirmBtn').disabled = true;
+
+    // Show correct/wrong
+    document.querySelector(`.option-btn[data-index="${q.answer}"]`).classList.add('correct');
+
+    if (isCorrect) {
+        // Correct!
+        const step = PRIZE_LADDER[gameState.currentQuestion];
+        gameState.currentPrize = step.prize;
+        if (step.checkpoint || step.million) {
+            gameState.lastCheckpoint = step.prize;
+        }
+
+        Toast.success('Correct!', `You won $${step.label}!`);
+
+        setTimeout(() => {
+            gameState.currentQuestion++;
+            if (gameState.currentQuestion >= PRIZE_LADDER.length) {
+                winGame();
+            } else {
+                loadQuestion();
+            }
+        }, 1500);
+    } else {
+        // Wrong!
+        document.querySelector(`.option-btn[data-index="${gameState.selectedAnswer}"]`).classList.add('wrong');
+        Toast.error('Wrong Answer!', `The correct answer was ${LETTERS[q.answer]}: ${q.options[q.answer]}`);
+
+        setTimeout(() => {
+            if (gameState.usedSave) {
+                // Save lifeline was active, keep current prize
+                gameState.usedSave = false;
+                Toast.info('Saved!', 'Your Save lifeline protected you!');
+                setTimeout(() => {
+                    gameState.currentQuestion++;
+                    loadQuestion();
+                }, 1000);
+            } else {
+                gameState.currentPrize = gameState.lastCheckpoint;
+                endGame(false);
+            }
+        }, 2000);
+    }
+}
+
+// ============================================================
+// LIFELINES
+// ============================================================
+function useLifeline(type) {
+    if (gameState.lifelines[type] || gameState.gameOver) return;
+
+    gameState.lifelines[type] = true;
+    document.getElementById(`lifeline${type.charAt(0).toUpperCase() + type.slice(1)}`).classList.add('used');
+
+    const q = gameState.questions[gameState.currentQuestion];
+
+    switch (type) {
+        case 'peek':
+            // Show classmate's answer (blurred becomes visible)
+            document.getElementById('classmateAnswer').classList.remove('hidden');
+            document.getElementById('classmateStatus').textContent =
+                `thinks the answer is ${LETTERS[q.classmateAnswer]}`;
+            Toast.info('Peek Used!', `${gameState.classmateName} thinks the answer is ${LETTERS[q.classmateAnswer]}`);
+            break;
+
+        case 'copy':
+            // Automatically select classmate's answer
+            document.getElementById('classmateAnswer').classList.remove('hidden');
+            document.getElementById('classmateStatus').textContent =
+                `answered ${LETTERS[q.classmateAnswer]}. You must use this answer!`;
+            selectOption(q.classmateAnswer);
+            // Lock selection
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                if (parseInt(btn.dataset.index) !== q.classmateAnswer) {
+                    btn.style.pointerEvents = 'none';
+                    btn.style.opacity = '0.5';
+                }
+            });
+            Toast.info('Copy Used!', `You must use ${gameState.classmateName}'s answer: ${LETTERS[q.classmateAnswer]}`);
+            break;
+
+        case 'save':
+            // Protected from one wrong answer
+            gameState.usedSave = true;
+            Toast.info('Save Activated!', 'If you answer wrong, you keep your current prize and move on!');
+            break;
+    }
+}
+
+// ============================================================
+// DROP OUT
+// ============================================================
+function dropOut() {
+    if (gameState.gameOver) return;
+
+    const prize = gameState.currentPrize;
+    if (confirm(`Are you sure you want to drop out?\nYou will take home $${prize.toLocaleString()}.`)) {
+        clearInterval(gameState.timerInterval);
+        endGame(true);
+    }
+}
+
+// ============================================================
+// END GAME
+// ============================================================
+async function endGame(voluntary) {
+    gameState.gameOver = true;
+    clearInterval(gameState.timerInterval);
+
+    const prize = gameState.currentPrize;
+    const questionsAnswered = gameState.currentQuestion;
+
+    // Send results to server
+    const studentId = document.getElementById('studentSelect')?.value || null;
+    try {
+        const response = await fetch('/smarter5th/api/complete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                score: questionsAnswered,
+                prizeMoney: prize,
+                questionsAnswered: questionsAnswered,
+                studentId: studentId || null
+            })
+        });
+        const data = await response.json();
+
+        // Show result
+        showResult(voluntary, prize, questionsAnswered, data.starsEarned || 0);
+    } catch (error) {
+        console.error('Error:', error);
+        showResult(voluntary, prize, questionsAnswered, 0);
+    }
+}
+
+async function winGame() {
+    gameState.gameOver = true;
+    gameState.currentPrize = 1000000;
+    gameState.currentQuestion = 11;
+    clearInterval(gameState.timerInterval);
+
+    const studentId = document.getElementById('studentSelect')?.value || null;
+    try {
+        const response = await fetch('/smarter5th/api/complete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                score: 11,
+                prizeMoney: 1000000,
+                questionsAnswered: 11,
+                studentId: studentId || null
+            })
+        });
+        const data = await response.json();
+        showResult(true, 1000000, 11, data.starsEarned || 50);
+        launchConfetti();
+    } catch (error) {
+        showResult(true, 1000000, 11, 50);
+        launchConfetti();
+    }
+}
+
+function showResult(success, prize, questions, stars) {
+    const overlay = document.getElementById('resultOverlay');
+    const isMillionaire = prize >= 1000000;
+
+    if (isMillionaire) {
+        document.getElementById('resultEmoji').innerHTML = '&#127942;&#127775;';
+        document.getElementById('resultTitle').textContent = 'YOU ARE A GENIUS!';
+        document.getElementById('resultMessage').textContent = 'You are smarter than a 5th grader!';
+    } else if (success && prize > 0) {
+        document.getElementById('resultEmoji').innerHTML = '&#128079;';
+        document.getElementById('resultTitle').textContent = 'Well Played!';
+        document.getElementById('resultMessage').textContent = prize >= 300000 ? 'Amazing performance!' :
+            prize >= 25000 ? 'Great job!' : 'Good effort!';
+    } else {
+        document.getElementById('resultEmoji').innerHTML = '&#128517;';
+        document.getElementById('resultTitle').textContent = 'Game Over!';
+        document.getElementById('resultMessage').textContent = prize > 0 ?
+            `You dropped to your checkpoint of $${prize.toLocaleString()}.` : 'Better luck next time!';
+    }
+
+    document.getElementById('resultPrize').textContent = `$${prize.toLocaleString()}`;
+    document.getElementById('resultQuestions').textContent = `${questions}/11`;
+    document.getElementById('resultStars').textContent = `+${stars}`;
+
+    overlay.classList.add('show');
+}
+
+// ============================================================
+// CONFETTI
+// ============================================================
+function launchConfetti() {
+    const canvas = document.getElementById('confettiCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const particles = [];
+    const colors = ['#FFD700', '#FFA500', '#FF6347', '#7C3AED', '#2563EB', '#10B981', '#F43F5E'];
+
+    for (let i = 0; i < 150; i++) {
+        particles.push({
+            x: Math.random() * canvas.width,
+            y: -Math.random() * canvas.height,
+            size: Math.random() * 8 + 4,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            speedY: Math.random() * 3 + 2,
+            speedX: (Math.random() - 0.5) * 4,
+            rotation: Math.random() * 360,
+            rotationSpeed: (Math.random() - 0.5) * 10,
+        });
+    }
+
+    let frame = 0;
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        particles.forEach(p => {
+            p.y += p.speedY;
+            p.x += p.speedX;
+            p.rotation += p.rotationSpeed;
+
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.rotation * Math.PI / 180);
+            ctx.fillStyle = p.color;
+            ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+            ctx.restore();
+        });
+
+        frame++;
+        if (frame < 200) {
+            requestAnimationFrame(animate);
+        } else {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    }
+
+    animate();
+}
+
+// ============================================================
+// QUIT
+// ============================================================
+function confirmQuit() {
+    if (confirm('Are you sure you want to quit? Your progress will be lost!')) {
+        window.location.href = '/smarter5th';
+    }
+}
+
+// ============================================================
+// START
+// ============================================================
+initGame();
+</script>
+{% endblock %}

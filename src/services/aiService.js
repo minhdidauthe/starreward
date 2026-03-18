@@ -24,10 +24,11 @@ class AIService {
 
             const proxyUrl = options.proxyUrl || this.proxyUrl;
             const proxyApiKey = options.proxyApiKey || this.proxyApiKey;
+            const targetModel = options.proxyModel || model;
 
             // Call CLIProxy
             const response = await axios.post(`${proxyUrl}/api/chat`, {
-                model: model,
+                model: targetModel,
                 messages: [
                     {
                         role: 'system',

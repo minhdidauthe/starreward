@@ -1,0 +1,545 @@
+{% extends "base.html" %}
+
+{% block title %}Are You Smarter Than a 5th Grader? - StarEdu{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        border-radius: var(--radius-2xl);
+        padding: 48px 40px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 32px;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(255, 215, 0, 0.15) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+
+    .hero-section::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        left: -10%;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero-title {
+        font-family: var(--font-display);
+        font-size: 2.5rem;
+        font-weight: 800;
+        line-height: 1.2;
+        margin-bottom: 16px;
+        background: linear-gradient(135deg, #FFD700, #FFA500, #FFD700);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .hero-subtitle {
+        font-size: 1.15rem;
+        opacity: 0.85;
+        max-width: 600px;
+        line-height: 1.6;
+    }
+
+    .grade-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .play-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 16px 40px;
+        font-size: 1.2rem;
+        font-weight: 700;
+        font-family: var(--font-display);
+        border-radius: 16px;
+        border: none;
+        background: linear-gradient(135deg, #FFD700, #FFA500);
+        color: #1a1a2e;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 20px rgba(255, 215, 0, 0.4);
+    }
+
+    .play-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 30px rgba(255, 215, 0, 0.6);
+        color: #1a1a2e;
+    }
+
+    .feature-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-xl);
+        padding: 24px;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .feature-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin: 0 auto 16px;
+    }
+
+    .prize-ladder {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+    }
+
+    .prize-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 20px;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        transition: background 0.2s;
+    }
+
+    .prize-row:hover {
+        background: rgba(139, 92, 246, 0.05);
+    }
+
+    .prize-row.checkpoint {
+        background: linear-gradient(90deg, rgba(255, 215, 0, 0.1), transparent);
+        border-left: 4px solid #FFD700;
+    }
+
+    .prize-row.million {
+        background: linear-gradient(90deg, rgba(255, 215, 0, 0.2), rgba(255, 165, 0, 0.1));
+        border-left: 4px solid #FFA500;
+    }
+
+    .prize-amount {
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    .prize-row.million .prize-amount {
+        font-size: 1.3rem;
+        background: linear-gradient(135deg, #FFD700, #FFA500);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .subject-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .rules-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-xl);
+        padding: 28px;
+    }
+
+    .rule-item {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        margin-bottom: 16px;
+    }
+
+    .rule-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .rule-number {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+    }
+
+    .lifeline-card {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
+        padding: 20px;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .lifeline-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .lifeline-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        margin: 0 auto 12px;
+    }
+
+    .student-select-wrapper {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-xl);
+        padding: 24px;
+    }
+
+    @media (max-width: 768px) {
+        .hero-section {
+            padding: 32px 24px;
+        }
+        .hero-title {
+            font-size: 1.8rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="hero-content">
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <span class="grade-badge"><i class="fas fa-graduation-cap"></i> Grade 1-5</span>
+            <span class="grade-badge"><i class="fas fa-globe"></i> English Version</span>
+            <span class="grade-badge"><i class="fas fa-star text-warning"></i> Earn Stars</span>
+        </div>
+        <h1 class="hero-title">Are You Smarter Than<br>a 5th Grader?</h1>
+        <p class="hero-subtitle">
+            Test your knowledge with questions from Grade 1 to Grade 5! Answer 11 questions correctly across
+            5 subjects to win the grand prize. Use lifelines wisely and climb the prize ladder!
+        </p>
+        <div class="d-flex flex-wrap gap-3 mt-4">
+            <a href="/smarter5th/play" class="play-btn" id="playBtn">
+                <i class="fas fa-play"></i> Play Now
+            </a>
+            <a href="#rules" class="btn btn-outline-light btn-lg" style="border-radius: 16px; padding: 14px 28px;">
+                <i class="fas fa-book-open me-2"></i> How to Play
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Features -->
+<div class="row g-4 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="feature-card">
+            <div class="feature-icon" style="background: linear-gradient(135deg, #EEF2FF, #C7D2FE);">
+                <i class="fas fa-brain" style="color: var(--primary-500);"></i>
+            </div>
+            <h6 class="mb-1">11 Questions</h6>
+            <small class="text-muted">From Grade 1 to 5</small>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="feature-card">
+            <div class="feature-icon" style="background: linear-gradient(135deg, #FEF3C7, #FDE68A);">
+                <i class="fas fa-trophy" style="color: #F59E0B;"></i>
+            </div>
+            <h6 class="mb-1">$1,000,000</h6>
+            <small class="text-muted">Grand Prize</small>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="feature-card">
+            <div class="feature-icon" style="background: linear-gradient(135deg, #ECFDF5, #A7F3D0);">
+                <i class="fas fa-life-ring" style="color: #10B981;"></i>
+            </div>
+            <h6 class="mb-1">3 Lifelines</h6>
+            <small class="text-muted">Peek, Copy, Save</small>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="feature-card">
+            <div class="feature-icon" style="background: linear-gradient(135deg, #FFF1F2, #FECDD3);">
+                <i class="fas fa-book" style="color: #F43F5E;"></i>
+            </div>
+            <h6 class="mb-1">5 Subjects</h6>
+            <small class="text-muted">Math, Science & more</small>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Prize Ladder -->
+    <div class="col-lg-5">
+        <div class="prize-ladder">
+            <div style="padding: 20px; background: linear-gradient(135deg, #1a1a2e, #16213e); color: white;">
+                <h5 class="mb-1"><i class="fas fa-coins me-2 text-warning"></i>Prize Ladder</h5>
+                <small style="opacity: 0.7;">Answer correctly to climb up!</small>
+            </div>
+            <div class="prize-row million">
+                <span><strong>Q11</strong> <span class="badge bg-danger ms-1">5th Grade</span></span>
+                <span class="prize-amount">$1,000,000</span>
+            </div>
+            <div class="prize-row">
+                <span><strong>Q10</strong> <span class="badge bg-warning text-dark ms-1">5th Grade</span></span>
+                <span class="prize-amount">$500,000</span>
+            </div>
+            <div class="prize-row checkpoint">
+                <span><strong>Q9</strong> <span class="badge bg-info ms-1">4th Grade</span></span>
+                <span class="prize-amount">$300,000 <i class="fas fa-shield-alt text-warning ms-1"></i></span>
+            </div>
+            <div class="prize-row">
+                <span><strong>Q8</strong> <span class="badge bg-info ms-1">4th Grade</span></span>
+                <span class="prize-amount">$175,000</span>
+            </div>
+            <div class="prize-row">
+                <span><strong>Q7</strong> <span class="badge bg-success ms-1">3rd Grade</span></span>
+                <span class="prize-amount">$100,000</span>
+            </div>
+            <div class="prize-row">
+                <span><strong>Q6</strong> <span class="badge bg-success ms-1">3rd Grade</span></span>
+                <span class="prize-amount">$50,000</span>
+            </div>
+            <div class="prize-row checkpoint">
+                <span><strong>Q5</strong> <span class="badge bg-primary ms-1">2nd Grade</span></span>
+                <span class="prize-amount">$25,000 <i class="fas fa-shield-alt text-warning ms-1"></i></span>
+            </div>
+            <div class="prize-row">
+                <span><strong>Q4</strong> <span class="badge bg-primary ms-1">2nd Grade</span></span>
+                <span class="prize-amount">$10,000</span>
+            </div>
+            <div class="prize-row">
+                <span><strong>Q3</strong> <span class="badge bg-secondary ms-1">1st Grade</span></span>
+                <span class="prize-amount">$5,000</span>
+            </div>
+            <div class="prize-row">
+                <span><strong>Q2</strong> <span class="badge bg-secondary ms-1">1st Grade</span></span>
+                <span class="prize-amount">$2,000</span>
+            </div>
+            <div class="prize-row">
+                <span><strong>Q1</strong> <span class="badge bg-secondary ms-1">1st Grade</span></span>
+                <span class="prize-amount">$1,000</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subjects & Rules -->
+    <div class="col-lg-7">
+        <!-- Subjects -->
+        <div class="rules-card mb-4">
+            <h5 class="mb-3"><i class="fas fa-book-open me-2 text-primary"></i>Subjects</h5>
+            <div class="d-flex flex-wrap gap-2">
+                <span class="subject-tag" style="background: #EEF2FF; color: #4F46E5;">
+                    <i class="fas fa-calculator"></i> Math
+                </span>
+                <span class="subject-tag" style="background: #ECFDF5; color: #059669;">
+                    <i class="fas fa-flask"></i> Science
+                </span>
+                <span class="subject-tag" style="background: #FEF3C7; color: #D97706;">
+                    <i class="fas fa-spell-check"></i> English
+                </span>
+                <span class="subject-tag" style="background: #FFF1F2; color: #E11D48;">
+                    <i class="fas fa-globe-americas"></i> Geography
+                </span>
+                <span class="subject-tag" style="background: #F5F3FF; color: #7C3AED;">
+                    <i class="fas fa-landmark"></i> History
+                </span>
+            </div>
+        </div>
+
+        <!-- Lifelines -->
+        <div class="rules-card mb-4">
+            <h5 class="mb-3"><i class="fas fa-life-ring me-2 text-success"></i>Lifelines</h5>
+            <div class="row g-3">
+                <div class="col-4">
+                    <div class="lifeline-card">
+                        <div class="lifeline-icon" style="background: linear-gradient(135deg, #DBEAFE, #93C5FD); color: #2563EB;">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <h6 style="font-size: 0.9rem;">Peek</h6>
+                        <small class="text-muted">See the classmate's answer</small>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="lifeline-card">
+                        <div class="lifeline-icon" style="background: linear-gradient(135deg, #D1FAE5, #6EE7B7); color: #059669;">
+                            <i class="fas fa-copy"></i>
+                        </div>
+                        <h6 style="font-size: 0.9rem;">Copy</h6>
+                        <small class="text-muted">Use the classmate's answer</small>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="lifeline-card">
+                        <div class="lifeline-icon" style="background: linear-gradient(135deg, #FEF3C7, #FCD34D); color: #D97706;">
+                            <i class="fas fa-save"></i>
+                        </div>
+                        <h6 style="font-size: 0.9rem;">Save</h6>
+                        <small class="text-muted">Keep your current prize</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rules -->
+        <div class="rules-card" id="rules">
+            <h5 class="mb-3"><i class="fas fa-list-ol me-2 text-warning"></i>How to Play</h5>
+            <div class="rule-item">
+                <div class="rule-number">1</div>
+                <div>
+                    <strong>Answer 11 questions</strong> - 2 questions each from Grade 1 to 4, then 2 from Grade 5, plus a final Million Dollar question.
+                </div>
+            </div>
+            <div class="rule-item">
+                <div class="rule-number">2</div>
+                <div>
+                    <strong>Each question is multiple choice</strong> with 4 options. Pick the correct answer to move up the prize ladder.
+                </div>
+            </div>
+            <div class="rule-item">
+                <div class="rule-number">3</div>
+                <div>
+                    <strong>Use your 3 lifelines</strong> wisely! Each can only be used once during the game.
+                </div>
+            </div>
+            <div class="rule-item">
+                <div class="rule-number">4</div>
+                <div>
+                    <strong>Two checkpoints</strong> at $25,000 and $300,000. If you answer wrong, you drop to the last checkpoint reached.
+                </div>
+            </div>
+            <div class="rule-item">
+                <div class="rule-number">5</div>
+                <div>
+                    <strong>You can "Drop Out"</strong> at any time to keep your current prize money. But once you answer, there's no going back!
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Student Selection & Play -->
+<div class="student-select-wrapper mb-4">
+    <div class="row align-items-center g-3">
+        <div class="col-md-6">
+            <h5 class="mb-2"><i class="fas fa-user-graduate me-2 text-primary"></i>Select Student</h5>
+            <p class="text-muted mb-0">Choose a student to earn stars for completing the game</p>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" id="studentSelect">
+                <option value="">-- Select Student --</option>
+                {% for student in students %}
+                <option value="{{ student._id }}">{{ student.name }} ({{ student.total_stars }} stars)</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <a href="/smarter5th/play" class="play-btn w-100 text-center text-decoration-none" id="startGameBtn">
+                <i class="fas fa-play"></i> Start Game
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Star Rewards Info -->
+<div class="rules-card mb-4">
+    <h5 class="mb-3"><i class="fas fa-star me-2 text-warning"></i>Star Rewards</h5>
+    <div class="row g-3">
+        <div class="col-6 col-md-2">
+            <div class="text-center p-2" style="background: var(--neutral-50); border-radius: var(--radius-lg);">
+                <div class="h5 text-muted mb-0">$1,000</div>
+                <small class="text-warning fw-bold">2 stars</small>
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="text-center p-2" style="background: var(--neutral-50); border-radius: var(--radius-lg);">
+                <div class="h5 text-info mb-0">$25,000</div>
+                <small class="text-warning fw-bold">10 stars</small>
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="text-center p-2" style="background: var(--neutral-50); border-radius: var(--radius-lg);">
+                <div class="h5 text-primary mb-0">$100,000</div>
+                <small class="text-warning fw-bold">20 stars</small>
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="text-center p-2" style="background: var(--neutral-50); border-radius: var(--radius-lg);">
+                <div class="h5 text-success mb-0">$300,000</div>
+                <small class="text-warning fw-bold">30 stars</small>
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="text-center p-2" style="background: linear-gradient(135deg, #FEF3C7, #FDE68A); border-radius: var(--radius-lg);">
+                <div class="h5 mb-0" style="color: #92400E;">$1,000,000</div>
+                <small class="text-warning fw-bold">50 stars</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Update play link with selected student
+document.getElementById('studentSelect').addEventListener('change', function() {
+    const studentId = this.value;
+    const playBtn = document.getElementById('playBtn');
+    const startBtn = document.getElementById('startGameBtn');
+    const baseUrl = '/smarter5th/play';
+    const url = studentId ? `${baseUrl}?studentId=${studentId}` : baseUrl;
+    playBtn.href = url;
+    startBtn.href = url;
+});
+</script>
+{% endblock %}

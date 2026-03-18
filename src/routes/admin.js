@@ -1065,7 +1065,7 @@ router.get('/reddit-manager', isAdmin, async (req, res) => {
 // AI Rewrite Reddit Posts (using CLIProxy or direct AI APIs)
 router.post('/api/reddit-ai-rewrite', isAdmin, async (req, res) => {
     try {
-        const { posts, aiModel, proxyUrl, proxyApiKey } = req.body;
+        const { posts, aiModel, proxyUrl, proxyApiKey, proxyModel } = req.body;
 
         if (!posts || posts.length === 0) {
             return res.status(400).json({
@@ -1074,10 +1074,10 @@ router.post('/api/reddit-ai-rewrite', isAdmin, async (req, res) => {
             });
         }
 
-        console.log(`[AI Rewrite] Processing ${posts.length} posts with ${aiModel}`);
+        console.log(`[AI Rewrite] Processing ${posts.length} posts with ${proxyModel || aiModel}`);
 
         // Use real AI service via CLIProxy
-        const options = { proxyUrl, proxyApiKey };
+        const options = { proxyUrl, proxyApiKey, proxyModel };
         const results = await aiService.rewriteBatch(posts, aiModel, options, (current, total) => {
             console.log(`[AI Rewrite] Progress: ${current}/${total}`);
         });

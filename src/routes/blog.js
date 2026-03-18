@@ -1,6 +1,19 @@
 const express = require('express');
 const router = express.Router();
+const sanitizeHtml = require('sanitize-html');
 const { BlogPost, categoryLabels, categoryIcons, categoryColors, roleLabels } = require('../models/Blog');
+
+// Sanitize HTML content - allow safe tags only
+const sanitize = (html) => sanitizeHtml(html, {
+    allowedTags: sanitizeHtml.defaults.allowedTags.concat(['h1', 'h2', 'h3', 'img', 'iframe']),
+    allowedAttributes: {
+        ...sanitizeHtml.defaults.allowedAttributes,
+        img: ['src', 'alt', 'class', 'width', 'height'],
+        a: ['href', 'target', 'rel'],
+        iframe: ['src', 'width', 'height', 'frameborder', 'allowfullscreen']
+    },
+    allowedIframeHostnames: ['www.youtube.com', 'youtube.com', 'player.vimeo.com']
+});
 
 // Helper to pass category data to templates
 const getBlogData = () => ({
@@ -133,15 +146,18 @@ router.post('/write', async (req, res) => {
             return res.redirect('/blog/write');
         }
 
+        // Sanitize content
+        const cleanContent = sanitize(content);
+
         // Create excerpt
-        const excerpt = content
+        const excerpt = cleanContent
             .replace(/<[^>]+>/g, '')
-            .substring(0, 300) + (content.length > 300 ? '...' : '');
+            .substring(0, 300) + (cleanContent.length > 300 ? '...' : '');
 
         // Create post
         const post = await BlogPost.create({
-            title,
-            content,
+            title: sanitizeHtml(title, { allowedTags: [], allowedAttributes: {} }),
+            content: cleanContent,
             excerpt,
             category: category || 'experience',
             tags: tags ? tags.split(',').map(t => t.trim()).filter(t => t) : [],
@@ -289,9 +305,9 @@ router.post('/:slug/comment', async (req, res) => {
         }
 
         post.comments.push({
-            authorName,
+            authorName: sanitizeHtml(authorName, { allowedTags: [], allowedAttributes: {} }),
             authorEmail,
-            content,
+            content: sanitizeHtml(content, { allowedTags: [], allowedAttributes: {} }),
             isParent: isParent !== 'false'
         });
 

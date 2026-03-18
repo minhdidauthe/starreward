@@ -1,7 +1,11 @@
 const express = require('express');
 const router = express.Router();
+const sanitizeHtml = require('sanitize-html');
 const { Idea, categoryLabels, categoryIcons, categoryColors } = require('../models/Idea');
 const { Student, Reward } = require('../models/Basic');
+
+// Strip all HTML tags for plain text fields
+const stripHtml = (text) => sanitizeHtml(text, { allowedTags: [], allowedAttributes: {} });
 
 // Helper to pass category data to templates
 const getCategoryData = () => ({
@@ -282,11 +286,15 @@ router.post('/create', async (req, res) => {
             return res.redirect('/ideas/create');
         }
 
+        // Sanitize input
+        const cleanTitle = stripHtml(title);
+        const cleanContent = stripHtml(content);
+
         // Create idea
         const idea = await Idea.create({
-            title,
-            content,
-            summary: content.substring(0, 200) + (content.length > 200 ? '...' : ''),
+            title: cleanTitle,
+            content: cleanContent,
+            summary: cleanContent.substring(0, 200) + (cleanContent.length > 200 ? '...' : ''),
             category: category || 'other',
             tags: tags ? tags.split(',').map(t => t.trim()).filter(t => t) : [],
             student: student._id,
@@ -442,7 +450,7 @@ router.post('/:id/comment', async (req, res) => {
         idea.comments.push({
             author: student._id,
             authorName: student.name,
-            content
+            content: stripHtml(content)
         });
 
         await idea.save();

@@ -1,736 +1,368 @@
-# 🌟 Star Reward - Hệ Thống Tặng Sao Giáo Dục
+# Star Reward
 
-> Nền tảng quản lý điểm thưởng và nội dung giáo dục dành cho trẻ em và phụ huynh
+> Nền tảng giáo dục gamification cho trẻ em (6-12 tuổi) - Hệ thống tặng sao, học tập, khám phá và blog phụ huynh.
 
-[![Node.js](https://img.shields.io/badge/Node.js-v16+-green.svg)](https://nodejs.org/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-v4.4+-green.svg)](https://www.mongodb.com/)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-
-## 📋 Mục lục
-
-- [Giới thiệu](#-giới-thiệu)
-- [Tính năng](#-tính-năng)
-- [Công nghệ sử dụng](#-công-nghệ-sử-dụng)
-- [Cài đặt](#-cài-đặt)
-- [Cấu hình](#-cấu-hình)
-- [Sử dụng](#-sử-dụng)
-- [Admin Panel](#-admin-panel)
-- [Reddit Integration](#-reddit-integration)
-- [API Documentation](#-api-documentation)
-- [Cấu trúc dự án](#-cấu-trúc-dự-án)
-- [Contributing](#-contributing)
-- [License](#-license)
+**Version:** 2.1.0 | **Port:** 8080 (prod) / 3000 (dev) | **Language:** Vietnamese
 
 ---
 
-## 🎯 Giới thiệu
+## Tech Stack
 
-**Star Reward** là một hệ thống giáo dục toàn diện giúp phụ huynh và giáo viên:
-
-- ⭐ Quản lý hệ thống tặng sao động viên cho trẻ
-- 📚 Cung cấp nội dung học tập (Toán, Tiếng Anh, Khoa học)
-- 🎮 Hoạt động khám phá và trò chơi giáo dục
-- 💡 Chia sẻ ý tưởng và kinh nghiệm nuôi dạy con
-- 📝 Blog giáo dục với nội dung từ Reddit
-- 🎯 Thi cử và đánh giá trực tuyến
-
----
-
-## ✨ Tính năng
-
-### 🎓 Cho Học sinh
-
-- **Hệ thống tặng sao**: Nhận sao khi hoàn thành nhiệm vụ hàng ngày
-- **Bảng xếp hạng**: Theo dõi tiến độ và so sánh với bạn bè
-- **Học tập tương tác**: Bài học Toán, Tiếng Anh, STEM
-- **Hoạt động khám phá**: Game giáo dục, thí nghiệm khoa học
-- **Thi cử trực tuyến**: Kiểm tra kiến thức định kỳ
-
-### 👨‍👩‍👧 Cho Phụ huynh
-
-- **Theo dõi tiến độ**: Xem điểm số và hoạt động của con
-- **Giao nhiệm vụ**: Tạo task và reward tùy chỉnh
-- **Blog giáo dục**: Đọc bài viết về nuôi dạy con
-- **Chia sẻ kinh nghiệm**: Đóng góp ý tưởng và tips
-
-### 👨‍🏫 Cho Giáo viên
-
-- **Quản lý lớp học**: Theo dõi nhiều học sinh
-- **Tạo bài học**: Soạn nội dung và đề thi
-- **Đánh giá**: Chấm điểm và phản hồi
-- **Báo cáo**: Thống kê tiến độ học tập
-
-### 🛡️ Admin Panel
-
-- **Quản lý người dùng**: CRUD users, phân quyền
-- **Quản lý blog**: Tạo/sửa/xóa bài viết
-- **Import Reddit**: Tự động crawl nội dung từ Reddit
-- **Thống kê**: Dashboard tổng quan hệ thống
-- **Cấu hình**: Settings và customization
+| Layer | Technology |
+|-------|-----------|
+| Backend | Express.js 4.19, Node.js 16+ |
+| Database | MongoDB (Mongoose 8.2) |
+| Template | Nunjucks (SSR) |
+| Frontend | Bootstrap 5, Chart.js, Quill.js |
+| Auth | bcryptjs + express-session + connect-mongo |
+| AI | CLIProxy (Gemini / ChatGPT / Claude) |
+| Reddit | snoowrap + RapidAPI |
+| Security | express-rate-limit, sanitize-html |
 
 ---
 
-## 🔧 Công nghệ sử dụng
+## Architecture
 
-### Backend
-- **Node.js** v16+ - Runtime
-- **Express.js** v4.18+ - Web framework
-- **MongoDB** v4.4+ - Database
-- **Mongoose** - ODM
-- **Nunjucks** - Template engine
-
-### Frontend
-- **Bootstrap 5** - UI framework
-- **Chart.js** - Biểu đồ và thống kê
-- **Quill.js** - Rich text editor
-- **Bootstrap Icons** - Icon library
-
-### Tools & Services
-- **bcryptjs** - Password hashing
-- **express-session** - Session management
-- **connect-flash** - Flash messages
-- **axios** - HTTP client
-- **moment** - Date formatting
-
----
-
-## 📦 Cài đặt
-
-### Yêu cầu hệ thống
-
-- Node.js v16 hoặc mới hơn
-- MongoDB v4.4 hoặc mới hơn
-- npm hoặc yarn
-- Git
-
-### Các bước cài đặt
-
-1. **Clone repository**
-
-```bash
-git clone https://github.com/yourusername/star-reward.git
-cd star-reward
 ```
-
-2. **Cài đặt dependencies**
-
-```bash
-npm install
-```
-
-3. **Cấu hình môi trường**
-
-```bash
-cp .env.example .env
-```
-
-Chỉnh sửa file `.env`:
-
-```env
-PORT=3000
-MONGODB_URI=mongodb://localhost:27017/star_reward_app
-SESSION_SECRET=your-secret-key
-BLOG_CORNER_API_URL=http://localhost:30001/api/blog-corner
-```
-
-4. **Khởi động MongoDB**
-
-```bash
-# Windows
-net start MongoDB
-
-# macOS/Linux
-sudo systemctl start mongod
-```
-
-5. **Chạy ứng dụng**
-
-```bash
-# Development mode
-npm start
-
-# Production mode
-npm run prod
-```
-
-6. **Truy cập ứng dụng**
-
-Mở trình duyệt và truy cập: `http://localhost:3000`
-
----
-
-## ⚙️ Cấu hình
-
-### Database
-
-MongoDB sẽ tự động tạo database `star_reward_app` khi chạy lần đầu.
-
-Seed data mặc định bao gồm:
-- Admin user (username: `admin`, password: `admin123`)
-- Sample users (student1, parent1, teacher1)
-- Daily tasks (Rửa bát, Học bài, Ngủ đúng giờ...)
-- Learning content (Subjects, Chapters, Lessons)
-- Exam templates
-
-### Environment Variables
-
-| Variable | Mô tả | Mặc định |
-|----------|-------|----------|
-| `PORT` | Cổng server | 3000 |
-| `MONGODB_URI` | MongoDB connection string | mongodb://localhost:27017/star_reward_app |
-| `SESSION_SECRET` | Secret key cho sessions | your-secret-key |
-| `BLOG_CORNER_API_URL` | URL của Reddit crawler API | http://localhost:30001 |
-| `NODE_ENV` | Môi trường (development/production) | development |
-
----
-
-## 🚀 Sử dụng
-
-### Đăng nhập
-
-#### Tài khoản Admin
-```
-Username: admin
-Password: admin123
-Email: admin@starreward.com
-```
-
-#### Tài khoản Test
-```
-Student: student1 / password123
-Parent: parent1 / password123
-Teacher: teacher1 / password123
-```
-
-**⚠️ QUAN TRỌNG:** Đổi mật khẩu admin ngay sau lần đăng nhập đầu tiên!
-
-### Tạo học sinh mới
-
-1. Truy cập trang chủ: `http://localhost:3000`
-2. Click "Thêm học sinh"
-3. Nhập tên học sinh
-4. Click "Thêm"
-
-### Tặng sao cho học sinh
-
-1. Click vào tên học sinh
-2. Chọn nhiệm vụ từ danh sách hoặc nhập tùy chỉnh
-3. Nhập số sao
-4. Click "Tặng sao"
-
-### Tạo nhiệm vụ
-
-1. Vào trang học sinh
-2. Click "Thêm công việc"
-3. Nhập tên, mô tả, deadline
-4. Click "Lưu"
-
----
-
-## 🛡️ Admin Panel
-
-### Truy cập Admin Panel
-
-1. Đăng nhập với tài khoản admin
-2. Menu "Admin Panel" sẽ xuất hiện ở sidebar
-3. Click để vào trang quản trị
-
-### Quản lý người dùng
-
-**URL:** `/admin/users`
-
-**Tính năng:**
-- ✅ Xem danh sách tất cả users (phân trang)
-- ✅ Tìm kiếm theo tên, email, username
-- ✅ Lọc theo vai trò (student/parent/teacher/admin)
-- ✅ Tạo user mới
-- ✅ Chỉnh sửa thông tin user
-- ✅ Đặt lại mật khẩu
-- ✅ Xóa user (có xác nhận)
-
-**Vai trò (Roles):**
-- `student` - Học sinh
-- `parent` - Phụ huynh
-- `teacher` - Giáo viên
-- `admin` - Quản trị viên
-
-### Quản lý Blog
-
-**URL:** `/admin/blog`
-
-**Tính năng:**
-- ✅ Dashboard với thống kê
-- ✅ Danh sách bài viết (search, filter, pagination)
-- ✅ Tạo bài viết với Rich Text Editor
-- ✅ Chỉnh sửa và xóa bài viết
-- ✅ Import từ Reddit
-- ✅ Quản lý categories và tags
-- ✅ Featured & Pinned posts
-- ✅ Draft/Published/Archived status
-
-**Categories:**
-- Education (Giáo dục)
-- Psychology (Tâm lý trẻ)
-- Health (Sức khỏe)
-- Nutrition (Dinh dưỡng)
-- Activities (Hoạt động)
-- Discipline (Kỷ luật)
-- Communication (Giao tiếp)
-- Technology (Công nghệ)
-- Experience (Kinh nghiệm)
-- Other (Khác)
-
----
-
-## 🔗 Reddit Integration
-
-Star Reward tích hợp với hệ thống crawler Reddit để tự động import nội dung giáo dục.
-
-### Cấu hình
-
-1. **Chạy Blog Corner API**
-
-Hệ thống Reddit crawler của bạn tại:
-```
-F:\HOC TAP\JAY\Order-Management-System\dashboard-v2
-```
-
-Đảm bảo API đang chạy ở port 30001:
-```bash
-cd "F:\HOC TAP\JAY\Order-Management-System\dashboard-v2"
-npm run dev
-```
-
-2. **Cấu hình URL trong .env**
-
-```env
-BLOG_CORNER_API_URL=http://localhost:30001/api/blog-corner
-```
-
-### Import từ Reddit
-
-**Phương thức 1: Import single post**
-
-1. Vào `/admin/blog/import-reddit`
-2. Chọn "URL Post"
-3. Nhập Reddit URL: `https://www.reddit.com/r/parenting/comments/abc123/...`
-4. Chọn category
-5. Click "Import"
-
-**Phương thức 2: Import từ Subreddit**
-
-1. Vào `/admin/blog/import-reddit`
-2. Chọn "Subreddit"
-3. Nhập tên subreddit: `parenting`
-4. Chọn sort (hot/new/top)
-5. Chọn số lượng posts (1-50)
-6. Click "Import"
-
-**Subreddits đề xuất:**
-
-- r/parenting - Nuôi dạy con
-- r/education - Giáo dục
-- r/Teachers - Giáo viên
-- r/homeschool - Giáo dục tại nhà
-- r/ScienceTeachers - Khoa học
-- r/EnglishLearning - Tiếng Anh
-- r/learnmath - Toán học
-
-### Reddit Crawler Service
-
-Service tại: `src/services/redditCrawler.js`
-
-**Methods:**
-- `fetchRedditTrends()` - Lấy trends từ blog-corner API
-- `fetchRedditPostByUrl()` - Lấy single post by URL
-- `fetchSubredditPosts()` - Lấy multiple posts từ subreddit
-- `convertRedditPostToBlogPost()` - Convert format
-- `syncRedditToBlog()` - Đồng bộ hàng loạt
-
----
-
-## 📚 API Documentation
-
-### Authentication APIs
-
-#### POST `/auth/login`
-Đăng nhập
-
-**Body:**
-```json
-{
-  "email": "admin@starreward.com",
-  "password": "admin123"
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "user": {
-    "id": "...",
-    "username": "admin",
-    "role": "admin"
-  }
-}
-```
-
-#### POST `/auth/register`
-Đăng ký tài khoản mới
-
-#### GET `/auth/logout`
-Đăng xuất
-
-### Blog APIs
-
-#### GET `/blog`
-Lấy danh sách blog posts
-
-**Query params:**
-- `page` - Số trang (default: 1)
-- `category` - Lọc theo category
-- `search` - Tìm kiếm
-- `sort` - Sắp xếp (newest/popular/liked)
-
-#### GET `/blog/:slug`
-Xem chi tiết bài viết
-
-#### POST `/blog/:slug/like`
-Like bài viết
-
-#### POST `/blog/:slug/comment`
-Thêm comment
-
-### Admin APIs
-
-#### GET `/admin/dashboard`
-Admin dashboard
-
-#### GET `/admin/users`
-Danh sách users (admin only)
-
-#### POST `/admin/users/create`
-Tạo user mới (admin only)
-
-#### GET `/admin/blog/posts`
-Danh sách blog posts (admin only)
-
-#### POST `/admin/blog/import-reddit`
-Import từ Reddit (admin only)
-
-**Body:**
-```json
-{
-  "importMethod": "url|subreddit",
-  "redditUrl": "https://reddit.com/...",
-  "subreddit": "parenting",
-  "category": "education",
-  "autoPublish": "on"
-}
+┌─────────────────────────────────────────────────────┐
+│                    Client (Browser)                   │
+│              Bootstrap 5 + Chart.js + Quill           │
+└────────────────────────┬────────────────────────────┘
+                         │
+┌────────────────────────▼────────────────────────────┐
+│                 Express.js Server                     │
+│                                                       │
+│  Routes:                                              │
+│  auth │ main │ blog │ admin │ learning │ exam         │
+│  explore │ ideas │ notifications │ checkin             │
+│  achievements │ shop                                  │
+│                                                       │
+│  Middleware:                                          │
+│  rate-limit │ session(MongoStore) │ sanitize-html     │
+│                                                       │
+│  Services:                                            │
+│  aiService │ redditCrawler │ directRedditCrawler      │
+└────────────────────────┬────────────────────────────┘
+                         │
+┌────────────────────────▼────────────────────────────┐
+│                    MongoDB                            │
+│  Users │ Students │ Rewards │ DailyTasks │ Tasks      │
+│  BlogPosts │ RedditPosts │ Notifications              │
+│  CheckIns │ Achievements │ StudentAchievements        │
+│  ShopItems │ Purchases                                │
+│  Subjects │ Chapters │ Lessons │ Exams │ Questions     │
+│  ExploreCategories │ ExploreActivities │ Ideas        │
+└──────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 📁 Cấu trúc dự án
+## Directory Structure
 
 ```
-star-reward/
-├── app/
-│   ├── static/
-│   │   ├── css/
-│   │   │   ├── custom.css
-│   │   │   └── avatars.css
-│   │   └── js/
-│   │       └── avatars.js
-│   └── templates/
-│       ├── admin/
-│       │   ├── dashboard.html
-│       │   ├── users.html
-│       │   ├── blog-dashboard.html
-│       │   ├── blog-posts.html
-│       │   ├── blog-create.html
-│       │   ├── blog-edit.html
-│       │   └── blog-import-reddit.html
-│       ├── auth/
-│       │   ├── login.html
-│       │   └── register.html
-│       ├── blog/
-│       │   ├── index.html
-│       │   ├── detail.html
-│       │   └── create.html
-│       ├── explore/
-│       ├── learning/
-│       ├── exam/
-│       ├── ideas/
-│       ├── base.html
-│       ├── dashboard.html
-│       └── student.html
+starreward/
 ├── src/
-│   ├── models/
-│   │   ├── Basic.js
-│   │   ├── User.js
-│   │   ├── Blog.js
-│   │   ├── Learning.js
-│   │   ├── Exam.js
-│   │   ├── Explore.js
-│   │   └── Idea.js
-│   ├── routes/
-│   │   ├── main.js
-│   │   ├── auth.js
-│   │   ├── admin.js
-│   │   ├── blog.js
-│   │   ├── learning.js
-│   │   ├── exam.js
-│   │   ├── explore.js
-│   │   └── ideas.js
+│   ├── app.js                    # Entry point
+│   ├── models/                   # Mongoose models (12 files)
+│   │   ├── User.js               # Auth (bcrypt, roles)
+│   │   ├── Basic.js              # Student, Reward, DailyTask, Task
+│   │   ├── Blog.js               # BlogPost + comments
+│   │   ├── RedditPost.js         # Reddit content cache
+│   │   ├── Learning.js           # Subject, Chapter, Lesson
+│   │   ├── Exam.js               # Exam, Question, Schedule, Result
+│   │   ├── Explore.js            # Category, Activity, Progress
+│   │   ├── Idea.js               # Idea + AI analysis
+│   │   ├── Notification.js       # Notifications (NEW)
+│   │   ├── CheckIn.js            # Daily check-in + streak (NEW)
+│   │   ├── Achievement.js        # Badges + rarity (NEW)
+│   │   └── Shop.js               # ShopItem + Purchase (NEW)
+│   ├── routes/                   # Express routes (12 files)
+│   │   ├── auth.js               # Login/Register + middleware
+│   │   ├── main.js               # Home, Student CRUD
+│   │   ├── blog.js               # Blog + sanitization
+│   │   ├── admin.js              # Admin panel (41KB)
+│   │   ├── learning.js           # Learning hub
+│   │   ├── exam.js               # Exams
+│   │   ├── explore.js            # Activities
+│   │   ├── ideas.js              # Ideas + AI
+│   │   ├── notifications.js      # Notification API (NEW)
+│   │   ├── checkin.js            # Check-in + streak bonus (NEW)
+│   │   ├── achievements.js       # Badge system + auto-check (NEW)
+│   │   └── shop.js               # Star shop + purchases (NEW)
 │   ├── services/
-│   │   └── redditCrawler.js
-│   ├── utils/
-│   │   └── seed.js
-│   └── app.js
-├── database/
-│   └── stars.db
-├── .env.example
-├── .gitignore
-├── package.json
-├── ADMIN_GUIDE.md
-└── README.md
+│   │   ├── aiService.js          # CLIProxy AI integration
+│   │   ├── redditCrawler.js      # Reddit via snoowrap
+│   │   └── directRedditCrawler.js
+│   └── utils/
+│       └── seed.js               # Auto-seed on first run
+│
+├── app/
+│   ├── static/css/, js/          # Frontend assets
+│   └── templates/                # Nunjucks HTML
+│       ├── base.html             # Main layout
+│       ├── admin/ (13 files)     # Admin panel
+│       ├── auth/                 # Login, Register
+│       ├── blog/                 # Blog
+│       ├── exam/                 # Exams
+│       ├── explore/              # Activities
+│       ├── ideas/                # Ideas
+│       ├── learning/             # Learning
+│       ├── notifications/        # Notifications (NEW)
+│       ├── checkin/              # Daily check-in (NEW)
+│       ├── achievements/         # Badges (NEW)
+│       ├── shop/                 # Star shop (NEW)
+│       └── errors/               # 404, 500 (NEW)
+│
+├── docs/
+│   ├── TECHNICAL_DOCUMENTATION.md
+│   └── FEATURE_DEVELOPMENT_GUIDE.md
+├── docker-compose.yml
+├── Dockerfile
+├── .env
+└── package.json
 ```
 
 ---
 
-## 🎨 Screenshots
+## Features
 
-### Trang chủ
-![Home](docs/screenshots/home.png)
+### Core
+| Feature | Route | Description |
+|---------|-------|-------------|
+| Star Rewards | `/student/:id` | Thưởng/phạt sao, daily tasks |
+| Learning Hub | `/learning` | Toán, Tiếng Anh, Tiếng Việt |
+| Exams | `/exam` | Thi trắc nghiệm online |
+| Explore | `/explore` | Games, puzzles, crafts, stories |
+| Ideas | `/ideas` | Chia sẻ ý tưởng + AI phân tích |
+| Blog | `/blog` | Blog phụ huynh + Reddit import |
 
-### Student Dashboard
-![Student](docs/screenshots/student.png)
+### Gamification (NEW)
+| Feature | Route | Description |
+|---------|-------|-------------|
+| Daily Check-in | `/checkin/:studentId` | Điểm danh + streak bonus (7d=+5, 14d=+10, 30d=+25 sao) |
+| Achievements | `/achievements/:studentId` | 19 huy hiệu, 5 rarity levels, auto-award |
+| Star Shop | `/shop/:studentId` | 15 vật phẩm đổi sao (game, kem, công viên...) |
+| Notifications | `/notifications/:studentId` | Thông báo tự động khi nhận sao, huy hiệu, mua hàng |
 
 ### Admin Panel
-![Admin](docs/screenshots/admin.png)
-
-### Blog Management
-![Blog](docs/screenshots/blog.png)
-
----
-
-## 🔐 Bảo mật
-
-### Best Practices
-
-1. **Passwords:**
-   - Tất cả mật khẩu được hash bằng bcrypt (10 salt rounds)
-   - Không lưu plain text passwords
-   - Yêu cầu tối thiểu 6 ký tự
-
-2. **Sessions:**
-   - Session-based authentication
-   - Secure session secret
-   - Auto timeout sau thời gian không hoạt động
-
-3. **Authorization:**
-   - Role-based access control (RBAC)
-   - Middleware `isAdmin`, `isAuthenticated`, `isTeacherOrAdmin`
-   - Route protection
-
-4. **Input Validation:**
-   - Server-side validation
-   - XSS protection
-   - SQL injection prevention (NoSQL)
-
-5. **HTTPS:**
-   - Sử dụng HTTPS trong production
-   - Secure cookies
+| Feature | Route |
+|---------|-------|
+| Dashboard | `/admin/dashboard` |
+| User CRUD | `/admin/users` |
+| Blog management | `/admin/blog` |
+| Reddit import + AI rewrite | `/admin/reddit-manager` |
 
 ---
 
-## 🧪 Testing
+## Roles & Permissions
 
-### Chạy tests
+| Role | Access |
+|------|--------|
+| student | Learning, Exams, Explore, Ideas |
+| parent | + Blog, child progress |
+| teacher | + Create exams, manage students |
+| admin | Full access + Admin panel |
 
+**Middleware:** `isAuthenticated`, `isGuest`, `isAdmin`, `isTeacherOrAdmin`
+
+---
+
+## API Endpoints
+
+### Auth (`/auth`)
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | /auth/login | Đăng nhập |
+| POST | /auth/register | Đăng ký |
+| GET | /auth/logout | Đăng xuất |
+
+### Student & Stars (`/`)
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | / | Danh sách học sinh |
+| POST | /add_student | Thêm học sinh |
+| GET | /student/:id | Chi tiết + daily tasks |
+| POST | /add_stars/:id | Thưởng/phạt sao |
+
+### Gamification
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | /checkin/:studentId | Điểm danh |
+| GET | /checkin/:studentId | Trang điểm danh + streak |
+| GET | /achievements/:studentId | Trang huy hiệu |
+| POST | /achievements/check/:studentId | Kiểm tra huy hiệu mới |
+| GET | /shop/:studentId | Cửa hàng |
+| POST | /shop/:studentId/buy/:itemId | Mua vật phẩm |
+| GET | /notifications/api/:studentId | API thông báo (JSON) |
+
+### Blog (`/blog`)
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | /blog | Danh sách (phân trang, lọc) |
+| GET | /blog/:slug | Chi tiết bài viết |
+| POST | /blog/:slug/like | Like toggle |
+| POST | /blog/:slug/comment | Bình luận |
+
+### Admin (`/admin`) - requires `isAdmin`
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | /admin/dashboard | Thống kê |
+| GET/POST | /admin/users/* | CRUD users |
+| GET/POST | /admin/blog/* | CRUD blog posts |
+| POST | /admin/reddit/sync | Sync Reddit posts |
+| POST | /admin/reddit/process | AI rewrite |
+
+---
+
+## Database Models
+
+### Core
+- **User** - username, email, password (bcrypt), role, lastLogin
+- **Student** - name, total_stars, avatar, avatarStyle
+- **Reward** - stars, reason, student (ref), is_penalty, task (ref)
+- **DailyTask** - name, default_stars, description
+- **Task** - student (ref), title, due_date, is_completed
+
+### Content
+- **BlogPost** - title, slug, content, author, category (10 types), status, likes, comments
+- **RedditPost** - redditId, content, AI-translated fields, status
+- **Subject/Chapter/Lesson** - Learning content hierarchy
+- **Exam/Question/ExamSchedule** - Testing system
+- **ExploreCategory/ExploreActivity** - 8 activity types
+- **Idea** - title, content, AI analysis (feasibility, strengths, suggestions)
+
+### Gamification (NEW)
+- **Notification** - student, type, title, message, isRead
+- **CheckIn** - student, date (unique), starsEarned, streakDay
+- **Achievement** - name, icon, type (7 types), requirement, rarity (5 levels), starsBonus
+- **StudentAchievement** - student + achievement (unique pair)
+- **ShopItem** - name, icon, cost, category (5 types), stock
+- **Purchase** - student, item, cost, status
+
+---
+
+## Seed Data (auto on first run)
+
+### Accounts
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | admin@starreward.com | admin123 |
+| Student | student1@test.com | password123 |
+| Parent | parent1@test.com | password123 |
+| Teacher | teacher1@test.com | password123 |
+
+### Daily Tasks (7)
+Rửa bát (2), Học bài (3), Ngủ đúng giờ (2), Ăn đúng giờ (2), Dọn phòng (2), Đánh răng (1), Tập thể dục (2)
+
+### Achievements (19)
+| Type | Achievements |
+|------|-------------|
+| Star milestone | Ngôi Sao Mới (10), Ngôi Sao Sáng (50), Siêu Sao (100), Vua Sao (500), Huyền Thoại (1000) |
+| Check-in streak | Bước Đầu (3d), Chăm Chỉ (7d), Kiên Trì (14d), Bất Khuất (30d) |
+| Task completion | Người Mới (5), Xuất Sắc (20), Siêu Nhân (50) |
+| Explore/Ideas/Exam | 5 more achievements |
+
+### Shop Items (15)
+| Category | Items |
+|----------|-------|
+| Privilege | 30p game (20), 30p YouTube (25), Nghỉ task (15), Ngủ muộn (10), Chọn bữa ăn (30) |
+| Physical | Kem (15), Bánh kẹo (10), Đồ chơi (50), Sách (40) |
+| Experience | Công viên (80), Xem phim (60), Picnic (100) |
+| Avatar | Siêu nhân (30), Công chúa (30), Robot (45) |
+
+### Content
+- 3 Subjects (Toán, Tiếng Anh, Tiếng Việt) with chapters + lessons
+- 3 Exams with questions
+- 8 Explore Categories + 12 Activities
+
+---
+
+## Security
+
+| Feature | Implementation |
+|---------|---------------|
+| Password hashing | bcryptjs (10 salt rounds) |
+| Session store | connect-mongo (persistent) |
+| Rate limiting | 200 req/15min (general), 10 req/15min (auth) |
+| Input sanitization | sanitize-html (blog content, comments, ideas) |
+| XSS protection | Nunjucks autoescape |
+| RBAC | 4 roles, middleware-protected routes |
+| Error handling | Global 404 + 500 handlers |
+| Static cache | 7-day maxAge in production |
+| Cookie | httpOnly, secure (prod), 1-day maxAge |
+
+---
+
+## Development
+
+### Setup
 ```bash
-# Run all tests
-npm test
-
-# Run specific test file
-npm test -- tests/test_api.js
-
-# Run with coverage
-npm run test:coverage
+cd "E:\Developer\Projects\Star Reward\starreward"
+npm install
+cp .env.example .env    # Edit with your values
 ```
 
-### Test files
-
-- `tests/test_api.js` - API endpoints
-- `tests/test_reward.js` - Reward system
-- `tests/test_task.js` - Task management
-
----
-
-## 🚢 Deployment
-
-### Heroku
-
+### Run
 ```bash
-# Login to Heroku
-heroku login
-
-# Create app
-heroku create star-reward-app
-
-# Add MongoDB addon
-heroku addons:create mongolab
-
-# Set environment variables
-heroku config:set SESSION_SECRET=your-secret-key
-heroku config:set NODE_ENV=production
-
-# Deploy
-git push heroku main
-
-# Open app
-heroku open
+npm run dev             # nodemon, port 3000
+npm start               # production, port 8080
 ```
+
+### Environment Variables
+| Variable | Default | Description |
+|----------|---------|-------------|
+| PORT | 3000 | Server port |
+| MONGODB_URI | mongodb://localhost:27017/star_reward_app | MongoDB |
+| SESSION_SECRET | (required) | Session encryption key |
+| RAPIDAPI_KEY | | Reddit API key |
+| CLIPROXY_URL | http://localhost:5000 | AI proxy URL |
+| CLIPROXY_API_KEY | | AI proxy key |
 
 ### Docker
-
 ```bash
-# Build image
-docker build -t star-reward .
-
-# Run container
-docker run -p 3000:3000 \
-  -e MONGODB_URI=mongodb://mongo:27017/star_reward \
-  star-reward
+docker-compose up -d    # MongoDB + Redis + App
 ```
 
-### PM2 (Production)
-
+### Production (PM2)
 ```bash
-# Install PM2
 npm install -g pm2
-
-# Start app
 pm2 start src/app.js --name star-reward
-
-# Auto restart on reboot
-pm2 startup
-pm2 save
-
-# Monitor
-pm2 monit
 ```
 
 ---
 
-## 🤝 Contributing
+## Documentation
 
-Chúng tôi hoan nghênh mọi đóng góp!
-
-### Quy trình
-
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-### Code Style
-
-- Sử dụng ES6+ syntax
-- Indentation: 4 spaces
-- Naming: camelCase cho variables, PascalCase cho classes
-- Comment bằng tiếng Việt hoặc tiếng Anh
+| File | Description |
+|------|-------------|
+| [TECHNICAL_DOCUMENTATION.md](docs/TECHNICAL_DOCUMENTATION.md) | Architecture, schema, API, security audit |
+| [FEATURE_DEVELOPMENT_GUIDE.md](docs/FEATURE_DEVELOPMENT_GUIDE.md) | How to add features + roadmap |
+| [ADMIN_GUIDE.md](ADMIN_GUIDE.md) | Admin panel operations |
+| [AI_CLIPROXY_INTEGRATION.md](AI_CLIPROXY_INTEGRATION.md) | AI service setup |
 
 ---
 
-## 📝 Changelog
+## Changelog
 
-### Version 2.0.0 (2026-01-23)
+### v2.1.0 (2026-03)
+- Notification system (auto-notify on star changes, achievements, purchases)
+- Daily check-in + streak bonus (7/14/30 day milestones)
+- Achievement/badge system (19 achievements, 5 rarity levels, auto-award)
+- Star shop (15 items across 4 categories)
+- Security fixes: rate limiting, session store, input sanitization, env vars
+- Error pages (404, 500)
+- Fixed Dockerfile (python -> node), docker-compose (Flask -> Node)
 
-#### Added
-- ✨ Admin Panel với quản lý users
-- 📝 Blog Management System
-- 🔗 Reddit Integration với crawler
-- 🎨 Rich Text Editor (Quill.js)
-- 📊 Dashboard với thống kê
-- 🔐 Role-based access control
-- 🌐 Multi-category blog system
+### v2.0.0 (2026-01)
+- Admin panel (user CRUD, blog management)
+- Blog system with Reddit import + AI translation
+- Rich text editor (Quill.js)
+- Role-based access control
+- Migrate from SQLite to MongoDB
 
-#### Changed
-- 🔄 Migrate từ SQLite sang MongoDB
-- 💅 UI/UX improvements với Bootstrap 5
-- ⚡ Performance optimization
-
-#### Fixed
-- 🐛 Bug fixes trong reward system
-- 🔧 Session management improvements
-
-### Version 1.0.0
-
-- ⭐ Basic reward system
-- 📚 Learning modules
-- 🎯 Exam system
-- 👥 Multi-user support
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 👥 Team
-
-- **Developer**: Star Reward Team
-- **Contributors**: [Contributors List](https://github.com/yourusername/star-reward/graphs/contributors)
-
----
-
-## 📞 Support
-
-### Liên hệ
-
-- 📧 Email: support@starreward.com
-- 🌐 Website: https://starreward.com
-- 💬 Discord: https://discord.gg/starreward
-
-### Báo lỗi
-
-Tạo issue tại: https://github.com/yourusername/star-reward/issues
-
-### Documentation
-
-- [Admin Guide](ADMIN_GUIDE.md) - Hướng dẫn quản trị
-- [API Docs](docs/API.md) - API documentation
-- [User Guide](docs/USER_GUIDE.md) - Hướng dẫn người dùng
-
----
-
-## 🙏 Acknowledgments
-
-- [Bootstrap](https://getbootstrap.com/) - UI Framework
-- [MongoDB](https://www.mongodb.com/) - Database
-- [Express.js](https://expressjs.com/) - Web Framework
-- [Quill.js](https://quilljs.com/) - Rich Text Editor
-- [Chart.js](https://www.chartjs.org/) - Charts
-- Reddit community - Content source
-
----
-
-## 🌟 Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=yourusername/star-reward&type=Date)](https://star-history.com/#yourusername/star-reward&Date)
-
----
-
-<div align="center">
-
-Made with ❤️ by Star Reward Team
-
-**[⬆ Back to Top](#-star-reward---hệ-thống-tặng-sao-giáo-dục)**
-
-</div>
+### v1.0.0
+- Star reward system
+- Learning modules (3 subjects)
+- Exam system
+- Explore activities
+- Ideas with AI analysis

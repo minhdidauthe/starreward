@@ -69,6 +69,22 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Quick Actions -->
+                <div class="mt-4 d-flex flex-wrap gap-2 justify-content-center">
+                    <a href="/checkin/{{ student._id }}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-calendar-check me-1"></i>Điểm danh
+                    </a>
+                    <a href="/achievements/{{ student._id }}" class="btn btn-outline-warning btn-sm">
+                        <i class="fas fa-trophy me-1"></i>Huy hiệu
+                    </a>
+                    <a href="/shop/{{ student._id }}" class="btn btn-outline-success btn-sm">
+                        <i class="fas fa-store me-1"></i>Cửa hàng
+                    </a>
+                    <a href="/notifications/{{ student._id }}" class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-bell me-1"></i>Thông báo
+                    </a>
+                </div>
             </div>
         </div>
 

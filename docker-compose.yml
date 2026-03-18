@@ -56,15 +56,18 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "5000:5000"
+      - "8080:8080"
     volumes:
       - .:/app
+      - /app/node_modules
     depends_on:
       - mongodb
       - redis
     environment:
-      - FLASK_ENV=development
-      - MONGO_URI=mongodb://admin:password@mongodb:27017/
+      - NODE_ENV=production
+      - PORT=8080
+      - MONGODB_URI=mongodb://admin:password@mongodb:27017/star_reward_app?authSource=admin
+      - SESSION_SECRET=${SESSION_SECRET:-change-this-in-production}
       - REDIS_URL=redis://redis:6379/0
     networks:
       - app_network

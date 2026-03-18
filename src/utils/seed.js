@@ -3,6 +3,8 @@ const { Subject, Chapter, Lesson } = require('../models/Learning');
 const { Exam, Question } = require('../models/Exam');
 const { ExploreCategory, ExploreActivity } = require('../models/Explore');
 const User = require('../models/User');
+const { Achievement } = require('../models/Achievement');
+const { ShopItem } = require('../models/Shop');
 
 // ============================================
 // Seed Default Daily Tasks
@@ -915,6 +917,85 @@ const seedAdminUser = async () => {
 };
 
 // ============================================
+// Seed Achievements
+// ============================================
+const seedAchievements = async () => {
+    const count = await Achievement.countDocuments();
+    if (count === 0) {
+        const achievements = [
+            // Star milestones
+            { name: 'Ngôi Sao Mới', description: 'Đạt 10 sao đầu tiên', icon: '⭐', type: 'star_milestone', requirement: 10, starsBonus: 2, rarity: 'common', order: 1 },
+            { name: 'Ngôi Sao Sáng', description: 'Đạt 50 sao', icon: '🌟', type: 'star_milestone', requirement: 50, starsBonus: 5, rarity: 'uncommon', order: 2 },
+            { name: 'Siêu Sao', description: 'Đạt 100 sao', icon: '💫', type: 'star_milestone', requirement: 100, starsBonus: 10, rarity: 'rare', order: 3 },
+            { name: 'Vua Sao', description: 'Đạt 500 sao', icon: '👑', type: 'star_milestone', requirement: 500, starsBonus: 25, rarity: 'epic', order: 4 },
+            { name: 'Huyền Thoại', description: 'Đạt 1000 sao', icon: '🏆', type: 'star_milestone', requirement: 1000, starsBonus: 50, rarity: 'legendary', order: 5 },
+
+            // Check-in streaks
+            { name: 'Bước Đầu', description: 'Điểm danh 3 ngày liên tiếp', icon: '📅', type: 'checkin_streak', requirement: 3, starsBonus: 2, rarity: 'common', order: 10 },
+            { name: 'Chăm Chỉ', description: 'Điểm danh 7 ngày liên tiếp', icon: '🔥', type: 'checkin_streak', requirement: 7, starsBonus: 5, rarity: 'uncommon', order: 11 },
+            { name: 'Kiên Trì', description: 'Điểm danh 14 ngày liên tiếp', icon: '💪', type: 'checkin_streak', requirement: 14, starsBonus: 10, rarity: 'rare', order: 12 },
+            { name: 'Bất Khuất', description: 'Điểm danh 30 ngày liên tiếp', icon: '🏅', type: 'checkin_streak', requirement: 30, starsBonus: 25, rarity: 'epic', order: 13 },
+
+            // Task completion
+            { name: 'Người Mới Bắt Đầu', description: 'Hoàn thành 5 công việc', icon: '✅', type: 'task_streak', requirement: 5, starsBonus: 3, rarity: 'common', order: 20 },
+            { name: 'Nhân Viên Xuất Sắc', description: 'Hoàn thành 20 công việc', icon: '🎯', type: 'task_streak', requirement: 20, starsBonus: 8, rarity: 'uncommon', order: 21 },
+            { name: 'Siêu Nhân', description: 'Hoàn thành 50 công việc', icon: '🦸', type: 'task_streak', requirement: 50, starsBonus: 15, rarity: 'rare', order: 22 },
+
+            // Explore
+            { name: 'Nhà Thám Hiểm', description: 'Hoàn thành 5 hoạt động khám phá', icon: '🧭', type: 'explore_count', requirement: 5, starsBonus: 5, rarity: 'uncommon', order: 30 },
+            { name: 'Nhà Khám Phá', description: 'Hoàn thành 15 hoạt động', icon: '🗺️', type: 'explore_count', requirement: 15, starsBonus: 10, rarity: 'rare', order: 31 },
+
+            // Ideas
+            { name: 'Nhà Tư Tưởng', description: 'Chia sẻ 3 ý tưởng', icon: '💡', type: 'idea_count', requirement: 3, starsBonus: 5, rarity: 'uncommon', order: 40 },
+            { name: 'Nhà Phát Minh', description: 'Chia sẻ 10 ý tưởng', icon: '🚀', type: 'idea_count', requirement: 10, starsBonus: 15, rarity: 'rare', order: 41 },
+
+            // Exam
+            { name: 'Học Sinh Giỏi', description: 'Đạt 80 điểm trong bài thi', icon: '📝', type: 'exam_score', requirement: 80, starsBonus: 5, rarity: 'uncommon', order: 50 },
+            { name: 'Thủ Khoa', description: 'Đạt 100 điểm trong bài thi', icon: '🎓', type: 'exam_score', requirement: 100, starsBonus: 15, rarity: 'epic', order: 51 },
+        ];
+
+        await Achievement.insertMany(achievements);
+        console.log('✓ Achievements seeded');
+    }
+};
+
+// ============================================
+// Seed Shop Items
+// ============================================
+const seedShopItems = async () => {
+    const count = await ShopItem.countDocuments();
+    if (count === 0) {
+        const items = [
+            // Privileges
+            { name: '30 phút chơi game', description: 'Được chơi game 30 phút', icon: '🎮', cost: 20, category: 'privilege', order: 1 },
+            { name: '30 phút xem YouTube', description: 'Được xem YouTube 30 phút', icon: '📱', cost: 25, category: 'privilege', order: 2 },
+            { name: 'Nghỉ 1 công việc', description: 'Được bỏ qua 1 công việc hàng ngày', icon: '😴', cost: 15, category: 'privilege', order: 3 },
+            { name: 'Ngủ muộn 30 phút', description: 'Được thức thêm 30 phút', icon: '🌙', cost: 10, category: 'privilege', order: 4 },
+            { name: 'Chọn bữa ăn', description: 'Được chọn món ăn yêu thích cho 1 bữa', icon: '🍽️', cost: 30, category: 'privilege', order: 5 },
+
+            // Physical rewards
+            { name: 'Ăn kem', description: 'Được ăn 1 ly kem', icon: '🍦', cost: 15, category: 'physical', order: 10 },
+            { name: 'Bánh kẹo', description: 'Được mua bánh kẹo yêu thích', icon: '🍬', cost: 10, category: 'physical', order: 11 },
+            { name: 'Đồ chơi nhỏ', description: 'Được mua 1 đồ chơi nhỏ', icon: '🧸', cost: 50, category: 'physical', order: 12 },
+            { name: 'Sách truyện', description: 'Được mua 1 cuốn sách/truyện', icon: '📚', cost: 40, category: 'physical', order: 13 },
+
+            // Experience
+            { name: 'Đi công viên', description: 'Được đi công viên chơi', icon: '🎡', cost: 80, category: 'experience', order: 20 },
+            { name: 'Xem phim rạp', description: 'Được đi xem phim ở rạp', icon: '🎬', cost: 60, category: 'experience', order: 21 },
+            { name: 'Picnic', description: 'Đi picnic cuối tuần', icon: '🧺', cost: 100, category: 'experience', order: 22 },
+
+            // Avatars
+            { name: 'Avatar Siêu Nhân', description: 'Mở khóa avatar siêu nhân', icon: '🦸', cost: 30, category: 'avatar', order: 30 },
+            { name: 'Avatar Công Chúa', description: 'Mở khóa avatar công chúa', icon: '👸', cost: 30, category: 'avatar', order: 31 },
+            { name: 'Avatar Robot', description: 'Mở khóa avatar robot', icon: '🤖', cost: 45, category: 'avatar', order: 32 },
+        ];
+
+        await ShopItem.insertMany(items);
+        console.log('✓ Shop items seeded');
+    }
+};
+
+// ============================================
 // Main Seed Function
 // ============================================
 const initSeedData = async () => {
@@ -924,6 +1005,8 @@ const initSeedData = async () => {
         await seedLearningData();
         await seedExamData();
         await seedExploreData();
+        await seedAchievements();
+        await seedShopItems();
         console.log('--- All seed data initialized ---');
     } catch (err) {
         console.error('Error seeding data:', err);

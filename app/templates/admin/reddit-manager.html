@@ -332,15 +332,20 @@
         <div class="collapse" id="aiConfig">
             <div class="card-body">
                 <div class="row g-3">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label class="form-label">CLIProxy URL</label>
                         <input type="text" class="form-control" id="cliproxyUrl" placeholder="http://localhost:5000">
                         <div class="form-text">The URL where your CLIProxy server is running.</div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label class="form-label">API Key</label>
                         <input type="password" class="form-control" id="cliproxyKey" placeholder="sk-...">
                         <div class="form-text">Your CLIProxy API Key (if authentication is enabled).</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Model Name</label>
+                        <input type="text" class="form-control" id="cliproxyModel" placeholder="gemini-2.0-flash-exp">
+                        <div class="form-text">Override the selected AI model (optional).</div>
                     </div>
                     <div class="col-12 text-end">
                         <button class="btn btn-secondary btn-sm" id="saveConfigBtn">
@@ -427,18 +432,22 @@
     document.addEventListener('DOMContentLoaded', () => {
         const savedUrl = localStorage.getItem('cliproxyUrl');
         const savedKey = localStorage.getItem('cliproxyKey');
+        const savedModel = localStorage.getItem('cliproxyModel');
 
         if (savedUrl) document.getElementById('cliproxyUrl').value = savedUrl;
         if (savedKey) document.getElementById('cliproxyKey').value = savedKey;
+        if (savedModel) document.getElementById('cliproxyModel').value = savedModel;
     });
 
     // Save config
     document.getElementById('saveConfigBtn').addEventListener('click', () => {
         const url = document.getElementById('cliproxyUrl').value;
         const key = document.getElementById('cliproxyKey').value;
+        const model = document.getElementById('cliproxyModel').value;
 
         localStorage.setItem('cliproxyUrl', url);
         localStorage.setItem('cliproxyKey', key);
+        localStorage.setItem('cliproxyModel', model);
 
         alert('Configuration saved!');
     });
@@ -672,8 +681,9 @@
         }
 
         const aiModel = document.getElementById('aiModel').value;
+        const proxyModel = document.getElementById('cliproxyModel').value;
 
-        showLoading(`Processing ${selectedPosts.length} posts with ${aiModel.toUpperCase()}...`);
+        showLoading(`Processing ${selectedPosts.length} posts with ${proxyModel || aiModel.toUpperCase()}...`);
 
         try {
             const response = await fetch('/admin/api/reddit-ai-rewrite', {
@@ -685,7 +695,8 @@
                     posts: selectedPosts,
                     aiModel: aiModel,
                     proxyUrl: document.getElementById('cliproxyUrl').value,
-                    proxyApiKey: document.getElementById('cliproxyKey').value
+                    proxyApiKey: document.getElementById('cliproxyKey').value,
+                    proxyModel: proxyModel
                 })
             });
 

@@ -2,7 +2,17 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const { Student, DailyTask, Reward, Task } = require('../models/Basic');
+const Notification = require('../models/Notification');
 const moment = require('moment');
+
+// Lazy-load achievement checker to avoid circular deps
+let _checkAchievements = null;
+function getAchievementChecker() {
+    if (!_checkAchievements) {
+        _checkAchievements = require('./achievements').checkAndAwardAchievements;
+    }
+    return _checkAchievements;
+}
 
 // Helper for reward level
 const getRewardLevel = (stars) => {
@@ -106,6 +116,20 @@ router.post('/add_stars/:id', async (req, res) => {
             });
 
             await Student.updateOne({ _id: student._id }, { $inc: { total_stars: stars } });
+
+            // Notify
+            await Notification.notify(
+                student._id,
+                isPenalty ? 'star_lost' : 'star_earned',
+                isPenalty ? `Trừ ${Math.abs(stars)} sao` : `Nhận ${stars} sao`,
+                reason,
+                { link: `/student/${student._id}` }
+            );
+
+            // Check achievements (async, don't block)
+            const updatedStudent = await Student.findById(student._id);
+            getAchievementChecker()(updatedStudent).catch(e => console.error('Achievement check error:', e));
+
             req.flash(isPenalty ? 'warning' : 'success', message);
         }
         res.redirect(`/student/${student._id}`);
