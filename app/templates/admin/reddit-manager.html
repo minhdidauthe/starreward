@@ -721,6 +721,9 @@
 
     // Show AI preview
     function showAIPreview(results) {
+        // IMPORTANT: hide loading overlay first, then show modal
+        hideLoading();
+
         const body = document.getElementById('aiPreviewBody');
 
         body.innerHTML = results.map((result, index) => `
@@ -785,8 +788,17 @@
         // Store results globally
         window.aiResults = results;
 
-        const modal = new bootstrap.Modal(document.getElementById('aiPreviewModal'));
-        modal.show();
+        // Remove any stale backdrop/body classes before showing modal
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+
+        setTimeout(() => {
+            const modalEl = document.getElementById('aiPreviewModal');
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        }, 100);
     }
 
     // Publish all selected
