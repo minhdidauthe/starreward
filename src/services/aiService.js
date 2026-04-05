@@ -7,8 +7,8 @@ const axios = require('axios');
 
 class AIService {
     constructor() {
-        // CLIProxy configuration
-        this.proxyUrl = process.env.CLIPROXY_URL || 'http://localhost:5000';
+        // CLIProxy configuration (OpenAI-compatible endpoint)
+        this.proxyUrl = process.env.CLIPROXY_URL || 'http://127.0.0.1:8317';
         this.proxyApiKey = process.env.CLIPROXY_API_KEY || '';
     }
 
@@ -24,39 +24,53 @@ class AIService {
 
             const proxyUrl = options.proxyUrl || this.proxyUrl;
             const proxyApiKey = options.proxyApiKey || this.proxyApiKey;
-            const targetModel = options.proxyModel || model;
+            const targetModel = options.proxyModel || this.getModelName(model);
 
-            // Call CLIProxy
-            const response = await axios.post(`${proxyUrl}/api/chat`, {
+            // Call CLIProxy (OpenAI-compatible /v1/chat/completions)
+            const response = await axios.post(`${proxyUrl}/v1/chat/completions`, {
                 model: targetModel,
                 messages: [
                     {
                         role: 'system',
-                        content: 'You are a professional translator specializing in parenting and education content for Vietnamese audiences. Translate Reddit posts to Vietnamese, maintaining the original meaning while making it culturally appropriate and engaging.'
+                        content: 'You are a professional translator specializing in parenting and education content for Vietnamese audiences. Translate Reddit posts to Vietnamese, maintaining the original meaning while making it culturally appropriate and engaging. Always respond with valid JSON only, no markdown.'
                     },
                     {
                         role: 'user',
                         content: prompt
                     }
                 ],
-                temperature: 0.7,
-                response_format: 'json'
+                temperature: 0.7
             }, {
                 headers: {
                     'Authorization': `Bearer ${proxyApiKey}`,
                     'Content-Type': 'application/json'
                 },
-                timeout: 60000 // 60 seconds
+                timeout: 120000 // 120 seconds
             });
 
-            // Parse response
+            // Parse response (OpenAI format)
             const result = this.parseResponse(response.data, post);
             return result;
 
         } catch (error) {
             console.error(`[AI Service] Error with ${model}:`, error.message);
+            if (error.response) {
+                console.error(`[AI Service] Response status: ${error.response.status}, data:`, JSON.stringify(error.response.data).substring(0, 500));
+            }
             throw new Error(`AI rewrite failed: ${error.message}`);
         }
+    }
+
+    /**
+     * Map UI model selection to actual model name
+     */
+    getModelName(model) {
+        const modelMap = {
+            'gemini': 'gemini-2.0-flash',
+            'chatgpt': 'gpt-4o',
+            'claude': 'claude-sonnet-4-20250514'
+        };
+        return modelMap[model] || model;
     }
 
     /**
@@ -103,30 +117,29 @@ Translate this Reddit post to Vietnamese for a parenting/education blog:
         try {
             // Different response formats from different proxies
             let parsed;
+            let content = '';
 
             if (typeof responseData === 'string') {
-                // Try to extract JSON from markdown code block
-                const jsonMatch = responseData.match(/```json\n([\s\S]*?)\n```/);
-                if (jsonMatch) {
-                    parsed = JSON.parse(jsonMatch[1]);
-                } else {
-                    parsed = JSON.parse(responseData);
-                }
+                content = responseData;
             } else if (responseData.choices && responseData.choices[0]) {
-                // OpenAI format
-                const content = responseData.choices[0].message.content;
-                parsed = JSON.parse(content);
+                // OpenAI format (CLIProxy returns this)
+                content = responseData.choices[0].message.content;
             } else if (responseData.content && responseData.content[0]) {
                 // Claude format
-                const content = responseData.content[0].text;
-                parsed = JSON.parse(content);
+                content = responseData.content[0].text;
             } else if (responseData.candidates && responseData.candidates[0]) {
                 // Gemini format
-                const content = responseData.candidates[0].content.parts[0].text;
-                parsed = JSON.parse(content);
+                content = responseData.candidates[0].content.parts[0].text;
             } else {
                 // Assume it's already parsed JSON
                 parsed = responseData;
+            }
+
+            if (!parsed && content) {
+                // Clean up: remove markdown code blocks if present
+                const jsonMatch = content.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
+                const jsonStr = jsonMatch ? jsonMatch[1] : content;
+                parsed = JSON.parse(jsonStr.trim());
             }
 
             // Validate and format
