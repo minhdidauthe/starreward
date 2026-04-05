@@ -203,7 +203,13 @@ redditPostSchema.methods.toAPIFormat = function() {
         created: this.redditCreatedAt ? Math.floor(this.redditCreatedAt.getTime() / 1000) : null,
         fetchedAt: this.fetchedAt,
         status: this.status,
-        aiProcessed: this.aiProcessed
+        aiProcessed: this.aiProcessed,
+        aiModel: this.aiModel,
+        vietnameseTitle: this.vietnameseTitle,
+        vietnameseContent: this.vietnameseContent,
+        suggestedCategory: this.suggestedCategory,
+        suggestedTags: this.suggestedTags,
+        publishedAt: this.publishedAt
     };
 };
 

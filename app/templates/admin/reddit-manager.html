@@ -346,7 +346,7 @@
                         <select class="form-select" id="filterStatus">
                             <option value="">All Status</option>
                             <option value="fetched">Fetched</option>
-                            <option value="processing">Processing</option>
+                            <option value="processing">AI Rewritten</option>
                             <option value="published">Published</option>
                             <option value="rejected">Rejected</option>
                         </select>
@@ -620,6 +620,11 @@
         container.innerHTML = posts.map(post => {
             const trendingClass = post.score > 1000 ? 'hot' : post.score > 500 ? 'medium' : 'low';
             const trendingIcon = post.score > 1000 ? 'bi-fire' : post.score > 500 ? 'bi-graph-up-arrow' : 'bi-activity';
+            const statusBadge = post.status === 'published'
+                ? '<span class="badge bg-success ms-1">Published</span>'
+                : post.aiProcessed
+                    ? '<span class="badge bg-info ms-1">AI Rewritten</span>'
+                    : '';
 
             return `
             <div class="col-md-4 col-lg-3 mb-4">
@@ -632,40 +637,55 @@
                                 <i class="bi bi-file-text text-secondary" style="font-size: 3rem; opacity: 0.3;"></i>
                             </div>
                         `}
-                        <div class="position-absolute top-0 end-0 m-2 badge rounded-pill bg-white text-dark shadow-sm d-flex align-items-center gap-1" 
+                        <div class="position-absolute top-0 end-0 m-2 badge rounded-pill bg-white text-dark shadow-sm d-flex align-items-center gap-1"
                              style="z-index: 2; font-weight: 600;">
                             <i class="bi ${trendingIcon} ${trendingClass === 'hot' ? 'text-danger' : trendingClass === 'medium' ? 'text-warning' : 'text-secondary'}"></i>
                             ${post.score.toLocaleString()}
                         </div>
                     </div>
-                    
+
                     <div class="card-body d-flex flex-column p-3">
-                        <div class="mb-2">
+                        <div class="mb-2 d-flex flex-wrap gap-1">
                             <span class="badge bg-light text-secondary border rounded-pill fw-normal">
                                 <i class="bi bi-reddit me-1"></i> r/${post.subreddit}
                             </span>
+                            ${statusBadge}
                         </div>
-                        
+
                         <h6 class="card-title fw-bold text-dark mb-3" style="font-size: 1rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; height: 4.2em;">
-                            ${escapeHtml(post.title)}
+                            ${escapeHtml(post.vietnameseTitle || post.title)}
                         </h6>
-                        
+
                         <div class="mt-auto d-flex align-items-center justify-content-between pt-3 border-top">
                             <div class="text-muted small" title="Comments">
                                 <i class="bi bi-chat-dots me-1"></i> ${post.num_comments}
                             </div>
-                            <a href="${post.url}" target="_blank" rel="noopener noreferrer" 
-                               class="btn btn-sm btn-light rounded-pill px-3" onclick="event.stopPropagation();">
-                                View <i class="bi bi-box-arrow-up-right ms-1"></i>
-                            </a>
+                            <div class="d-flex gap-1">
+                                ${post.aiProcessed ? `
+                                    <button class="btn btn-sm btn-outline-primary rounded-pill px-3 view-rewrite-btn"
+                                            data-post-id="${post.id}" onclick="event.stopPropagation();">
+                                        <i class="bi bi-eye me-1"></i>View
+                                    </button>
+                                ` : ''}
+                                <a href="${post.url}" target="_blank" rel="noopener noreferrer"
+                                   class="btn btn-sm btn-light rounded-pill px-3" onclick="event.stopPropagation();">
+                                    <i class="bi bi-box-arrow-up-right"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
-                    
+
                     <div class="card-footer bg-white border-0 p-3 pt-0">
-                        <label class="d-flex align-items-center p-2 rounded border w-100 cursor-pointer hover-bg-light" style="cursor: pointer;" onclick="event.stopPropagation();">
-                            <input type="checkbox" class="form-check-input me-2 post-checkbox" value="${post.id}" id="check-${post.id}" style="width: 1.2em; height: 1.2em;">
-                            <span class="small fw-medium text-secondary">Select for AI Rewrite</span>
-                        </label>
+                        ${post.status === 'published' ? `
+                            <div class="text-center small text-success fw-medium py-1">
+                                <i class="bi bi-check-circle me-1"></i> Published
+                            </div>
+                        ` : `
+                            <label class="d-flex align-items-center p-2 rounded border w-100" style="cursor: pointer;" onclick="event.stopPropagation();">
+                                <input type="checkbox" class="form-check-input me-2 post-checkbox" value="${post.id}" id="check-${post.id}" style="width: 1.2em; height: 1.2em;">
+                                <span class="small fw-medium text-secondary">${post.aiProcessed ? 'Select to Publish' : 'Select for AI Rewrite'}</span>
+                            </label>
+                        `}
                     </div>
                 </div>
             </div>
@@ -675,10 +695,12 @@
         // Add click handlers
         document.querySelectorAll('.reddit-card').forEach(card => {
             card.addEventListener('click', (e) => {
-                if (e.target.type !== 'checkbox') {
+                if (e.target.type !== 'checkbox' && !e.target.closest('.view-rewrite-btn') && !e.target.closest('a')) {
                     const checkbox = card.querySelector('.post-checkbox');
-                    checkbox.checked = !checkbox.checked;
-                    checkbox.dispatchEvent(new Event('change'));
+                    if (checkbox) {
+                        checkbox.checked = !checkbox.checked;
+                        checkbox.dispatchEvent(new Event('change'));
+                    }
                 }
             });
         });
@@ -686,6 +708,93 @@
         document.querySelectorAll('.post-checkbox').forEach(checkbox => {
             checkbox.addEventListener('change', updateSelection);
         });
+
+        // View Rewrite buttons
+        document.querySelectorAll('.view-rewrite-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const postId = btn.dataset.postId;
+                const post = allPosts.find(p => p.id === postId);
+                if (post && post.vietnameseContent) {
+                    viewSingleRewrite(post);
+                }
+            });
+        });
+    }
+
+    // View single rewrite in panel
+    function viewSingleRewrite(post) {
+        const body = document.getElementById('aiPreviewBody');
+        body.innerHTML = `
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">${escapeHtml(post.title)}</h6>
+                    <div>
+                        <span class="badge bg-info me-1">${post.aiModel || 'AI'}</span>
+                        <span class="badge bg-${post.status === 'published' ? 'success' : 'warning'}">${post.status}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Vietnamese Title:</label>
+                        <input type="text" class="form-control" value="${escapeHtml(post.vietnameseTitle || '')}" data-result-index="0" data-field="title">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Category:</label>
+                        <select class="form-select" data-result-index="0" data-field="category">
+                            <option value="education" ${post.suggestedCategory === 'education' ? 'selected' : ''}>Giáo dục</option>
+                            <option value="psychology" ${post.suggestedCategory === 'psychology' ? 'selected' : ''}>Tâm lý</option>
+                            <option value="health" ${post.suggestedCategory === 'health' ? 'selected' : ''}>Sức khỏe</option>
+                            <option value="nutrition" ${post.suggestedCategory === 'nutrition' ? 'selected' : ''}>Dinh dưỡng</option>
+                            <option value="activities" ${post.suggestedCategory === 'activities' ? 'selected' : ''}>Hoạt động</option>
+                            <option value="discipline" ${post.suggestedCategory === 'discipline' ? 'selected' : ''}>Kỷ luật</option>
+                            <option value="communication" ${post.suggestedCategory === 'communication' ? 'selected' : ''}>Giao tiếp</option>
+                            <option value="technology" ${post.suggestedCategory === 'technology' ? 'selected' : ''}>Công nghệ</option>
+                            <option value="experience" ${post.suggestedCategory === 'experience' ? 'selected' : ''}>Kinh nghiệm</option>
+                            <option value="other" ${post.suggestedCategory === 'other' ? 'selected' : ''}>Khác</option>
+                        </select>
+                    </div>
+                    ${post.suggestedTags && post.suggestedTags.length > 0 ? `
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Tags:</label>
+                            <div class="d-flex flex-wrap gap-1">
+                                ${post.suggestedTags.map(t => `<span class="badge bg-light text-dark border">${t}</span>`).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Vietnamese Content:</label>
+                        <div class="ai-preview border rounded p-3" style="background: #f8f9fa;">
+                            ${post.vietnameseContent}
+                        </div>
+                    </div>
+                    ${post.status !== 'published' ? `
+                        <div class="form-check">
+                            <input class="form-check-input publish-checkbox" type="checkbox" id="publish-0" checked data-result-index="0">
+                            <label class="form-check-label" for="publish-0">Publish this post</label>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+
+        // Set aiResults for publish handler
+        window.aiResults = [{
+            success: true,
+            originalTitle: post.title,
+            vietnameseTitle: post.vietnameseTitle,
+            vietnameseContent: post.vietnameseContent,
+            category: post.suggestedCategory,
+            tags: post.suggestedTags,
+            redditUrl: post.url,
+            redditScore: post.score,
+            redditComments: post.num_comments,
+            subreddit: post.subreddit,
+            image: post.image,
+            redditId: post.id
+        }];
+
+        document.getElementById('aiPreviewPanel').classList.add('active');
+        document.body.style.overflow = 'hidden';
     }
 
     // Update selection

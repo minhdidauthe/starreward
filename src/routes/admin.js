@@ -1084,6 +1084,41 @@ router.post('/api/reddit-ai-rewrite', isAdmin, async (req, res) => {
 
         console.log(`[AI Rewrite] Completed: ${results.filter(r => r.success).length} success, ${results.filter(r => !r.success).length} failed`);
 
+        // Save rewritten results to DB
+        for (const result of results) {
+            if (!result.success) continue;
+            try {
+                const post = posts.find(p => p.title === result.originalTitle || p.id === result.redditId);
+                const redditId = (post && post.id) || result.redditId || result.originalTitle;
+
+                await RedditPost.findOneAndUpdate(
+                    { redditId },
+                    {
+                        $set: {
+                            redditId,
+                            title: result.originalTitle,
+                            url: result.redditUrl || (post && post.url) || '',
+                            subreddit: result.subreddit || (post && post.subreddit) || '',
+                            score: result.redditScore || (post && post.score) || 0,
+                            numComments: result.redditComments || (post && post.num_comments) || 0,
+                            image: result.image || (post && post.image) || null,
+                            content: (post && post.content) || '',
+                            aiProcessed: true,
+                            aiModel: proxyModel || aiModel,
+                            vietnameseTitle: result.vietnameseTitle,
+                            vietnameseContent: result.vietnameseContent,
+                            suggestedCategory: result.category,
+                            suggestedTags: result.tags || [],
+                            status: 'processing'
+                        }
+                    },
+                    { upsert: true, new: true }
+                );
+            } catch (dbErr) {
+                console.error(`[AI Rewrite] DB save error for "${result.originalTitle}":`, dbErr.message);
+            }
+        }
+
         res.json({
             success: true,
             results
@@ -1144,8 +1179,17 @@ router.post('/api/reddit-publish', isAdmin, async (req, res) => {
                 });
 
                 if (!existing) {
-                    await BlogPost.create(blogPostData);
+                    const newBlogPost = await BlogPost.create(blogPostData);
                     published++;
+
+                    // Update RedditPost status
+                    const redditId = post.redditId || post.id;
+                    if (redditId) {
+                        await RedditPost.findOneAndUpdate(
+                            { redditId },
+                            { status: 'published', publishedAt: new Date(), publishedPostId: newBlogPost._id }
+                        );
+                    }
                 } else {
                     failed.push({
                         title: post.vietnameseTitle,
