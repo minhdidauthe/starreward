@@ -66,9 +66,10 @@ class AIService {
      */
     getModelName(model) {
         const modelMap = {
-            'gemini': 'gemini-2.0-flash',
-            'chatgpt': 'gpt-4o',
-            'claude': 'claude-sonnet-4-20250514'
+            'gemini': 'gemini-2.5-flash',
+            'gemini-pro': 'gemini-3-pro-preview',
+            'chatgpt': 'gpt-oss-120b-medium',
+            'claude': 'claude-sonnet-4-6'
         };
         return modelMap[model] || model;
     }
