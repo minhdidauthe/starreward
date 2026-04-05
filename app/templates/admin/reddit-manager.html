@@ -181,16 +181,65 @@
         display: none;
         align-items: center;
         justify-content: center;
-        z-index: 1040;
+        z-index: 99999;
     }
 
     .loading-overlay.active {
         display: flex;
     }
 
-    /* Ensure modal is always on top */
-    #aiPreviewModal {
-        z-index: 1060;
+    /* Custom fullscreen panel instead of Bootstrap modal */
+    #aiPreviewPanel {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 99998;
+        display: none;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 30px;
+        overflow-y: auto;
+    }
+    #aiPreviewPanel.active {
+        display: flex;
+    }
+    #aiPreviewPanel .panel-content {
+        background: white;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 900px;
+        max-height: calc(100vh - 60px);
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    #aiPreviewPanel .panel-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        background: white;
+        border-radius: 16px 16px 0 0;
+        z-index: 1;
+    }
+    #aiPreviewPanel .panel-body {
+        padding: 24px;
+    }
+    #aiPreviewPanel .panel-footer {
+        padding: 16px 24px;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        position: sticky;
+        bottom: 0;
+        background: white;
+        border-radius: 0 0 16px 16px;
     }
 </style>
 {% endblock %}
@@ -393,26 +442,20 @@
     </div>
 </div>
 
-<!-- AI Preview Modal -->
-<div class="modal fade" id="aiPreviewModal" tabindex="-1" data-bs-backdrop="true" data-bs-keyboard="true">
-    <div class="modal-dialog modal-xl modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="bi bi-magic"></i>
-                    AI Rewritten Content Preview
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="aiPreviewBody" style="max-height: 70vh; overflow-y: auto;">
-                <!-- AI results will be inserted here -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="publishAllBtn">
-                    <i class="bi bi-send"></i> Publish All
-                </button>
-            </div>
+<!-- AI Preview Panel (custom, no Bootstrap modal) -->
+<div id="aiPreviewPanel">
+    <div class="panel-content">
+        <div class="panel-header">
+            <h5 class="mb-0"><i class="bi bi-magic"></i> AI Rewritten Content Preview</h5>
+            <button type="button" class="btn-close" id="closePreviewBtn" aria-label="Close"></button>
+        </div>
+        <div class="panel-body" id="aiPreviewBody">
+        </div>
+        <div class="panel-footer">
+            <button type="button" class="btn btn-secondary" id="closePreviewBtn2">Close</button>
+            <button type="button" class="btn btn-primary" id="publishAllBtn">
+                <i class="bi bi-send"></i> Publish All
+            </button>
         </div>
     </div>
 </div>
@@ -788,17 +831,9 @@
         // Store results globally
         window.aiResults = results;
 
-        // Remove any stale backdrop/body classes before showing modal
-        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-        document.body.classList.remove('modal-open');
-        document.body.style.overflow = '';
-        document.body.style.paddingRight = '';
-
-        setTimeout(() => {
-            const modalEl = document.getElementById('aiPreviewModal');
-            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-            modal.show();
-        }, 100);
+        // Show custom panel
+        document.getElementById('aiPreviewPanel').classList.add('active');
+        document.body.style.overflow = 'hidden';
     }
 
     // Publish all selected
@@ -841,7 +876,7 @@
 
             if (data.success) {
                 alert(`Successfully published ${data.published} posts!`);
-                bootstrap.Modal.getInstance(document.getElementById('aiPreviewModal')).hide();
+                closePreviewPanel();
 
                 // Clear selection
                 document.querySelectorAll('.post-checkbox').forEach(cb => cb.checked = false);
@@ -854,6 +889,18 @@
         } finally {
             hideLoading();
         }
+    });
+
+    // Close preview panel
+    function closePreviewPanel() {
+        document.getElementById('aiPreviewPanel').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    document.getElementById('closePreviewBtn').addEventListener('click', closePreviewPanel);
+    document.getElementById('closePreviewBtn2').addEventListener('click', closePreviewPanel);
+    // Click outside panel content to close
+    document.getElementById('aiPreviewPanel').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('aiPreviewPanel')) closePreviewPanel();
     });
 
     // Utility functions
